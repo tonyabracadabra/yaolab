@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "Yao Lab",
+  name: "YaoLab @ JNU",
   description:
     "Beautifully designed components built with Radix UI and Tailwind CSS.",
 };
