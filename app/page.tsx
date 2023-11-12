@@ -26,6 +26,7 @@ const features = [
   {
     Icon: ScatterChartIcon,
     name: "Metabolic Reaction Network Analysis",
+    hrefText: "Analyze Now",
     description:
       "Our latest research in streamlining metabolic network analysis from data to visualization.",
     href: "/analysis",
@@ -142,7 +143,7 @@ const features = [
 
 export default function Home() {
   return (
-    <main className="p-8 px-8 h-screen w-full sm:px-16 xl:px-32 font-sans">
+    <main className="p-8 px-8 h-full w-full sm:px-16 xl:px-32 font-sans">
       <BentoGrid>
         {features.map((feature, idx) => (
           <BentoCard key={idx} {...feature} />

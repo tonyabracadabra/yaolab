@@ -11,10 +11,11 @@ export function MainNav() {
 
   return (
     <div className="mr-4 hidden md:flex">
-      <Link href="/" className="mr-6 flex items-center space-x-2">
+      <Link href="/" className="font-urban mr-6 flex items-center space-x-2">
         <Icons.logo className="h-6 w-6" />
         <div className="relative -ml-[1px] text-xl flex items-center justify-center">
-          {siteConfig.name}
+          <span className="font-bold">{siteConfig.name}</span>
+          <span className="font-thin">{siteConfig.suffix}</span>
         </div>
       </Link>
     </div>

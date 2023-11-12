@@ -3,10 +3,11 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Urbanist } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
+const urbanist = Urbanist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,7 +22,9 @@ export default function RootLayout({
   return (
     // <ClerkProvider>
     <html lang="en">
-      <body className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <body
+        className={`${GeistSans.variable} ${GeistMono.variable} ${inter.className} ${urbanist.className}`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
