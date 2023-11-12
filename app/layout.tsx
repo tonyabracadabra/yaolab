@@ -1,4 +1,6 @@
 import { ThemeProvider } from "@/components/theme-provider";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -18,7 +20,7 @@ export default function RootLayout({
   return (
     // <ClerkProvider>
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${GeistSans.variable} ${GeistMono.variable}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
