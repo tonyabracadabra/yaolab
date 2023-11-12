@@ -86,3 +86,7 @@
   background: linear-gradient(to right, rgba(139, 136, 159, 0.5), transparent);
   border-radius: inherit; /* to match the rounded corners of the div */
 }
+
+.hide-links a {
+  @apply hidden;
+}

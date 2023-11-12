@@ -70,6 +70,7 @@ export default function Globe({
 
   const onRender = useCallback(
     (state: Record<string, any>) => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       if (!pointerInteracting.current) phi += 0.005;
       state.phi = phi + r.get();
       state.width = width * 2;

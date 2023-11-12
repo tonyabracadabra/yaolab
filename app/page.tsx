@@ -3,7 +3,6 @@
 import { BentoCard, BentoGrid } from "@/components/magicui/bento-grid";
 import Globe from "@/components/magicui/globe";
 import Marquee from "@/components/magicui/marquee";
-import { SiteHeader } from "@/components/site-header";
 import {
   Command,
   CommandEmpty,
@@ -17,18 +16,19 @@ import lineAnimation from "@/public/animations/line.json";
 
 import Lottie from "lottie-react";
 
-import { FileTextIcon, GlobeIcon, InputIcon } from "@radix-ui/react-icons";
+import { GlobeIcon, InputIcon } from "@radix-ui/react-icons";
 
 import Meteors from "@/components/magicui/meteors";
 import { cn } from "@/lib/utils";
-import { ContactIcon } from "lucide-react";
+import { ContactIcon, ScatterChartIcon } from "lucide-react";
 
 const features = [
   {
-    Icon: FileTextIcon,
-    name: "Upload your files",
-    description: "We automatically save your files as you type.",
-    href: "/",
+    Icon: ScatterChartIcon,
+    name: "Metabolic Reaction Network Analysis",
+    description:
+      "Our latest research in streamlining metabolic network analysis from data to visualization.",
+    href: "/analysis",
     className: "col-span-3 lg:col-span-1",
     background: (
       <div className="relative">
@@ -114,11 +114,11 @@ const features = [
     name: "Join the global community",
     description:
       "Building a global research community on traditional Chinese medicine",
-    href: "/",
+    href: "/analysis",
     className: "col-span-3 lg:col-span-2",
     background: (
       <div className="relative">
-        <Meteors number={10} />
+        <Meteors number={20} />
         <Globe className="top-0 h-[600px] w-[600px] transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_30%,#000_100%)] group-hover:scale-105 sm:left-40" />
       </div>
     ),
@@ -128,7 +128,7 @@ const features = [
     name: "About Us",
     description: "More on our mission and team",
     className: "col-span-3 lg:col-span-1",
-    href: "/",
+    href: "/aboutus",
     background: (
       <div
         style={{
@@ -142,8 +142,7 @@ const features = [
 
 export default function Home() {
   return (
-    <main className="p-8 px-8 sm:px-16 xl:px-32 font-sans">
-      <SiteHeader />
+    <main className="p-8 px-8 h-screen w-full sm:px-16 xl:px-32 font-sans">
       <BentoGrid>
         {features.map((feature, idx) => (
           <BentoCard key={idx} {...feature} />
