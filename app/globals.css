@@ -83,6 +83,6 @@
   right: 0;
   bottom: 0;
   backdrop-filter: blur(2px);
-  background: linear-gradient(to right, rgba(57, 24, 220, 0.5), transparent);
+  background: linear-gradient(to right, rgba(139, 136, 159, 0.5), transparent);
   border-radius: inherit; /* to match the rounded corners of the div */
 }
