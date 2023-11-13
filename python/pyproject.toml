@@ -10,9 +10,9 @@ python = "3.11.6"
 scipy = "^1.10.1"
 matchms = "^0.23.1"
 pandas = "^2.1.2"
-apache-airflow = "^2.7.2"
-dagster = "^1.5.6"
-dagster-webserver = "^1.5.6"
+dagster = "^1.5.7"
+dagster-webserver = "^1.5.7"
+grpcio = "^1.59.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.10.1"
