@@ -1,4 +1,4 @@
-export default {
+const config = {
   providers: [
     {
       domain: "https://sacred-flamingo-58.clerk.accounts.dev",
@@ -6,3 +6,5 @@ export default {
     },
   ],
 };
+
+export default config;
