@@ -1,17 +1,36 @@
 import pandas as pd
-from dagster import asset
+from dagster import Out, op
+from dagster_pandas import DataFrame
+from scipy.sparse import coo_matrix
 
-# Dagster asset function
-@asset
-def combine_matrices_and_extract_edges(mz_matrix_df: pd.DataFrame, similarity_matrix_df: pd.DataFrame, threshold: float = 1.5) -> pd.DataFrame:
-    # Perform addition operation
-    result_matrix = similarity_matrix_df.add(mz_matrix_df, fill_value=0)
+FILTERING_THRESHOLD = 1.5
 
-    # Extract and filter edge data
-    edge_data = result_matrix.stack().reset_index()
-    edge_data.columns = ['ID1', 'ID2', 'Value']
-    edge_data = edge_data[edge_data['Value'] > threshold]
-    edge_data = edge_data[edge_data['ID1'].astype(int) - edge_data['ID2'].astype(int) <= 0]
+
+@op(out=Out(DataFrame))
+def combine_matrices_and_extract_edges(
+    ion_interaction_matrix: coo_matrix,
+    similarity_matrix: coo_matrix,
+) -> pd.DataFrame:
+    print(f"ion_interaction_matrix: {ion_interaction_matrix.shape}")
+    print(f"similarity_matrix: {similarity_matrix.shape}")
+
+    # Perform addition operation on sparse matrices
+    result_matrix: coo_matrix = (ion_interaction_matrix + similarity_matrix).tocoo()
+
+    # Extract row, column, and data from the result matrix
+    row, col, data = result_matrix.row, result_matrix.col, result_matrix.data
+
+    # Apply threshold and ensure ID1 - ID2 <= 0 to reduce the amount of data processed
+    valid_indices = (data > FILTERING_THRESHOLD) & (row <= col)
+
+    # Create a DataFrame from filtered data
+    edge_data = pd.DataFrame(
+        {
+            "ID1": row[valid_indices],
+            "ID2": col[valid_indices],
+            "Value": data[valid_indices],
+        }
+    )
 
     return edge_data
 

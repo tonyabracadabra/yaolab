@@ -1,27 +1,48 @@
 from dagster import job
-from .steps import diff_mz_matching, ReactionInput, edge_value_matching, calculate_ms_ms_cosine_similarity, update_metabolic_reaction_database, generate_adjacency_matrix, combine_matrices_and_extract_edges
+from scipy.sparse import coo_matrix
+from matchms.Spectrum import Spectrum
 import pandas as pd
-from matchms.importing import load_from_mgf
+
+from .steps import (
+    calculate_edge_metrics,
+    create_similarity_matrix,
+    combine_matrices_and_extract_edges,
+    edge_value_matching,
+    create_ion_interaction_matrix,
+    load_data,
+    update_metabolic_reaction_database,
+)
 
 
 @job
 def full_workflow():
-    # f1 data
-    mgf_generator = load_from_mgf("file.mgf")
-    # f2 data
-    targeted_ions_df = pd.read_csv("targeted_ions.csv")
-    # f3 data
-    metabolic_reaction_df = pd.read_csv("metabolic_reaction.csv")
-    reaction_input = ReactionInput(formula_change="", reaction_description="")
+    # f1, f2, f3
+    spectra, targeted_ions_df, metabolic_reaction_df, reaction_input = load_data()
 
-    metabolic_reaction_df_updated = update_metabolic_reaction_database(metabolic_reaction_df, reaction_input)
-    # f4 data
-    adj_matrix_mz_df = generate_adjacency_matrix(targeted_ions_df)
-    # f6 data
-    adj_matrix_df = diff_mz_matching(adj_matrix_mz_df, metabolic_reaction_df_updated)
-    # f7 data
-    similarity_matrix_df: pd.DataFrame = calculate_ms_ms_cosine_similarity(mgf_generator, targeted_ions_df)
-    # f9 data
-    edge_data_df = combine_matrices_and_extract_edges(adj_matrix_df, similarity_matrix_df)
+    # optional
+    metabolic_reaction_df: pd.DataFrame = update_metabolic_reaction_database(
+        metabolic_reaction_df, reaction_input
+    )
+
+    # f6
+    # this is to extract the interaction between ions that has m/z and mass difference within MASS_DIFF_THRESHOLD
+    # given the metabolic reaction database (metabolic_reaction_df)
+    ion_interaction_matrix = create_ion_interaction_matrix(
+        targeted_ions_df, metabolic_reaction_df
+    )
+    # f7
+    # this is to calculate the similarity between each pair of spectra
+    similarity_matrix: coo_matrix = create_similarity_matrix(spectra, targeted_ions_df)
+    # f9
+    edge_data_df = combine_matrices_and_extract_edges(
+        ion_interaction_matrix, similarity_matrix
+    )
+    # f10
+    edge_metrics = calculate_edge_metrics(targeted_ions_df, edge_data_df)
     # f11, f12
-    matched_df, formula_change_counts = edge_value_matching(edge_data_df, metabolic_reaction_df_updated)
+    matched_df, formula_change_counts = edge_value_matching(
+        edge_metrics, metabolic_reaction_df
+    )
+
+    print(f"matched_df: {matched_df}")
+    print(f"formula_change_counts: {formula_change_counts}")
