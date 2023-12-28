@@ -34,3 +34,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# dagster
+# folders starts with tmp 
+tmp*

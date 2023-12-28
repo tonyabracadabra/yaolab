@@ -5,8 +5,5 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
-  }
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
