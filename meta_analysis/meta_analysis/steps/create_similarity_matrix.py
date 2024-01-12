@@ -23,9 +23,7 @@ def create_similarity_matrix(
     # Filter spectra based on scan IDs
     ids = set(target_ions_df[ID_COL])
     filtered_spectra = [
-        spectrum
-        for spectrum in spectra
-        if int(spectrum.metadata[SCANS_KEY]) in ids
+        spectrum for spectrum in spectra if int(spectrum.metadata[SCANS_KEY]) in ids
     ]
 
     # Calculate the cosine scores

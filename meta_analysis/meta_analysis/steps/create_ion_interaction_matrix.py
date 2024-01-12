@@ -26,15 +26,19 @@ def create_ion_interaction_matrix(
     sorted_mass_diffs = np.sort(metabolic_reactions_df[MASS_DIFF_COL].values)
 
     # Broadcasting sorted_mass_diffs to match the shape of mz_differences
-    # sorted_mass_diffs is reshaped to (1, 120) and then broadcasted to (257, 120)
+    # sorted_mass_diffs is reshaped to (1, m) and then broadcasted to (n, m)
     sorted_mass_diffs_broadcasted = sorted_mass_diffs.reshape(1, -1)
 
     # Calculate the indices of the nearest differences
-    # Broadcasting here aligns mz_differences (257, 257) with sorted_mass_diffs (1, 120)
-    nearest_diff_indices = np.abs(mz_differences[:, :, np.newaxis] - sorted_mass_diffs_broadcasted).argmin(axis=2)
+    # Broadcasting here aligns mz_differences (n, n) with sorted_mass_diffs (1, m)
+    nearest_diff_indices = np.abs(
+        mz_differences[:, :, np.newaxis] - sorted_mass_diffs_broadcasted
+    ).argmin(axis=2)
 
     # Fetch the nearest differences based on the calculated indices
-    nearest_diffs = np.take_along_axis(sorted_mass_diffs_broadcasted, nearest_diff_indices, axis=1)
+    nearest_diffs = np.take_along_axis(
+        sorted_mass_diffs_broadcasted, nearest_diff_indices, axis=1
+    )
 
     # Calculate the ppm difference
     ppm_diff = np.abs(mz_differences - nearest_diffs) / nearest_diffs * 1e6

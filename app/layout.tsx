@@ -1,5 +1,6 @@
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { ClerkProvider } from "@clerk/nextjs";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
@@ -36,7 +37,8 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <SiteHeader />
-              {children}
+              <main>{children}</main>
+              <Toaster />
             </ThemeProvider>
           </ConvexClientProvider>
         </body>

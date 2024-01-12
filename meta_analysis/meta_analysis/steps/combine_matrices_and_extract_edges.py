@@ -11,9 +11,6 @@ def combine_matrices_and_extract_edges(
     ion_interaction_matrix: coo_matrix,
     similarity_matrix: coo_matrix,
 ) -> pd.DataFrame:
-    print(f"ion_interaction_matrix: {ion_interaction_matrix.shape}")
-    print(f"similarity_matrix: {similarity_matrix.shape}")
-
     # Perform addition operation on sparse matrices
     result_matrix: coo_matrix = (ion_interaction_matrix + similarity_matrix).tocoo()
 
@@ -33,9 +30,3 @@ def combine_matrices_and_extract_edges(
     )
 
     return edge_data
-
-# Example usage:
-# similarity_matrix_df = pd.read_csv('F7_ModCos_Adjecency_Matrix.csv')
-# mz_matrix_df = pd.read_csv('F6_1_0_Adjacency_Matrix_mz.csv')
-# edge_data_df = combine_matrices_and_extract_edges(similarity_matrix_df, mz_matrix_df)
-# edge_data_df.to_csv('F9_Mz_Similarity_RawEdge.csv')
