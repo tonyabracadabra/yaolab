@@ -29,7 +29,7 @@ const features = [
     hrefText: "Analyze Now",
     description:
       "Our latest research in streamlining metabolic network analysis from data to visualization.",
-    href: "/analysis",
+    href: "/dashboard/analysis/new",
     className: "col-span-3 lg:col-span-1",
     background: (
       <div className="relative">

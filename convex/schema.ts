@@ -1,40 +1,79 @@
+import { zid, zodToConvexFields } from "convex-helpers/server/zod";
 import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
+import { z } from "zod";
 
-export const TaskConfigSchema = v.object({
-  fileType: v.union(v.literal("MZine"), v.literal("MDial")),
-  maxResponseThreshold: v.number(),
-  minResponseRatio: v.number(),
-  ms2SimilarityThreshold: v.number(),
-  mzErrorThreshold: v.number(),
-  rtTimeWindow: v.number(),
-  experimentGroups: v.array(
-    v.object({
-      name: v.string(),
-      sampleGroups: v.array(v.string()),
-      blankGroups: v.array(v.string()),
-    })
+export const ExperimentSchema = z.object({
+  name: z.string(),
+  sampleGroups: z.array(z.string()),
+  blankGroups: z.array(z.string()),
+});
+
+export const CustomReactionSchema = z.object({
+  formulaChange: z.string(),
+  reactionDescription: z.string(),
+});
+
+export const TaskConfigSchema = z.object({
+  maxResponseThreshold: z.number(),
+  minResponseRatio: z.number().default(0.1),
+  ms2SimilarityThreshold: z.number().default(0.7),
+  mzErrorThreshold: z.number().default(10),
+  rtTimeWindow: z.number().default(0.02),
+  experimentGroups: z.array(ExperimentSchema),
+});
+
+export const TaskCreationInputSchema = z.object({
+  rawFile: zid("rawFiles"),
+  reactionDb: zid("reactionDatabases"),
+  config: TaskConfigSchema,
+});
+
+export const TaskStatus = z.enum(["pending", "running", "complete", "failed"]);
+
+export const TaskSchema = z.object({
+  ...TaskCreationInputSchema.shape,
+  user: z.string(),
+  status: TaskStatus,
+  log: z.optional(z.string()),
+  result: z.optional(
+    z.array(
+      z.object({
+        node: z.string(),
+        score: z.number(),
+        edge: z.string(),
+      })
+    )
   ),
 });
 
+export const FileType = z.enum(["MZine", "MDial"]);
+
+export const ReactionDatabaseSchema = z.object({
+  user: z.string(),
+  name: z.string(),
+  file: zid("_storage"),
+  customReactions: z.array(CustomReactionSchema),
+});
+
+export const RawFileCreationInputSchema = z.object({
+  name: z.string(),
+  file: zid("_storage"),
+  fileType: FileType,
+});
+
+export const RawFileSchema = z.object({
+  ...RawFileCreationInputSchema.shape,
+  user: z.string(),
+});
+
 export default defineSchema({
-  tasks: defineTable({
-    user: v.string(),
-    file: v.id("_storage"),
-    config: TaskConfigSchema,
-    status: v.union(
-      v.literal("pending"),
-      v.literal("active"),
-      v.literal("complete")
-    ),
-    result: v.optional(
-      v.array(
-        v.object({
-          node: v.string(),
-          score: v.number(),
-          edge: v.string(),
-        })
-      )
-    ),
-  }),
+  tasks: defineTable(zodToConvexFields(TaskSchema.shape)).index("user", [
+    "user",
+  ]),
+  reactionDatabases: defineTable(
+    zodToConvexFields(ReactionDatabaseSchema.shape)
+  ).index("user", ["user"]),
+  rawFiles: defineTable(zodToConvexFields(RawFileSchema.shape)).index("user", [
+    "user",
+  ]),
 });
