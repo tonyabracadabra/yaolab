@@ -1,13 +1,12 @@
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { useFileUpload } from "@/lib/utils";
-import { AccordionItem, AccordionTrigger } from "@radix-ui/react-accordion";
 import { useMutation } from "convex/react";
-import { Loader2, Minus, Plus } from "lucide-react";
+import { Loader2, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import { Control, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Accordion, AccordionContent } from "./ui/accordion";
+import { FormLabelWithTooltip } from "./form-label-tooltip";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -40,66 +39,101 @@ const CustomReactionFieldArray = ({
   });
 
   return (
-    <Accordion type="single" collapsible>
-      <AccordionItem value="custom">
-        <AccordionTrigger className="text-sm">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-4">
+        <FormLabelWithTooltip tooltip="You can additional define custom reactions here">
           Custom Reactions
-        </AccordionTrigger>
-        <AccordionContent>
-          <div className="flex flex-col">
-            <Plus
-              onClick={() => {
-                append({
-                  formulaChange: "",
-                  reactionDescription: "",
-                });
-              }}
-            />
-            <div className="flex flex-col overflow-scroll gap-2">
-              {fields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="flex items-center space-x-3 gap-2"
-                >
-                  <FormField
-                    control={control}
-                    name={`customReactions.${index}`}
-                    render={({ field }) => (
-                      <div className="flex items-center justify-center gap-2">
-                        <FormItem>
-                          <FormLabel>Formula Change</FormLabel>
-                          <Input
-                            defaultValue=""
-                            value={field.value.formulaChange}
-                            onChange={field.onChange}
-                          />
-                        </FormItem>
-                        <FormItem>
-                          <FormLabel>Reaction Description</FormLabel>
-                          <Input
-                            defaultValue=""
-                            value={field.value.reactionDescription}
-                            onChange={field.onChange}
-                          />
-                        </FormItem>
-                      </div>
-                    )}
-                  />
-                  <Button
-                    className="w-6 h-4 p-0"
-                    type="button"
-                    variant="outline"
-                    onClick={() => remove(index)}
-                  >
-                    <Minus size={12} />
-                  </Button>
-                </div>
-              ))}
-            </div>
+        </FormLabelWithTooltip>
+
+        <Button
+          type="button"
+          className="flex flex-col"
+          size="xs"
+          variant="secondary"
+          onClick={() => {
+            append({
+              formulaChange: "",
+              reactionDescription: "",
+            });
+          }}
+        >
+          <Plus size={14} />
+        </Button>
+      </div>
+
+      <div className="flex flex-col overflow-scroll gap-2">
+        <div className="flex gap-2 items-center justify-center">
+          <div className="flex flex-col items-center justify-center gap-2">
+            <FormLabel className="py-2">Formula Change</FormLabel>
+            {fields.map((field, index) => (
+              <div
+                key={field.id}
+                className="flex items-center space-x-3 gap-2 p-1"
+              >
+                <FormField
+                  control={control}
+                  name={`customReactions.${index}`}
+                  render={({ field }) => (
+                    <div className="flex items-center justify-center gap-2">
+                      <FormItem>
+                        <Input
+                          defaultValue=""
+                          value={field.value.formulaChange}
+                          onChange={field.onChange}
+                        />
+                      </FormItem>
+                    </div>
+                  )}
+                />
+              </div>
+            ))}
           </div>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+          <div className="flex flex-col items-center justify-center gap-2">
+            <FormLabel className="py-2">Reaction Description</FormLabel>
+            {fields.map((field, index) => (
+              <div
+                key={field.id}
+                className="flex items-center space-x-3 gap-2 p-1"
+              >
+                <FormField
+                  control={control}
+                  name={`customReactions.${index}`}
+                  render={({ field }) => (
+                    <div className="flex items-center justify-center gap-2">
+                      <FormItem>
+                        <Input
+                          defaultValue=""
+                          value={field.value.reactionDescription}
+                          onChange={field.onChange}
+                        />
+                      </FormItem>
+                    </div>
+                  )}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col items-center justify-center gap-2">
+            <FormLabel className="py-3" />
+            {fields.map((field, index) => (
+              <div key={field.id} className="flex items-center space-x-3 gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => remove(index)}
+                  className="opacity-80 group"
+                >
+                  <Trash
+                    size={12}
+                    className="dark:stroke-red-800 dark:group-hover:stroke-red-700 stroke-red-400 group-hover:stroke-red-500"
+                  />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -162,7 +196,10 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col gap-4 py-4"
+          >
             <FormField
               control={form.control}
               name="file"
