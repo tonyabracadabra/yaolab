@@ -24,7 +24,7 @@ import { api } from "@/convex/_generated/api";
 import { TaskCreationInputSchema } from "@/convex/schema";
 import { useAction, useQuery } from "convex/react";
 import { Loader2, Trash } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { UseFormReturn, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -48,7 +48,7 @@ type TaskCreationInputType = z.infer<typeof TaskCreationInputSchema>;
 interface SampleGroupFieldArrayProps {
   options: string[];
   form: UseFormReturn<TaskCreationInputType>;
-  sampleIndex: number;
+  experiment: number;
   groupName: "sampleGroups" | "blankGroups";
 }
 
@@ -58,7 +58,7 @@ interface TaskCreationProps {
 
 const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
   form,
-  sampleIndex,
+  experiment,
   groupName,
   options,
 }) => {
@@ -74,7 +74,7 @@ const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
         }))}
         onSelect={async (val: string) => {
           const currExperiment =
-            form.getValues().config.experimentGroups[sampleIndex];
+            form.getValues().config.experimentGroups[experiment];
           const otherGroup =
             groupName === "sampleGroups" ? "blankGroups" : "sampleGroups";
 
@@ -85,19 +85,19 @@ const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
 
           if (currExperiment[groupName].includes(val)) {
             form.setValue(
-              `config.experimentGroups.${sampleIndex}.${groupName}`,
+              `config.experimentGroups.${experiment}.${groupName}`,
               currExperiment[groupName].filter((v) => v !== val)
             );
           } else {
             form.setValue(
-              `config.experimentGroups.${sampleIndex}.${groupName}`,
+              `config.experimentGroups.${experiment}.${groupName}`,
               [...currExperiment[groupName], val]
             );
           }
         }}
         selectedValues={
           form.watch(
-            `config.experimentGroups.${sampleIndex}.${groupName}`
+            `config.experimentGroups.${experiment}.${groupName}`
           ) as string[]
         }
       />
@@ -140,6 +140,7 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
   );
 
   const onSubmit = async (values: TaskCreationInputType) => {
+    console.log("values", values);
     setIsSubmitting(true);
     const { id } = await triggerTask({
       reactionDb: values.reactionDb,
@@ -149,16 +150,11 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
     onCreate(id);
   };
 
-  const watchedRawFile = form.watch("rawFile");
-  useEffect(() => {
-    console.log("Raw file value:", watchedRawFile);
-  }, [watchedRawFile]);
-
   return (
-    <div className="w-full max-w-4xl p-4 space-y-6 h-full items-center flex flex-col justify-center rounded-lg">
+    <div className="w-full max-w-3xl px-8 py-4 space-y-6 h-full flex flex-col justify-center rounded-lg">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 px-6">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-8">
             <FormField
               control={form.control}
               name="rawFile"
@@ -259,257 +255,264 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
               )}
             />
           </div>
-          <Accordion type="multiple" className="w-[700px]">
-            <AccordionItem
-              value="experiment-groups"
-              disabled={!form.watch("rawFile")}
-              className="cursor-pointer"
-            >
-              <AccordionTrigger>
-                <div className="flex items-center justify-center gap-2">
-                  <Badge variant="secondary">3</Badge>Configure Experiment
-                  Groups
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex gap-4 w-full">
-                  <div className="flex flex-col gap-4 p-2 w-[300px] h-full justify-between">
-                    <div className="flex items-center gap-2 justify-center">
-                      <Select
-                        onValueChange={(v) => {
-                          if (!v) return;
-                          setCurrExperiment(+v);
-                        }}
-                        value={currExperiment.toString()}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Raw File to be analyzed" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {fields?.map((f, i) => {
-                            return (
-                              <SelectItem key={i} value={i.toString()}>
-                                {f.name}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <FormDescription>
-                      Choose an experiment to configure or{" "}
-                      <Button
-                        onClick={() => {
-                          append({
-                            name: `new sample ${fields.length + 1}`,
-                            sampleGroups: [],
-                            blankGroups: [],
-                          });
-                        }}
-                        variant="outline"
-                        size="xs"
-                        className="font-bold"
-                      >
-                        <span>✨ Create </span>
-                      </Button>{" "}
-                      a new experiment group
-                    </FormDescription>
+          {form.watch("rawFile") && (
+            <Accordion type="multiple" className="w-full">
+              <AccordionItem
+                value="experiment-groups"
+                className="cursor-pointer"
+              >
+                <AccordionTrigger>
+                  <div className="flex items-center justify-center gap-2">
+                    <Badge variant="secondary">3</Badge>Configure Experiment
+                    Groups
                   </div>
-                  <div className="flex w-full relative flex-col gap-4 bg-slate-100 dark:bg-slate-900 p-6 rounded-md">
-                    <Button
-                      type="button"
-                      className="absolute right-[8px] top-[8px] w-8 h-6 p-0 bg-red-50 border-0 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
-                      variant="outline"
-                      onClick={() => {
-                        if (fields.length > 1) {
-                          setCurrExperiment(0);
-
-                          remove(currExperiment);
-                        } else {
-                          toast.error(
-                            "You need to have at least one sample group"
-                          );
-                        }
-                      }}
-                    >
-                      <Trash className="stroke-red-400" size={12} />
-                    </Button>
-                    <div className="flex gap-8 items-center">
-                      <FormField
-                        control={form.control}
-                        name={`config.experimentGroups.${currExperiment}.name`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Experiment Group Name</FormLabel>
-                            <div className="flex items-center gap-4 justify-center w-full">
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Sample Groups */}
-                    <div className="flex items-center justify-between gap-2">
-                      <SampleGroupFieldArray
-                        options={
-                          allRawFiles?.find(
-                            (rawFile) => rawFile._id === form.watch("rawFile")
-                          )?.sampleColumns || []
-                        }
-                        form={form}
-                        sampleIndex={currExperiment}
-                        groupName="sampleGroups"
-                      />
-                      <div className="flex h-full items-center justify-center">
-                        <div className="h-[50%] mt-6 w-[1.5px] dark:bg-slate-700 bg-slate-300" />
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex gap-4 w-full">
+                    <div className="flex flex-col gap-4 p-2 w-[300px] h-full justify-between">
+                      <div className="flex items-center gap-2 justify-center">
+                        <Select
+                          onValueChange={(v) => {
+                            if (!v) return;
+                            setCurrExperiment(+v);
+                          }}
+                          value={currExperiment.toString()}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Raw File to be analyzed" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {fields?.map((f, i) => {
+                              return (
+                                <SelectItem key={i} value={i.toString()}>
+                                  {f.name}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <SampleGroupFieldArray
-                        options={
-                          allRawFiles?.find(
-                            (rawFile) => rawFile._id === form.watch("rawFile")
-                          )?.sampleColumns || []
-                        }
-                        form={form}
-                        sampleIndex={currExperiment}
-                        groupName="blankGroups"
-                      />
+                      <FormDescription>
+                        Choose an experiment to configure or{" "}
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            append({
+                              name: `new sample ${fields.length + 1}`,
+                              sampleGroups: [],
+                              blankGroups: [],
+                            });
+                            setCurrExperiment(fields.length);
+                          }}
+                          variant="outline"
+                          size="xs"
+                          className="font-bold"
+                        >
+                          <span>✨ Create </span>
+                        </Button>{" "}
+                        a new experiment group
+                      </FormDescription>
+                    </div>
+                    <div className="flex w-full relative flex-col gap-4 bg-slate-100 dark:bg-slate-900 p-6 rounded-md">
+                      <Button
+                        type="button"
+                        className="absolute right-[8px] top-[8px] w-8 h-6 p-0 bg-red-50 border-0 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
+                        variant="outline"
+                        onClick={() => {
+                          if (fields.length > 1) {
+                            setCurrExperiment(0);
+
+                            remove(currExperiment);
+                          } else {
+                            toast.error(
+                              "You need to have at least one sample group"
+                            );
+                          }
+                        }}
+                      >
+                        <Trash className="stroke-red-400" size={12} />
+                      </Button>
+                      <div className="flex gap-8 items-center">
+                        <FormField
+                          key={`experiment-group-name-${currExperiment}`} // Adding a unique key
+                          control={form.control}
+                          name={`config.experimentGroups.${currExperiment}.name`}
+                          render={({ field: { onChange, value } }) => {
+                            console.log("value", value, "onChange", onChange);
+                            return (
+                              <FormItem>
+                                <FormLabel>Experiment Group Name</FormLabel>
+                                <div className="flex items-center gap-4 justify-center w-full">
+                                  <FormControl>
+                                    <Input value={value} onChange={onChange} />
+                                  </FormControl>
+                                </div>
+                              </FormItem>
+                            );
+                          }}
+                        />
+                      </div>
+
+                      {/* Sample Groups */}
+                      <div className="flex items-center justify-between gap-2">
+                        <SampleGroupFieldArray
+                          options={
+                            allRawFiles?.find(
+                              (rawFile) => rawFile._id === form.watch("rawFile")
+                            )?.sampleColumns || []
+                          }
+                          form={form}
+                          experiment={currExperiment}
+                          groupName="sampleGroups"
+                        />
+                        <div className="flex h-full items-center justify-center">
+                          <div className="h-[50%] mt-6 w-[1.5px] dark:bg-slate-700 bg-slate-300" />
+                        </div>
+                        <SampleGroupFieldArray
+                          options={
+                            allRawFiles?.find(
+                              (rawFile) => rawFile._id === form.watch("rawFile")
+                            )?.sampleColumns || []
+                          }
+                          form={form}
+                          experiment={currExperiment}
+                          groupName="blankGroups"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="advanced">
-              <AccordionTrigger>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">4</Badge>
-                  Advanced Settings
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="flex gap-4 flex-col px-1">
-                <FormField
-                  control={form.control}
-                  name="config.maxResponseThreshold"
-                  render={({ field: { onChange, value } }) => (
-                    <FormItem>
-                      <FormLabelWithTooltip
-                        tooltip="Define the Minimum acceptable maximum response value for the compound
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="advanced">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">4</Badge>
+                    Advanced Settings
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="flex gap-4 flex-col px-1">
+                  <FormField
+                    control={form.control}
+                    name="config.maxResponseThreshold"
+                    render={({ field: { onChange, value } }) => (
+                      <FormItem>
+                        <FormLabelWithTooltip
+                          tooltip="Define the Minimum acceptable maximum response value for the compound
           in the dosed sample group. The compound&rsquo;s response must meet or
           exceed this threshold to be considered significant"
-                      >
-                        Maximum Response Threshold
-                      </FormLabelWithTooltip>
-                      <FormControl>
-                        <Input
-                          placeholder="1"
-                          type="number"
-                          defaultValue={1}
-                          onChange={(event) => onChange(+event.target.value)}
-                          value={value}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="config.minResponseRatio"
-                  render={({ field: { onChange, value } }) => (
-                    <FormItem>
-                      <FormLabelWithTooltip
-                        tooltip="Set the threshold for the lowest acceptable ratio of the
+                        >
+                          Maximum Response Threshold
+                        </FormLabelWithTooltip>
+                        <FormControl>
+                          <Input
+                            placeholder="1"
+                            type="number"
+                            defaultValue={1}
+                            onChange={(event) => onChange(+event.target.value)}
+                            value={value}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="config.minResponseRatio"
+                    render={({ field: { onChange, value } }) => (
+                      <FormItem>
+                        <FormLabelWithTooltip
+                          tooltip="Set the threshold for the lowest acceptable ratio of the
                         compound&rsquo;s maximum response value in the dosed
                         sample group to that in the blank group. A ratio less
                         than this value indicates insufficient response."
-                      >
-                        Minimum Response Ratio
-                      </FormLabelWithTooltip>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0.1"
-                          onChange={(event) => onChange(+event.target.value)}
-                          value={value}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="config.ms2SimilarityThreshold"
-                  render={({ field: { onChange, value } }) => (
-                    <FormItem>
-                      <FormLabelWithTooltip
-                        tooltip="Set the threshold for MS2 similarity filtering. A
+                        >
+                          Minimum Response Ratio
+                        </FormLabelWithTooltip>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0.1"
+                            onChange={(event) => onChange(+event.target.value)}
+                            value={value}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="config.ms2SimilarityThreshold"
+                    render={({ field: { onChange, value } }) => (
+                      <FormItem>
+                        <FormLabelWithTooltip
+                          tooltip="Set the threshold for MS2 similarity filtering. A
                         default value of 0.7 is recommended."
-                      >
-                        MS2 Similarity Filter Threshold
-                      </FormLabelWithTooltip>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0.7"
-                          onChange={(event) => onChange(+event.target.value)}
-                          value={value}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="config.mzErrorThreshold"
-                  render={({ field: { onChange, value } }) => (
-                    <FormItem>
-                      <FormLabelWithTooltip
-                        tooltip="Set the maximum allowable ∆m/z error for matching
+                        >
+                          MS2 Similarity Filter Threshold
+                        </FormLabelWithTooltip>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0.7"
+                            onChange={(event) => onChange(+event.target.value)}
+                            value={value}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="config.mzErrorThreshold"
+                    render={({ field: { onChange, value } }) => (
+                      <FormItem>
+                        <FormLabelWithTooltip
+                          tooltip="Set the maximum allowable ∆m/z error for matching
                           metabolite responses. A value within 10ppm is
                           recommended for accurate matching."
-                      >
-                        ∆m/z Error Threshold
-                      </FormLabelWithTooltip>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="10"
-                          onChange={(event) => onChange(+event.target.value)}
-                          value={value}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="config.rtTimeWindow"
-                  render={({ field: { onChange, value } }) => (
-                    <FormItem>
-                      <FormLabelWithTooltip
-                        tooltip="Define the time window in minutes (∆Rt) for redundancy
+                        >
+                          ∆m/z Error Threshold
+                        </FormLabelWithTooltip>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="10"
+                            onChange={(event) => onChange(+event.target.value)}
+                            value={value}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="config.rtTimeWindow"
+                    render={({ field: { onChange, value } }) => (
+                      <FormItem>
+                        <FormLabelWithTooltip
+                          tooltip="Define the time window in minutes (∆Rt) for redundancy
                           checks. A default value of 0.02min helps in
                           distinguishing redundant entries effectively."
-                      >
-                        ∆Rt Time Window (min)
-                      </FormLabelWithTooltip>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          onChange={(event) => onChange(+event.target.value)}
-                          value={value}
-                          placeholder={"0.02"}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+                        >
+                          ∆Rt Time Window (min)
+                        </FormLabelWithTooltip>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            onChange={(event) => onChange(+event.target.value)}
+                            value={value}
+                            placeholder={"0.02"}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          )}
           <ShimmerButton type="submit" className="hover:opacity-90 py-2 px-3">
             <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-lg">
               {isSubmitting ? (
