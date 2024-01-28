@@ -1,20 +1,21 @@
 import os
+import tempfile
 
 import pandas as pd
 from matchms.importing import load_from_mgf
 from matchms.Spectrum import Spectrum
-from app.utils.convex import download_file
+
 from app.models.analysis import Task
-import tempfile
+from app.utils.convex import download_file
 
 from .update_metabolic_reaction_database import ReactionInput
 
 current_dir = os.path.dirname(__file__)
 
 
-def load_data(task: Task) -> (
-    tuple[list[Spectrum], pd.DataFrame, pd.DataFrame, ReactionInput]
-):
+def load_data(
+    task: Task,
+) -> tuple[list[Spectrum], pd.DataFrame, pd.DataFrame, ReactionInput]:
     raw_file = download_file(task.rawFile.file)
     reaction_db = download_file(task.reactionDatabase.file)
 

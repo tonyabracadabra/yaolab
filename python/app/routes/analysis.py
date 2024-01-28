@@ -1,5 +1,6 @@
+import pyteomics.mass
 from convex import Id
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from scipy.sparse import coo_matrix
 
@@ -13,8 +14,8 @@ from app.steps import (
     load_data,
     update_metabolic_reaction_database,
 )
-
 from app.utils.convex import get_convex
+import pandas as pd
 
 router = APIRouter()
 
@@ -23,7 +24,7 @@ class TaskTriggerInput(BaseModel):
     id: str
 
 
-def analysis_workflow():
+async def analysis_workflow(task: Task):
     # f1, f2, f3
     (
         spectra,
@@ -60,15 +61,27 @@ def analysis_workflow():
     )
 
 
-@router.post("")
+@router.post("/start")
 async def metabolite_analysis(
     input: TaskTriggerInput, convex=Depends(get_convex)
 ):
     task: Task = convex.query("tasks:get", {"id": input.id})
-    message_id = Id("messages", input.message_id)
 
     try:
-        analysis_workflow()
+        analysis_workflow(task)
+        return {"status": "success"}
     except Exception as e:
         convex.mutation("tasks:update", {"id": input.id, "status": "error"})
-        convex.mutation("messages:error", {"id": message_id})
+        return {"status": "error"}
+
+
+@router.get("/mass")
+async def mass(formula: str):
+    """
+    Calculate the mass of a given chemical formula.
+    """
+    try:
+        mass = pyteomics.mass.calculate_mass(formula=formula)
+        return {"formula": formula, "mass": mass}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
