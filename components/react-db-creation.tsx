@@ -64,7 +64,9 @@ const CustomReactionFieldArray = ({
       <div className="flex flex-col overflow-scroll gap-2">
         <div className="flex gap-2 items-center justify-center">
           <div className="flex flex-col items-center justify-center gap-2">
-            <FormLabel className="py-2">Formula Change</FormLabel>
+            {fields.length > 0 && (
+              <FormLabel className="py-2">Formula Change</FormLabel>
+            )}
             {fields.map((field, index) => (
               <div
                 key={field.id}
@@ -89,7 +91,9 @@ const CustomReactionFieldArray = ({
             ))}
           </div>
           <div className="flex flex-col items-center justify-center gap-2">
-            <FormLabel className="py-2">Reaction Description</FormLabel>
+            {fields.length > 0 && (
+              <FormLabel className="py-2">Reaction Description</FormLabel>
+            )}
             {fields.map((field, index) => (
               <div
                 key={field.id}
