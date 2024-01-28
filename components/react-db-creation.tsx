@@ -63,34 +63,71 @@ const CustomReactionFieldArray = ({
 
       <div className="flex flex-col overflow-scroll gap-2">
         <div className="flex gap-2 items-center justify-center">
-          <div className="flex flex-col items-center justify-center gap-2">
+          <div className="flex flex-col items-center justify-center gap-1">
             {fields.length > 0 && (
-              <FormLabel className="py-2">Formula Change</FormLabel>
-            )}
-            {fields.map((field, index) => (
-              <div
-                key={field.id}
-                className="flex items-center space-x-3 gap-2 p-1"
-              >
-                <FormField
-                  control={control}
-                  name={`customReactions.${index}`}
-                  render={({ field }) => (
-                    <div className="flex items-center justify-center gap-2">
-                      <FormItem>
-                        <Input
-                          defaultValue=""
-                          value={field.value.formulaChange}
-                          onChange={field.onChange}
-                        />
-                      </FormItem>
-                    </div>
-                  )}
-                />
+              <div className="flex items-center gap-8">
+                <FormLabel className="py-2">Formula Change</FormLabel>
+                <FormLabel className="py-2">Reaction Description</FormLabel>
+                <div />
               </div>
-            ))}
+            )}
+            <div className="flex flex-col gap-1 max-h-[300px] overflow-auto">
+              {fields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="flex items-center space-x-3 gap-2 p-1"
+                >
+                  <FormField
+                    control={control}
+                    name={`customReactions.${index}`}
+                    render={({ field }) => (
+                      <div className="flex items-center justify-center gap-2">
+                        <FormItem>
+                          <Input
+                            defaultValue=""
+                            value={field.value.formulaChange}
+                            onChange={field.onChange}
+                          />
+                        </FormItem>
+                      </div>
+                    )}
+                  />
+                  <FormField
+                    control={control}
+                    name={`customReactions.${index}`}
+                    render={({ field }) => (
+                      <div className="flex items-center justify-center gap-2">
+                        <FormItem>
+                          <Input
+                            defaultValue=""
+                            value={field.value.reactionDescription}
+                            onChange={field.onChange}
+                          />
+                        </FormItem>
+                      </div>
+                    )}
+                  />
+                  <div
+                    key={field.id}
+                    className="flex items-center space-x-3 gap-2"
+                  >
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => remove(index)}
+                      className="opacity-80 group"
+                    >
+                      <Trash
+                        size={12}
+                        className="dark:stroke-red-800 dark:group-hover:stroke-red-700 stroke-red-400 group-hover:stroke-red-500"
+                      />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-col items-center justify-center gap-2">
+          {/* <div className="flex flex-col items-center justify-center gap-2">
             {fields.length > 0 && (
               <FormLabel className="py-2">Reaction Description</FormLabel>
             )}
@@ -134,7 +171,7 @@ const CustomReactionFieldArray = ({
                 </Button>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
