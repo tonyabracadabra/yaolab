@@ -1,16 +1,15 @@
-import { zid } from "convex-helpers/server/zod";
-import { z } from "zod";
-import { FileType } from "./schema";
+import { RawFileCreationInputSchema } from "./schema";
 import { zMutation, zQuery } from "./utils";
 
 export const createRawFile = zMutation({
-  args: { name: z.string(), file: zid("_storage"), fileType: FileType },
-  handler: async ({ db, user }, { name, file, fileType }) => {
+  args: RawFileCreationInputSchema.shape,
+  handler: async ({ db, user }, { name, file, fileType, sampleColumns }) => {
     const id = await db.insert("rawFiles", {
       name,
       user,
       file,
       fileType,
+      sampleColumns,
     });
 
     return { id };

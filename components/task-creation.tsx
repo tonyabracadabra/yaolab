@@ -22,15 +22,16 @@ import {
 } from "@/components/ui/form";
 import { api } from "@/convex/_generated/api";
 import { TaskCreationInputSchema } from "@/convex/schema";
-import { useMutation, useQuery } from "convex/react";
-import { Loader2, Minus, Plus } from "lucide-react";
+import { useAction, useQuery } from "convex/react";
+import { Loader2, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Control, Controller, useFieldArray, useForm } from "react-hook-form";
+import { UseFormReturn, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Id } from "../convex/_generated/dataModel";
 import { FormLabelWithTooltip } from "./form-label-tooltip";
 import ShimmerButton from "./magicui/shimmer-button";
+import { MultiSelectCombobox } from "./multiselect-combobox";
 import { RawFileCreation } from "./raw-file-creation";
 import { ReactionDbCreation } from "./react-db-creation";
 import { Badge } from "./ui/badge";
@@ -41,12 +42,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 type TaskCreationInputType = z.infer<typeof TaskCreationInputSchema>;
 
 interface SampleGroupFieldArrayProps {
-  control: Control<TaskCreationInputType>;
+  options: string[];
+  form: UseFormReturn<TaskCreationInputType>;
   sampleIndex: number;
   groupName: "sampleGroups" | "blankGroups";
 }
@@ -56,58 +57,50 @@ interface TaskCreationProps {
 }
 
 const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
-  control,
+  form,
   sampleIndex,
   groupName,
+  options,
 }) => {
-  const { fields, append, remove } = useFieldArray({
-    control,
-    // @ts-ignore
-    name: `experimentGroups.${sampleIndex}.${groupName}`,
-  });
-
   return (
     <div className="flex flex-col gap-2 items-start justify-start h-full">
-      <div className="px-4 flex items-center justify-center gap-2">
+      <FormLabel className="px-4 flex items-center justify-center gap-2">
         {groupName === "sampleGroups" ? "Sample Groups" : "Blank Groups"}
-        <Button
-          className="w-6 h-6 p-0"
-          type="button"
-          variant="outline"
-          // @ts-ignore
-          onClick={() => append({ value: "" })}
-        >
-          <Plus size={12} />
-        </Button>
-      </div>
-      <div className="flex p-2 flex-col max-h-[300px] overflow-scroll gap-2">
-        {fields.map((field, index) => (
-          <div key={field.id} className="flex items-center space-x-3 gap-2">
-            <Controller
-              control={control}
-              name={`config.experimentGroups.${sampleIndex}.${groupName}.${index}`}
-              render={({ field }) => (
-                <div>
-                  <Input
-                    defaultValue=""
-                    // @ts-ignore
-                    value={field.value.value}
-                    onChange={field.onChange}
-                  />
-                </div>
-              )}
-            />
-            <Button
-              className="w-6 h-4 p-0"
-              type="button"
-              variant="outline"
-              onClick={() => remove(index)}
-            >
-              <Minus size={12} />
-            </Button>
-          </div>
-        ))}
-      </div>
+      </FormLabel>
+      <MultiSelectCombobox
+        options={options.map((option) => ({
+          value: option,
+          label: option,
+        }))}
+        onSelect={async (val: string) => {
+          const currExperiment =
+            form.getValues().config.experimentGroups[sampleIndex];
+          const otherGroup =
+            groupName === "sampleGroups" ? "blankGroups" : "sampleGroups";
+
+          if (currExperiment[otherGroup].includes(val)) {
+            toast.error("Sample group and blank group cannot have same values");
+            return;
+          }
+
+          if (currExperiment[groupName].includes(val)) {
+            form.setValue(
+              `config.experimentGroups.${sampleIndex}.${groupName}`,
+              currExperiment[groupName].filter((v) => v !== val)
+            );
+          } else {
+            form.setValue(
+              `config.experimentGroups.${sampleIndex}.${groupName}`,
+              [...currExperiment[groupName], val]
+            );
+          }
+        }}
+        selectedValues={
+          form.watch(
+            `config.experimentGroups.${sampleIndex}.${groupName}`
+          ) as string[]
+        }
+      />
     </div>
   );
 };
@@ -120,8 +113,8 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
         experimentGroups: [
           {
             name: "new sample 1",
-            sampleGroups: ["a"],
-            blankGroups: ["a"],
+            sampleGroups: [],
+            blankGroups: [],
           },
         ],
         maxResponseThreshold: 1,
@@ -133,11 +126,12 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
     },
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const createTask = useMutation(api.tasks.createTask);
+  const triggerTask = useAction(api.actions.triggerTask);
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "config.experimentGroups",
   });
+  const [currExperiment, setCurrExperiment] = useState(0);
 
   const allRawFiles = useQuery(api.rawFiles.getAllRawFiles, {});
   const allReactionDatabases = useQuery(
@@ -147,7 +141,7 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
 
   const onSubmit = async (values: TaskCreationInputType) => {
     setIsSubmitting(true);
-    const { id } = await createTask({
+    const { id } = await triggerTask({
       reactionDb: values.reactionDb,
       rawFile: values.rawFile,
       config: values.config,
@@ -208,7 +202,6 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
                     Select or{" "}
                     <RawFileCreation
                       onCreate={(id: Id<"rawFiles">) => {
-                        console.log("nnnnnn raw", id);
                         onChange(id);
                       }}
                     />{" "}
@@ -266,8 +259,12 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
               )}
             />
           </div>
-          <Accordion type="multiple">
-            <AccordionItem value="experiment-groups">
+          <Accordion type="multiple" className="w-[700px]">
+            <AccordionItem
+              value="experiment-groups"
+              disabled={!form.watch("rawFile")}
+              className="cursor-pointer"
+            >
               <AccordionTrigger>
                 <div className="flex items-center justify-center gap-2">
                   <Badge variant="secondary">3</Badge>Configure Experiment
@@ -275,85 +272,113 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <Tabs defaultValue="account" className="w-full">
-                  <TabsList className="overflow-x-scroll overflow-y-hidden">
-                    {fields.map((sampleField, sampleIndex) => (
-                      <TabsTrigger key={sampleIndex} value={sampleField.name}>
-                        {sampleField.name}
-                      </TabsTrigger>
-                    ))}
-                    <button
-                      type="button"
-                      className="hover:bg-slate-50 p-4 rounded-md"
-                      onClick={() =>
-                        append({
-                          name: `new sample ${fields.length + 1}`,
-                          sampleGroups: ["a"],
-                          blankGroups: ["a"],
-                        })
-                      }
-                    >
-                      <Plus size={12} />
-                    </button>
-                  </TabsList>
-                  {fields.map((sampleField, sampleIndex) => (
-                    <TabsContent key={sampleIndex} value={sampleField.name}>
-                      <div
-                        key={sampleField.id}
-                        className="flex flex-col gap-4 items-start w-full"
+                <div className="flex gap-4 w-full">
+                  <div className="flex flex-col gap-4 p-2 w-[300px] h-full justify-between">
+                    <div className="flex items-center gap-2 justify-center">
+                      <Select
+                        onValueChange={(v) => {
+                          if (!v) return;
+                          setCurrExperiment(+v);
+                        }}
+                        value={currExperiment.toString()}
                       >
-                        <div className="flex px-2 items-center gap-4 justify-center">
-                          <FormField
-                            control={form.control}
-                            name={`config.experimentGroups.${sampleIndex}.name`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Experiment Group Name</FormLabel>
-                                <div className="flex items-center gap-4 justify-center w-full">
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <Button
-                                    type="button"
-                                    className="w-8 h-6 p-0"
-                                    variant="outline"
-                                    onClick={() => {
-                                      if (fields.length > 1) {
-                                        remove(sampleIndex);
-                                      } else {
-                                        toast.error(
-                                          "You need to have at least one sample group"
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    <Minus size={12} />
-                                  </Button>
-                                </div>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Raw File to be analyzed" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {fields?.map((f, i) => {
+                            return (
+                              <SelectItem key={i} value={i.toString()}>
+                                {f.name}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <FormDescription>
+                      Choose an experiment to configure or{" "}
+                      <Button
+                        onClick={() => {
+                          append({
+                            name: `new sample ${fields.length + 1}`,
+                            sampleGroups: [],
+                            blankGroups: [],
+                          });
+                        }}
+                        variant="outline"
+                        size="xs"
+                        className="font-bold"
+                      >
+                        <span>✨ Create </span>
+                      </Button>{" "}
+                      a new experiment group
+                    </FormDescription>
+                  </div>
+                  <div className="flex w-full relative flex-col gap-4 bg-slate-100 dark:bg-slate-900 p-6 rounded-md">
+                    <Button
+                      type="button"
+                      className="absolute right-[8px] top-[8px] w-8 h-6 p-0 bg-red-50 border-0 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
+                      variant="outline"
+                      onClick={() => {
+                        if (fields.length > 1) {
+                          setCurrExperiment(0);
 
-                        <div className="flex justify-between w-full gap-4">
-                          {/* Sample Groups */}
-                          <SampleGroupFieldArray
-                            control={form.control}
-                            sampleIndex={sampleIndex}
-                            groupName="sampleGroups"
-                          />
-                          {/* Blank Groups */}
+                          remove(currExperiment);
+                        } else {
+                          toast.error(
+                            "You need to have at least one sample group"
+                          );
+                        }
+                      }}
+                    >
+                      <Trash className="stroke-red-400" size={12} />
+                    </Button>
+                    <div className="flex gap-8 items-center">
+                      <FormField
+                        control={form.control}
+                        name={`config.experimentGroups.${currExperiment}.name`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Experiment Group Name</FormLabel>
+                            <div className="flex items-center gap-4 justify-center w-full">
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                          <SampleGroupFieldArray
-                            control={form.control}
-                            sampleIndex={sampleIndex}
-                            groupName="blankGroups"
-                          />
-                        </div>
+                    {/* Sample Groups */}
+                    <div className="flex items-center justify-between gap-2">
+                      <SampleGroupFieldArray
+                        options={
+                          allRawFiles?.find(
+                            (rawFile) => rawFile._id === form.watch("rawFile")
+                          )?.sampleColumns || []
+                        }
+                        form={form}
+                        sampleIndex={currExperiment}
+                        groupName="sampleGroups"
+                      />
+                      <div className="flex h-full items-center justify-center">
+                        <div className="h-[50%] mt-6 w-[1.5px] dark:bg-slate-700 bg-slate-300" />
                       </div>
-                    </TabsContent>
-                  ))}
-                </Tabs>
+                      <SampleGroupFieldArray
+                        options={
+                          allRawFiles?.find(
+                            (rawFile) => rawFile._id === form.watch("rawFile")
+                          )?.sampleColumns || []
+                        }
+                        form={form}
+                        sampleIndex={currExperiment}
+                        groupName="blankGroups"
+                      />
+                    </div>
+                  </div>
+                </div>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="advanced">

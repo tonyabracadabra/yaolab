@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "askstring"
+version = "0.1.0"
+description = ""
+authors = ["tonyabracadabra <tongxupeng.cpu@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.11.6"
+fastapi = "^0.87.0"
+pandas = "^2.1.2"
+pydantic = "^1.10.2"
+uvicorn = "^0.20.0"
+redis = "^4.5.1"
+python-dotenv = "^1.0.0"
+convex = "^0.5.0"
+scipy = "^1.10.1"
+matchms = "0.24.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.11.0"
+mypy = "^0.991"
+isort = "^5.12.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 79
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 79

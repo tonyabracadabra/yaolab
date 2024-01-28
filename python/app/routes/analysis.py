@@ -1,25 +1,36 @@
-from dagster import job
+from convex import Id
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from scipy.sparse import coo_matrix
-from matchms.Spectrum import Spectrum
-import pandas as pd
-from convex import ConvexClient
 
-from .steps import (
+from app.models.analysis import Task
+from app.steps import (
     calculate_edge_metrics,
-    create_similarity_matrix,
     combine_matrices_and_extract_edges,
-    edge_value_matching,
     create_ion_interaction_matrix,
+    create_similarity_matrix,
+    edge_value_matching,
     load_data,
     update_metabolic_reaction_database,
 )
 
-client = ConvexClient('https://example-lion-123.convex.cloud')
+from app.utils.convex import get_convex
 
-@job
-def full_workflow():
+router = APIRouter()
+
+
+class TaskTriggerInput(BaseModel):
+    id: str
+
+
+def analysis_workflow():
     # f1, f2, f3
-    spectra, targeted_ions_df, metabolic_reaction_df, reaction_input = load_data()
+    (
+        spectra,
+        targeted_ions_df,
+        metabolic_reaction_df,
+        reaction_input,
+    ) = load_data()
 
     # optional
     metabolic_reaction_df: pd.DataFrame = update_metabolic_reaction_database(
@@ -34,7 +45,9 @@ def full_workflow():
     )
     # f7
     # this is to calculate the similarity between each pair of spectra
-    similarity_matrix: coo_matrix = create_similarity_matrix(spectra, targeted_ions_df)
+    similarity_matrix: coo_matrix = create_similarity_matrix(
+        spectra, targeted_ions_df
+    )
     # f9
     edge_data_df = combine_matrices_and_extract_edges(
         ion_interaction_matrix, similarity_matrix
@@ -46,5 +59,16 @@ def full_workflow():
         edge_metrics, metabolic_reaction_df
     )
 
-    print(f"matched_df: {matched_df}")
-    print(f"formula_change_counts: {formula_change_counts}")
+
+@router.post("")
+async def metabolite_analysis(
+    input: TaskTriggerInput, convex=Depends(get_convex)
+):
+    task: Task = convex.query("tasks:get", {"id": input.id})
+    message_id = Id("messages", input.message_id)
+
+    try:
+        analysis_workflow()
+    except Exception as e:
+        convex.mutation("tasks:update", {"id": input.id, "status": "error"})
+        convex.mutation("messages:error", {"id": message_id})

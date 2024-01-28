@@ -30,20 +30,20 @@ export const TaskCreationInputSchema = z.object({
 
 export const TaskStatus = z.enum(["pending", "running", "complete", "failed"]);
 
+export const TaskResultSchema = z.array(
+  z.object({
+    node: z.string(),
+    score: z.number(),
+    edge: z.string(),
+  })
+);
+
 export const TaskSchema = z.object({
   ...TaskCreationInputSchema.shape,
   user: z.string(),
   status: TaskStatus,
   log: z.optional(z.string()),
-  result: z.optional(
-    z.array(
-      z.object({
-        node: z.string(),
-        score: z.number(),
-        edge: z.string(),
-      })
-    )
-  ),
+  result: z.optional(TaskResultSchema),
 });
 
 export const FileType = z.enum(["MZine", "MDial"]);
@@ -59,6 +59,7 @@ export const RawFileCreationInputSchema = z.object({
   name: z.string(),
   file: zid("_storage"),
   fileType: FileType,
+  sampleColumns: z.array(z.string()),
 });
 
 export const RawFileSchema = z.object({

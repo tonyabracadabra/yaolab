@@ -1,8 +1,13 @@
 import { zid } from "convex-helpers/server/zod";
-import { TaskCreationInputSchema } from "./schema";
-import { zMutation, zQuery } from "./utils";
+import { z } from "zod";
+import {
+  TaskCreationInputSchema,
+  TaskResultSchema,
+  TaskStatus,
+} from "./schema";
+import { zInternalMutation, zMutation, zQuery } from "./utils";
 
-export const createTask = zMutation({
+export const create = zInternalMutation({
   args: TaskCreationInputSchema.shape,
   handler: async ({ db, user }, { config, reactionDb, rawFile }) => {
     const id = await db.insert("tasks", {
@@ -17,10 +22,35 @@ export const createTask = zMutation({
   },
 });
 
-export const getTask = zQuery({
+export const get = zQuery({
   args: { id: zid("tasks") },
   handler: async ({ db }, args) => {
-    return await db.get(args.id);
+    const task = await db.get(args.id);
+    if (!task) {
+      throw new Error("Task not found");
+    }
+
+    return {
+      ...task,
+      rawFile: await db.get(task.rawFile),
+      reactionDb: await db.get(task.reactionDb),
+    };
+  },
+});
+
+export const update = zMutation({
+  args: {
+    id: zid("tasks"),
+    status: z.optional(TaskStatus),
+    log: z.optional(z.string()),
+    result: z.optional(TaskResultSchema),
+  },
+  handler: async ({ db }, { id, status, log, result }) => {
+    db.patch(id, {
+      ...(status && { status }),
+      ...(log && { log }),
+      ...(result && { result }),
+    });
   },
 });
 

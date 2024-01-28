@@ -7,7 +7,7 @@ import { useQuery } from "convex/react";
 import { LoaderIcon } from "lucide-react";
 
 export default function Page({ params }: { params: { id: Id<"tasks"> } }) {
-  const task = useQuery(api.tasks.getTask, { id: params.id });
+  const task = useQuery(api.tasks.get, { id: params.id });
 
   if (!task) {
     return <LoaderIcon className="animate-spin" />;

@@ -1,27 +1,19 @@
-# Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
-# Install Poetry
-RUN pip install poetry
+RUN mkdir -p /opt/dagster/dagster_home /opt/dagster/app
 
-# Set the working directory in the container
-WORKDIR /usr/src/app
+RUN pip install dagster-webserver dagster-postgres dagster-aws
 
-# Copy the pyproject.toml and optionally poetry.lock file
-COPY pyproject.toml poetry.lock* /usr/src/app/
+# Copy your code and workspace to /opt/dagster/app
+COPY repo.py workspace.yaml /opt/dagster/app/
 
-# Install dependencies
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-dev
+ENV DAGSTER_HOME=/opt/dagster/dagster_home/
 
-# Copy the rest of your application's code
-COPY . /usr/src/app
+# Copy dagster instance YAML to $DAGSTER_HOME
+COPY dagster.yaml /opt/dagster/dagster_home/
 
-# Make port available to the world outside this container
+WORKDIR /opt/dagster/app
+
 EXPOSE 3000
 
-# Define environment variable
-ENV DAGSTER_HOME=/usr/src/app
-
-# Run dagit when the container launches
-CMD ["dagit", "-h", "0.0.0.0", "-p", "3000"]
+ENTRYPOINT ["dagster-webserver", "-h", "0.0.0.0", "-p", "3000"]
