@@ -1,7 +1,7 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { CustomReactionSchema, ReactionDatabaseSchema } from "@/convex/schema";
-import { useFileUpload } from "@/lib/utils";
+import { readFirstLine, useFileUpload } from "@/lib/utils";
 import { useAction, useMutation } from "convex/react";
 import { Loader2, Plus, Trash } from "lucide-react";
 import { useState } from "react";
@@ -182,7 +182,7 @@ const CustomReactionFieldArray = ({
               It represents the net change in mass of the metabolite as a result of the metabolic reaction. 
               This information is crucial for understanding the impact of the reaction on the metabolite's physical properties."
                   >
-                    Mass
+                    △ Mass
                   </FormLabelWithTooltip>
                 </div>
               </TableHead>
@@ -287,18 +287,59 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
           >
             <FormField
               control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <Input
+                    defaultValue="My Reaction Database"
+                    type="text"
+                    {...field}
+                  />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="file"
               render={({ field: { onChange } }) => {
                 return (
                   <FormItem>
-                    <FormLabel>File</FormLabel>
+                    <FormLabelWithTooltip tooltip="Preparing a csv file with three columns: formula, description and mass">
+                      File
+                    </FormLabelWithTooltip>
                     <Input
+                      accept=".csv"
                       onChange={(event) => {
                         const selectedFile =
                           event.target.files && event.target.files[0];
                         if (selectedFile) {
-                          onChange(event.target.files && event.target.files[0]);
-                          form.setValue("name", selectedFile.name);
+                          readFirstLine(selectedFile).then(
+                            (columns: string[]) => {
+                              // see if the columns contain the required headers (blurry match)
+                              if (
+                                columns
+                                  .map((column) => column.toLowerCase())
+                                  .includes("formula") &&
+                                columns
+                                  .map((column) => column.toLowerCase())
+                                  .includes("description") &&
+                                columns
+                                  .map((column) => column.toLowerCase())
+                                  .includes("mass")
+                              ) {
+                                onChange(
+                                  event.target.files && event.target.files[0]
+                                );
+                                form.setValue("name", selectedFile.name);
+                              } else {
+                                toast.error(
+                                  "Your file is missing the required headers: formula, description and mass, \
+                                  make sure you have them in the first row of your csv file"
+                                );
+                              }
+                            }
+                          );
                         }
                       }}
                       type="file"
@@ -306,16 +347,6 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
                   </FormItem>
                 );
               }}
-            />
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <Input type="text" {...field} />
-                </FormItem>
-              )}
             />
             <CustomReactionFieldArray control={form.control} />
             <DialogFooter>

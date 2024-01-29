@@ -11,7 +11,7 @@ export function FormLabelWithTooltip({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <FormLabel>{children}</FormLabel>
+      <FormLabel className="whitespace-nowrap">{children}</FormLabel>
       <HelperTooltip text={tooltip} />
     </div>
   );
