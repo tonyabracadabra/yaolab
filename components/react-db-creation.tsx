@@ -239,9 +239,16 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
 
   const onSubmit = async (values: LocalReactionDbInput) => {
     setIsSubmitting(true);
+    if (!values.file) {
+      toast.error("You need to upload a file");
+      setIsSubmitting(false);
+      return;
+    }
+
     const { storageId } = await handleUpload(values.file);
     if (!storageId) {
       toast.error("Something went wrong while uploading your file, try again");
+      setIsSubmitting(false);
       return;
     }
 
@@ -256,7 +263,15 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) {
+          onClose();
+        }
+      }}
+    >
       <DialogTrigger asChild>
         <Button
           type="button"
@@ -316,27 +331,32 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
                         if (selectedFile) {
                           readFirstLine(selectedFile).then(
                             (columns: string[]) => {
-                              // see if the columns contain the required headers (blurry match)
+                              // TODO: use gpt for fuzzy matching later
+                              const lowerCased = columns.map((column) =>
+                                column.toLowerCase()
+                              );
                               if (
-                                columns
-                                  .map((column) => column.toLowerCase())
-                                  .includes("formula") &&
-                                columns
-                                  .map((column) => column.toLowerCase())
-                                  .includes("description") &&
-                                columns
-                                  .map((column) => column.toLowerCase())
-                                  .includes("mass")
+                                !lowerCased.every(
+                                  (column) => !column.includes("formula")
+                                ) &&
+                                !lowerCased.every(
+                                  (column) => !column.includes("description")
+                                ) &&
+                                !lowerCased.every(
+                                  (column) => !column.includes("mass")
+                                )
                               ) {
                                 onChange(
                                   event.target.files && event.target.files[0]
                                 );
                                 form.setValue("name", selectedFile.name);
                               } else {
+                                console.log(columns);
                                 toast.error(
                                   "Your file is missing the required headers: formula, description and mass, \
                                   make sure you have them in the first row of your csv file"
                                 );
+                                form.reset();
                               }
                             }
                           );
