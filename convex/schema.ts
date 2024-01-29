@@ -9,8 +9,9 @@ export const ExperimentSchema = z.object({
 });
 
 export const CustomReactionSchema = z.object({
-  formulaChange: z.string(),
-  reactionDescription: z.string(),
+  formula: z.string(),
+  description: z.string(),
+  mass: z.number(),
 });
 
 export const TaskConfigSchema = z.object({

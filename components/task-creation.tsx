@@ -321,11 +321,10 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
                         onClick={() => {
                           if (fields.length > 1) {
                             setCurrExperiment(0);
-
                             remove(currExperiment);
                           } else {
                             toast.error(
-                              "You need to have at least one sample group"
+                              "You need to have at least one experimentation group"
                             );
                           }
                         }}
@@ -365,8 +364,8 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
                           experiment={currExperiment}
                           groupName="sampleGroups"
                         />
-                        <div className="flex h-full items-center justify-center">
-                          <div className="h-[50%] mt-6 w-[1.5px] dark:bg-slate-700 bg-slate-300" />
+                        <div className="flex h-full items-center justify-center mt-5">
+                          vs
                         </div>
                         <SampleGroupFieldArray
                           options={

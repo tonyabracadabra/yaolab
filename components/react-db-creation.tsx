@@ -1,11 +1,13 @@
 import { api } from "@/convex/_generated/api";
-import { Doc, Id } from "@/convex/_generated/dataModel";
+import { Id } from "@/convex/_generated/dataModel";
+import { CustomReactionSchema, ReactionDatabaseSchema } from "@/convex/schema";
 import { useFileUpload } from "@/lib/utils";
-import { useMutation } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { Loader2, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import { Control, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 import { FormLabelWithTooltip } from "./form-label-tooltip";
 import { Button } from "./ui/button";
 import {
@@ -19,24 +21,109 @@ import {
 } from "./ui/dialog";
 import { Form, FormField, FormItem, FormLabel } from "./ui/form";
 import { Input } from "./ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
 
-type ReactionDatabase = Doc<"reactionDatabases">;
-type CustomReaction = ReactionDatabase["customReactions"][0];
-type LocalReactionDb = {
-  file: File;
-  name: string;
-  customReactions: CustomReaction[];
-};
+const LocalReactionDbInputSchema = ReactionDatabaseSchema.extend({
+  file: z.instanceof(File),
+});
+type LocalReactionDbInput = z.infer<typeof LocalReactionDbInputSchema>;
+type CustomReaction = z.infer<typeof CustomReactionSchema>;
 
 const CustomReactionFieldArray = ({
   control,
 }: {
-  control: Control<LocalReactionDb>;
+  control: Control<LocalReactionDbInput>;
 }) => {
-  const { fields, append, remove } = useFieldArray<LocalReactionDb>({
+  const { fields, append, remove } = useFieldArray<LocalReactionDbInput>({
     control,
     name: "customReactions",
   });
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
+  interface ReactionFormInterface {
+    onReactionAdd: (reaction: CustomReaction) => void;
+  }
+
+  const ReactionForm = ({ onReactionAdd }: ReactionFormInterface) => {
+    const calculateMass = useAction(api.actions.calculateMass);
+    const [formula, setFormula] = useState("");
+    const [description, setDescription] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+
+    return (
+      <div className="flex flex-col justify-center gap-2">
+        <FormItem>
+          <FormLabel>
+            Formula Change{" "}
+            <span className="text-sm text-gray-400">(e.g. C6H12O6)</span>
+          </FormLabel>
+          <Input
+            defaultValue=""
+            value={formula}
+            onChange={(e) => setFormula(e.target.value)}
+          />
+        </FormItem>
+        <FormItem>
+          <FormLabel>
+            Reaction Description{" "}
+            <span className="text-sm text-gray-400">
+              (e.g. glucose to fructose)
+            </span>
+          </FormLabel>
+          <Input
+            defaultValue=""
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </FormItem>
+        <div className="flex justify-end mt-4">
+          <Button
+            type="button"
+            onClick={async () => {
+              if (!formula) {
+                toast.error("You need to provide a valid formula");
+                return;
+              }
+
+              setIsLoading(true);
+
+              try {
+                const { mass } = await calculateMass({
+                  formula,
+                });
+                onReactionAdd({
+                  formula,
+                  description,
+                  mass,
+                });
+              } catch {
+                toast.error("Error calculating mass, please try again later");
+              } finally {
+                setPopoverOpen(false);
+              }
+            }}
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-2">
+                Caculating Mass...
+                <Loader2 className="animate-spin" />
+              </div>
+            ) : (
+              "Confirm"
+            )}
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -45,134 +132,86 @@ const CustomReactionFieldArray = ({
           Custom Reactions
         </FormLabelWithTooltip>
 
-        <Button
-          type="button"
-          className="flex flex-col"
-          size="xs"
-          variant="secondary"
-          onClick={() => {
-            append({
-              formulaChange: "",
-              reactionDescription: "",
-            });
-          }}
-        >
-          <Plus size={14} />
-        </Button>
+        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="secondary" size="xs">
+              <Plus size={14} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <ReactionForm
+              onReactionAdd={(r) => {
+                append(r);
+              }}
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="flex flex-col overflow-scroll gap-2">
-        <div className="flex gap-2 items-center justify-center">
-          <div className="flex flex-col items-center justify-center gap-1">
-            {fields.length > 0 && (
-              <div className="flex items-center gap-8">
-                <FormLabel className="py-2">Formula Change</FormLabel>
-                <FormLabel className="py-2">Reaction Description</FormLabel>
-                <div />
-              </div>
-            )}
-            <div className="flex flex-col gap-1 max-h-[300px] overflow-auto">
-              {fields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="flex items-center space-x-3 gap-2 p-1"
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[50px]"></TableHead>
+              <TableHead className="w-[200px]">
+                <FormLabelWithTooltip
+                  tooltip="Enter the chemical formula representing the change in the composition of a metabolite. 
+                This could be the addition or removal of specific elements or compounds during a metabolic reaction."
                 >
-                  <FormField
-                    control={control}
-                    name={`customReactions.${index}`}
-                    render={({ field }) => (
-                      <div className="flex items-center justify-center gap-2">
-                        <FormItem>
-                          <Input
-                            defaultValue=""
-                            value={field.value.formulaChange}
-                            onChange={field.onChange}
-                          />
-                        </FormItem>
-                      </div>
-                    )}
-                  />
-                  <FormField
-                    control={control}
-                    name={`customReactions.${index}`}
-                    render={({ field }) => (
-                      <div className="flex items-center justify-center gap-2">
-                        <FormItem>
-                          <Input
-                            defaultValue=""
-                            value={field.value.reactionDescription}
-                            onChange={field.onChange}
-                          />
-                        </FormItem>
-                      </div>
-                    )}
-                  />
-                  <div
-                    key={field.id}
-                    className="flex items-center space-x-3 gap-2"
+                  △ Formula
+                </FormLabelWithTooltip>
+              </TableHead>
+              <TableHead className="w-[200px]">
+                <FormLabelWithTooltip
+                  tooltip="Provide a brief description of the metabolic change or reaction. 
+                Include information about the context in which the formula change occurs, such as the metabolic process, the compounds involved, or any relevant biochemical details. 
+                This description should help users understand the nature of the formula change and its significance in the metabolic pathway."
+                >
+                  Description
+                </FormLabelWithTooltip>
+              </TableHead>
+              <TableHead className="w-[200px]">
+                <div className="flex items-center justify-center gap-2">
+                  <FormLabelWithTooltip
+                    tooltip="This field displays the calculated mass difference resulting from the formula change. 
+              The mass is calculated based on the atomic weights of the elements added or removed in the formula change. 
+              It represents the net change in mass of the metabolite as a result of the metabolic reaction. 
+              This information is crucial for understanding the impact of the reaction on the metabolite's physical properties."
                   >
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => remove(index)}
-                      className="opacity-80 group"
-                    >
-                      <Trash
-                        size={12}
-                        className="dark:stroke-red-800 dark:group-hover:stroke-red-700 stroke-red-400 group-hover:stroke-red-500"
-                      />
-                    </Button>
-                  </div>
+                    Mass
+                  </FormLabelWithTooltip>
                 </div>
-              ))}
-            </div>
-          </div>
-          {/* <div className="flex flex-col items-center justify-center gap-2">
-            {fields.length > 0 && (
-              <FormLabel className="py-2">Reaction Description</FormLabel>
-            )}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {/* fields map to table rows then table cells */}
             {fields.map((field, index) => (
-              <div
-                key={field.id}
-                className="flex items-center space-x-3 gap-2 p-1"
-              >
-                <FormField
-                  control={control}
-                  name={`customReactions.${index}`}
-                  render={({ field }) => (
-                    <div className="flex items-center justify-center gap-2">
-                      <FormItem>
-                        <Input
-                          defaultValue=""
-                          value={field.value.reactionDescription}
-                          onChange={field.onChange}
-                        />
-                      </FormItem>
-                    </div>
-                  )}
-                />
-              </div>
+              <TableRow key={field.id} className="py-0">
+                <TableCell>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => remove(index)}
+                    className="opacity-80 group"
+                  >
+                    <Trash
+                      size={12}
+                      className="dark:stroke-red-800 dark:group-hover:stroke-red-700 stroke-red-400 group-hover:stroke-red-500"
+                    />
+                  </Button>
+                </TableCell>
+                <TableCell>{field.formula}</TableCell>
+                <TableCell>{field.description}</TableCell>
+                <TableCell>{field.mass}</TableCell>
+              </TableRow>
             ))}
-          </div>
-          <div className="flex flex-col items-center justify-center gap-2">
-            <FormLabel className="py-3" />
-            {fields.map((field, index) => (
-              <div key={field.id} className="flex items-center space-x-3 gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => remove(index)}
-                  className="opacity-80 group"
-                >
-                  <Trash
-                    size={12}
-                    className="dark:stroke-red-800 dark:group-hover:stroke-red-700 stroke-red-400 group-hover:stroke-red-500"
-                  />
-                </Button>
-              </div>
-            ))}
-          </div> */}
-        </div>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
@@ -183,7 +222,7 @@ interface ReactionDbCreationInterface {
 }
 
 export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
-  const form = useForm<LocalReactionDb>();
+  const form = useForm<LocalReactionDbInput>();
   const [open, setOpen] = useState(false);
   const { handleUpload } = useFileUpload();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -198,7 +237,7 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
     setIsSubmitting(false);
   };
 
-  const onSubmit = async (values: LocalReactionDb) => {
+  const onSubmit = async (values: LocalReactionDbInput) => {
     setIsSubmitting(true);
     const { storageId } = await handleUpload(values.file);
     if (!storageId) {
@@ -219,7 +258,12 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="xs" className="font-bold">
+        <Button
+          type="button"
+          variant="outline"
+          size="xs"
+          className="font-bold text-primary"
+        >
           <span>✨ Create </span>
         </Button>
       </DialogTrigger>
@@ -227,7 +271,7 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
         onInteractOutside={(e) => {
           e.preventDefault();
         }}
-        className="sm:max-w-[425px]"
+        className="sm:max-w-[500px]"
       >
         <DialogHeader>
           <DialogTitle>Upload your reactions database</DialogTitle>

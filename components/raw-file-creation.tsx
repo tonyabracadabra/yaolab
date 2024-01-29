@@ -90,7 +90,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="xs" className="font-bold">
+        <Button variant="outline" size="xs" className="font-bold text-primary">
           <span>✨ Create </span>
         </Button>
       </DialogTrigger>
