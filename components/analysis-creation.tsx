@@ -142,12 +142,16 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
 
   const onSubmit = async (values: AnalysisCreationInputType) => {
     setIsSubmitting(true);
-    const { id } = await triggerAnalysis({
-      reactionDb: values.reactionDb,
-      rawFile: values.rawFile,
-      config: values.config,
-    });
-    onCreate(id);
+    try {
+      const { id } = await triggerAnalysis({
+        reactionDb: values.reactionDb,
+        rawFile: values.rawFile,
+        config: values.config,
+      });
+      onCreate(id);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
