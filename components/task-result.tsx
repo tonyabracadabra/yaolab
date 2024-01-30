@@ -1,5 +1,9 @@
-interface TaskResultInterface {
-  taskId: string;
+import { Id } from "@/convex/_generated/dataModel";
+
+interface AnalysisResultInterface {
+  analysisId: Id<"analyses">;
 }
 
-export default function TaskResult({ taskId }: TaskResultInterface) {}
+export default function AnalysisResult({
+  analysisId,
+}: AnalysisResultInterface) {}

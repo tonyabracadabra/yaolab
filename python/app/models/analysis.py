@@ -8,7 +8,7 @@ from pydantic import BaseModel
 class AnalysisCreationInput(BaseModel):
     rawFile: str
     reactionDb: str
-    config: TaskConfig
+    config: AnalysisConfig
 
     class Config:
         arbitrary_types_allowed = True
@@ -51,7 +51,7 @@ class Experiment(BaseModel):
     blankGroups: list[str]
 
 
-class TaskConfig(BaseModel):
+class AnalysisConfig(BaseModel):
     maxResponseThreshold: float
     minResponseRatio: float
     ms2SimilarityThreshold: float
@@ -63,10 +63,31 @@ class TaskConfig(BaseModel):
         arbitrary_types_allowed = True
 
 
-class Task(BaseModel):
+class Edge(BaseModel):
+    id1: str
+    id2: str
+    value: float
+    correlation: float
+    rtDiff: float
+    mzDiff: float
+    matchedMzDiff: float
+    matchedFormulaChange: float
+    matchedReactionDesc: float
+    redundantData: float
+    modCos: float
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class Analysis(BaseModel):
     id: str
     reactionDatabase: ReactionDatabase
     rawFile: RawFile
 
     class Config:
         arbitrary_types_allowed = True
+
+
+class AnalysisTriggerInput(BaseModel):
+    id: str

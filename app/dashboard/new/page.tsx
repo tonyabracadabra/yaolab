@@ -1,6 +1,6 @@
 "use client";
 
-import TaskCreation from "@/components/analysis-creation";
+import AnalysisCreation from "@/components/analysis-creation";
 import { Id } from "@/convex/_generated/dataModel";
 
 import { useRouter } from "next/navigation";
@@ -14,7 +14,7 @@ export default function Analysis() {
 
   return (
     <main className="h-full flex w-full font-sans">
-      <TaskCreation onCreate={handleSubmit} />
+      <AnalysisCreation onCreate={handleSubmit} />
     </main>
   );
 }

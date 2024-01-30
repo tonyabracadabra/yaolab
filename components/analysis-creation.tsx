@@ -149,6 +149,10 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
         config: values.config,
       });
       onCreate(id);
+    } catch (e) {
+      toast.error(
+        "Error occured while analyzing your data, please try again later"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -518,7 +522,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
             <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-lg">
               {isSubmitting ? (
                 <div className="flex items-center gap-2">
-                  Uploading
+                  Initiating analysis
                   <Loader2 className="animate-spin" />
                 </div>
               ) : (

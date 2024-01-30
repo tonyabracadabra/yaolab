@@ -7,11 +7,11 @@ import { useQuery } from "convex/react";
 import { LoaderIcon } from "lucide-react";
 
 export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
-  const task = useQuery(api.analysis.get, { id: params.id });
+  const analysis = useQuery(api.analysis.get, { id: params.id });
 
-  if (!task) {
+  if (!analysis) {
     return <LoaderIcon className="animate-spin" />;
   }
 
-  return <div>{task.status === "failed" && <Button>Retry</Button>}</div>;
+  return <div>{analysis.status === "failed" && <Button>Retry</Button>}</div>;
 }

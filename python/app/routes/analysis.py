@@ -1,14 +1,13 @@
 import pandas as pd
 import pyteomics.mass
-from app.models.analysis import Task
+from app.models.analysis import Analysis, AnalysisTriggerInput
 from app.steps import (calculate_edge_metrics,
                        combine_matrices_and_extract_edges,
                        create_ion_interaction_matrix, create_similarity_matrix,
                        edge_value_matching, load_data,
-                       update_metabolic_reaction_database)
+                       )
 from app.utils.convex import get_convex
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from scipy.sparse import coo_matrix
 
 from convex import ConvexClient
@@ -16,29 +15,19 @@ from convex import ConvexClient
 router = APIRouter()
 
 
-class TaskTriggerInput(BaseModel):
-    id: str
-
-
-async def analysis_workflow(convex: ConvexClient, task: Task):
+async def analysis_workflow(convex: ConvexClient, analysis: Analysis):
     # f1, f2, f3
     (
         spectra,
         targeted_ions_df,
-        metabolic_reaction_df,
-        reaction_input,
-    ) = load_data(task=task)
-
-    # optional
-    metabolic_reaction_df: pd.DataFrame = update_metabolic_reaction_database(
-        metabolic_reaction_df, reaction_input
-    )
+        reaction_df,
+    ) = load_data(analysis=analysis)
 
     # f6
     # this is to extract the interaction between ions that has m/z and mass difference within MASS_DIFF_THRESHOLD
     # given the metabolic reaction database (metabolic_reaction_df)
     ion_interaction_matrix = create_ion_interaction_matrix(
-        targeted_ions_df, metabolic_reaction_df
+        targeted_ions_df, reaction_df
     )
     # f7
     # this is to calculate the similarity between each pair of spectra
@@ -51,21 +40,21 @@ async def analysis_workflow(convex: ConvexClient, task: Task):
     edge_metrics = calculate_edge_metrics(targeted_ions_df, edge_data_df)
     # f11, f12
     matched_df, formula_change_counts = edge_value_matching(
-        edge_metrics, metabolic_reaction_df
+        edge_metrics, reaction_df
     )
 
-    convex.mutation("tasks:update", {"id": input.id, "result": {"edges": []}})
+    convex.mutation("analyses:update", {"id": input.id, "result": {"edges": []}})
 
 
 @router.post("/start")
-async def metabolite_analysis(input: TaskTriggerInput, convex=Depends(get_convex)):
-    task: Task = convex.query("tasks:get", {"id": input.id})
+async def metabolite_analysis(input: AnalysisTriggerInput, convex=Depends(get_convex)):
+    analysis: Analysis = convex.query("analyses:get", {"id": input.id})
 
     try:
-        analysis_workflow(task)
+        analysis_workflow(analysis=analysis)
         return {"status": "success"}
     except Exception as e:
-        convex.mutation("tasks:update", {"id": input.id, "status": "error"})
+        convex.mutation("analyses:update", {"id": input.id, "status": "error"})
         return {"status": "error"}
 
 

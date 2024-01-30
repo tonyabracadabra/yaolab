@@ -25,15 +25,15 @@ export const create = zInternalMutation({
 export const get = zQuery({
   args: { id: zid("analyses") },
   handler: async ({ db }, args) => {
-    const task = await db.get(args.id);
-    if (!task) {
-      throw new Error("Task not found");
+    const analysis = await db.get(args.id);
+    if (!analysis) {
+      throw new Error("Analysis not found");
     }
 
     return {
-      ...task,
-      rawFile: await db.get(task.rawFile),
-      reactionDb: await db.get(task.reactionDb),
+      ...analysis,
+      rawFile: await db.get(analysis.rawFile),
+      reactionDb: await db.get(analysis.reactionDb),
     };
   },
 });
@@ -56,15 +56,15 @@ export const update = zMutation({
 
 export const getAll = zQuery({
   handler: async ({ db, user }) => {
-    const tasks = await db
+    const analyses = await db
       .query("analyses")
       .withIndex("user", (q) => q.eq("user", user))
       .collect();
 
-    return tasks.map((task) => ({
-      ...task,
-      rawFile: db.get(task.rawFile),
-      reactionDb: db.get(task.reactionDb),
+    return analyses.map((analysis) => ({
+      ...analysis,
+      rawFile: db.get(analysis.rawFile),
+      reactionDb: db.get(analysis.reactionDb),
     }));
   },
 });
