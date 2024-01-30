@@ -7,7 +7,7 @@ import { zAction } from "./utils";
 export const triggerAnalysis = zAction({
   args: AnalysisCreationInputSchema.shape,
   handler: async ({ runMutation }, { config, reactionDb, rawFile }) => {
-    const res: any = await runMutation(internal.tasks.create, {
+    const res: any = await runMutation(internal.analysis.create, {
       config,
       reactionDb,
       rawFile,

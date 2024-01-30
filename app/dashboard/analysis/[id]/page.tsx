@@ -6,8 +6,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { LoaderIcon } from "lucide-react";
 
-export default function Page({ params }: { params: { id: Id<"tasks"> } }) {
-  const task = useQuery(api.tasks.get, { id: params.id });
+export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
+  const task = useQuery(api.analysis.get, { id: params.id });
 
   if (!task) {
     return <LoaderIcon className="animate-spin" />;
