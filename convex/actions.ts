@@ -32,9 +32,9 @@ http.route({
 });
 
 export const triggerAnalysis = zAction({
-  args: AnalysisCreationInputSchema.shape,
-  handler: async ({ runMutation }, { config, reactionDb, rawFile }) => {
-    const res: any = await runMutation(internal.analysis.create, {
+  args: { ...AnalysisCreationInputSchema.shape, token: z.string() },
+  handler: async ({ runMutation }, { config, reactionDb, rawFile, token }) => {
+    const res: any = await runMutation(internal.analyses.create, {
       config,
       reactionDb,
       rawFile,
@@ -44,6 +44,7 @@ export const triggerAnalysis = zAction({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(res),
     });

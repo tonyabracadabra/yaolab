@@ -23,6 +23,7 @@ import {
 
 import { api } from "@/convex/_generated/api";
 import { AnalysisCreationInputSchema } from "@/convex/schema";
+import { useAuth } from "@clerk/nextjs";
 import { useAction, useQuery } from "convex/react";
 import { Loader2, Trash } from "lucide-react";
 import { useState } from "react";
@@ -126,6 +127,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
       },
     },
   });
+  const { getToken } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const triggerAnalysis = useAction(api.actions.triggerAnalysis);
   const { fields, append, remove } = useFieldArray({
@@ -142,11 +144,13 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
 
   const onSubmit = async (values: AnalysisCreationInputType) => {
     setIsSubmitting(true);
+    const token = await getToken({ template: "convex" });
     try {
       const { id } = await triggerAnalysis({
         reactionDb: values.reactionDb,
         rawFile: values.rawFile,
         config: values.config,
+        token: token || "",
       });
       onCreate(id);
     } catch (e) {
