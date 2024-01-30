@@ -14,7 +14,7 @@ export const CustomReactionSchema = z.object({
   mass: z.number(),
 });
 
-export const TaskConfigSchema = z.object({
+export const AnalysisConfigSchema = z.object({
   maxResponseThreshold: z.number(),
   minResponseRatio: z.number().default(0.1),
   ms2SimilarityThreshold: z.number().default(0.7),
@@ -23,31 +23,46 @@ export const TaskConfigSchema = z.object({
   experimentGroups: z.array(ExperimentSchema),
 });
 
-export const TaskCreationInputSchema = z.object({
+export const AnalysisCreationInputSchema = z.object({
   rawFile: zid("rawFiles"),
   reactionDb: zid("reactionDatabases"),
-  config: TaskConfigSchema,
+  config: AnalysisConfigSchema,
 });
 
-export const TaskStatus = z.enum(["pending", "running", "complete", "failed"]);
+export const AnalysisStatus = z.enum([
+  "pending",
+  "running",
+  "complete",
+  "failed",
+]);
 
-export const TaskResultSchema = z.array(
-  z.object({
-    node: z.string(),
-    score: z.number(),
-    edge: z.string(),
-  })
-);
+export const Edge = z.object({
+  id1: z.string(),
+  id2: z.string(),
+  value: z.number(),
+  correlation: z.number(),
+  retentionTimeDifference: z.number(),
+  mzDifference: z.number(),
+  matchedMzDifference: z.number(),
+  matchedFormulaChange: z.number(),
+  matchedReactionDescription: z.number(),
+  redundantData: z.number(),
+  modCos: z.number(),
+});
 
-export const TaskSchema = z.object({
-  ...TaskCreationInputSchema.shape,
+export const AnalysisResultSchema = z.object({
+  edges: z.array(Edge),
+});
+
+export const AnalysisSchema = z.object({
+  ...AnalysisCreationInputSchema.shape,
   user: z.string(),
-  status: TaskStatus,
+  status: AnalysisStatus,
   log: z.optional(z.string()),
-  result: z.optional(TaskResultSchema),
+  result: z.optional(AnalysisResultSchema),
 });
 
-export const FileType = z.enum(["MZine", "MDial"]);
+export const MSTool = z.enum(["MZine", "MDial"]);
 
 export const ReactionDatabaseSchema = z.object({
   user: z.string(),
@@ -58,8 +73,9 @@ export const ReactionDatabaseSchema = z.object({
 
 export const RawFileCreationInputSchema = z.object({
   name: z.string(),
-  file: zid("_storage"),
-  fileType: FileType,
+  tool: MSTool,
+  mgf: zid("_storage"),
+  targetedIons: zid("_storage"),
   sampleColumns: z.array(z.string()),
 });
 
@@ -69,7 +85,7 @@ export const RawFileSchema = z.object({
 });
 
 export default defineSchema({
-  tasks: defineTable(zodToConvexFields(TaskSchema.shape)).index("user", [
+  analyses: defineTable(zodToConvexFields(AnalysisSchema.shape)).index("user", [
     "user",
   ]),
   reactionDatabases: defineTable(

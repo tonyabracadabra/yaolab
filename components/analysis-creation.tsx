@@ -20,8 +20,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
 import { api } from "@/convex/_generated/api";
-import { TaskCreationInputSchema } from "@/convex/schema";
+import { AnalysisCreationInputSchema } from "@/convex/schema";
 import { useAction, useQuery } from "convex/react";
 import { Loader2, Trash } from "lucide-react";
 import { useState } from "react";
@@ -43,17 +44,17 @@ import {
   SelectValue,
 } from "./ui/select";
 
-type TaskCreationInputType = z.infer<typeof TaskCreationInputSchema>;
+type AnalysisCreationInputType = z.infer<typeof AnalysisCreationInputSchema>;
 
 interface SampleGroupFieldArrayProps {
   options: string[];
-  form: UseFormReturn<TaskCreationInputType>;
+  form: UseFormReturn<AnalysisCreationInputType>;
   experiment: number;
   groupName: "sampleGroups" | "blankGroups";
 }
 
-interface TaskCreationProps {
-  onCreate: (id: Id<"tasks">) => void;
+interface AnalysisCreationProps {
+  onCreate: (id: Id<"analyses">) => void;
 }
 
 const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
@@ -105,9 +106,9 @@ const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
   );
 };
 
-export default function TaskCreation({ onCreate }: TaskCreationProps) {
-  const form = useForm<TaskCreationInputType>({
-    resolver: zodResolver(TaskCreationInputSchema),
+export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
+  const form = useForm<AnalysisCreationInputType>({
+    resolver: zodResolver(AnalysisCreationInputSchema),
     defaultValues: {
       config: {
         experimentGroups: [
@@ -126,7 +127,7 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
     },
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const triggerTask = useAction(api.actions.triggerTask);
+  const triggerAnalysis = useAction(api.actions.triggerAnalysis);
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "config.experimentGroups",
@@ -139,10 +140,9 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
     {}
   );
 
-  const onSubmit = async (values: TaskCreationInputType) => {
-    console.log("values", values);
+  const onSubmit = async (values: AnalysisCreationInputType) => {
     setIsSubmitting(true);
-    const { id } = await triggerTask({
+    const { id } = await triggerAnalysis({
       reactionDb: values.reactionDb,
       rawFile: values.rawFile,
       config: values.config,
@@ -337,7 +337,6 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
                           control={form.control}
                           name={`config.experimentGroups.${currExperiment}.name`}
                           render={({ field: { onChange, value } }) => {
-                            console.log("value", value, "onChange", onChange);
                             return (
                               <FormItem>
                                 <FormLabel>Experiment Group Name</FormLabel>
@@ -351,7 +350,6 @@ export default function TaskCreation({ onCreate }: TaskCreationProps) {
                           }}
                         />
                       </div>
-
                       {/* Sample Groups */}
                       <div className="flex items-center justify-between gap-2">
                         <SampleGroupFieldArray

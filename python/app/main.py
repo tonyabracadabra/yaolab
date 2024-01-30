@@ -1,10 +1,9 @@
 import logging
 import os
 
+from app.routes.analysis import router as analysis
 from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI
-
-from app.routes.analysis import router as analysis
 
 # Load .env file from the root folder
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env.local"))

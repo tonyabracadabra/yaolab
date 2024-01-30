@@ -1,9 +1,6 @@
+import pandas as pd
 import pyteomics.mass
-from convex import Id
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from scipy.sparse import coo_matrix
-
+from convex import ConvexClient
 from app.models.analysis import Task
 from app.steps import (
     calculate_edge_metrics,
@@ -15,7 +12,9 @@ from app.steps import (
     update_metabolic_reaction_database,
 )
 from app.utils.convex import get_convex
-import pandas as pd
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from scipy.sparse import coo_matrix
 
 router = APIRouter()
 
@@ -24,14 +23,14 @@ class TaskTriggerInput(BaseModel):
     id: str
 
 
-async def analysis_workflow(task: Task):
+async def analysis_workflow(convex: ConvexClient, task: Task):
     # f1, f2, f3
     (
         spectra,
         targeted_ions_df,
         metabolic_reaction_df,
         reaction_input,
-    ) = load_data()
+    ) = load_data(task=task)
 
     # optional
     metabolic_reaction_df: pd.DataFrame = update_metabolic_reaction_database(
@@ -46,9 +45,7 @@ async def analysis_workflow(task: Task):
     )
     # f7
     # this is to calculate the similarity between each pair of spectra
-    similarity_matrix: coo_matrix = create_similarity_matrix(
-        spectra, targeted_ions_df
-    )
+    similarity_matrix: coo_matrix = create_similarity_matrix(spectra, targeted_ions_df)
     # f9
     edge_data_df = combine_matrices_and_extract_edges(
         ion_interaction_matrix, similarity_matrix
@@ -60,11 +57,11 @@ async def analysis_workflow(task: Task):
         edge_metrics, metabolic_reaction_df
     )
 
+    convex.mutation("tasks:update", {"id": input.id, "result": {"edges": []}})
+
 
 @router.post("/start")
-async def metabolite_analysis(
-    input: TaskTriggerInput, convex=Depends(get_convex)
-):
+async def metabolite_analysis(input: TaskTriggerInput, convex=Depends(get_convex)):
     task: Task = convex.query("tasks:get", {"id": input.id})
 
     try:

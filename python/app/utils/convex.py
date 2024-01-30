@@ -2,13 +2,12 @@ import os
 from functools import lru_cache
 
 import requests
-from convex import ConvexClient
 from dotenv import load_dotenv
 from fastapi import Request
 
-load_dotenv(
-    dotenv_path=os.path.join(os.path.dirname(__file__), "../../.env.local")
-)
+from convex import ConvexClient
+
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "../../.env.local"))
 
 
 def get_convex(request: Request) -> ConvexClient:

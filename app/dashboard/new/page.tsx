@@ -1,6 +1,6 @@
 "use client";
 
-import TaskCreation from "@/components/task-creation";
+import TaskCreation from "@/components/analysis-creation";
 import { Id } from "@/convex/_generated/dataModel";
 
 import { useRouter } from "next/navigation";
@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export default function Analysis() {
   const router = useRouter();
 
-  const handleSubmit = async (id: Id<"tasks">) => {
+  const handleSubmit = async (id: Id<"analyses">) => {
     router.push(`/dashboard/analysis/${id}`);
   };
 

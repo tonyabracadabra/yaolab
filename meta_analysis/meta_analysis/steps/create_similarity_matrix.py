@@ -1,11 +1,11 @@
 from typing import List
 
 import pandas as pd
-from pandas import Series
 from dagster import op
 from matchms import Scores, calculate_scores
 from matchms.similarity import ModifiedCosine
 from matchms.Spectrum import Spectrum
+from pandas import Series
 from scipy.sparse import coo_matrix
 
 from ..utils.contants import ID_COL

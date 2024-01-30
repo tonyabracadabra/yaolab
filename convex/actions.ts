@@ -1,10 +1,11 @@
+import { zid } from "convex-helpers/server/zod";
 import { z } from "zod";
 import { internal } from "./_generated/api";
-import { TaskCreationInputSchema } from "./schema";
+import { AnalysisCreationInputSchema } from "./schema";
 import { zAction } from "./utils";
 
-export const triggerTask = zAction({
-  args: TaskCreationInputSchema.shape,
+export const triggerAnalysis = zAction({
+  args: AnalysisCreationInputSchema.shape,
   handler: async ({ runMutation }, { config, reactionDb, rawFile }) => {
     const res: any = await runMutation(internal.tasks.create, {
       config,
@@ -23,6 +24,7 @@ export const triggerTask = zAction({
     return res;
   },
   output: z.object({
+    id: zid("analyses"),
     status: z.enum(["success", "error"]),
   }),
 });

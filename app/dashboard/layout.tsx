@@ -26,7 +26,7 @@ export default function DashboardLayout({
             href: "/dashboard/analysis",
           },
           {
-            title: "Raw files",
+            title: "Raw MS files",
             icon: File,
             href: "/dashboard/files",
           },

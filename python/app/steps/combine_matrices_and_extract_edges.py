@@ -11,9 +11,7 @@ def combine_matrices_and_extract_edges(
     similarity_matrix: coo_matrix,
 ) -> pd.DataFrame:
     # Perform addition operation on sparse matrices
-    result_matrix: coo_matrix = (
-        ion_interaction_matrix + similarity_matrix
-    ).tocoo()
+    result_matrix: coo_matrix = (ion_interaction_matrix + similarity_matrix).tocoo()
 
     # Extract row, column, and data from the result matrix
     row, col, data = result_matrix.row, result_matrix.col, result_matrix.data

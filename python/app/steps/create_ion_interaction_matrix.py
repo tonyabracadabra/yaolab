@@ -18,9 +18,7 @@ def create_ion_interaction_matrix(
     row_indices, col_indices = np.ogrid[:ion_count, :ion_count]
 
     # Calculate mz differences for the interaction matrix
-    mz_differences = np.abs(
-        ion_mass_values[row_indices] - ion_mass_values[col_indices]
-    )
+    mz_differences = np.abs(ion_mass_values[row_indices] - ion_mass_values[col_indices])
 
     # Prepare sorted mass differences for reaction potential check
     sorted_mass_diffs = np.sort(metabolic_reactions_df[MASS_DIFF_COL].values)

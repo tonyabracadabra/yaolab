@@ -17,7 +17,7 @@ export function useFileUpload() {
     // Step 2: POST the file to the URL
     const result = await fetch(postUrl, {
       method: "POST",
-      headers: { "Content-Type": file.type },
+      headers: { "Content-Type": file.type || "text/plain" },
       body: file,
     });
     return await result.json();

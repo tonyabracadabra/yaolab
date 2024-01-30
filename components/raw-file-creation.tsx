@@ -1,6 +1,6 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { FileType, RawFileCreationInputSchema } from "@/convex/schema";
+import { MSTool, RawFileCreationInputSchema } from "@/convex/schema";
 import { readFirstLine, useFileUpload } from "@/lib/utils";
 import { useMutation } from "convex/react";
 import { Loader2 } from "lucide-react";
@@ -35,14 +35,16 @@ interface RawFileCreationInterface {
 }
 
 const LocalRawFileInputSchema = RawFileCreationInputSchema.extend({
-  file: z.instanceof(File),
+  mgf: z.instanceof(File),
+  targetedIons: z.instanceof(File),
 });
 type RawFileCreationInput = z.infer<typeof LocalRawFileInputSchema>;
 
 export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
   const form = useForm<RawFileCreationInput>({
     defaultValues: {
-      fileType: "MDial",
+      name: "My Raw File",
+      tool: "MDial",
     },
   });
   const { handleUpload } = useFileUpload();
@@ -55,32 +57,39 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
     form.reset();
     setOpen(false);
     setIsSubmitting(false);
+    setSampleColumns([]);
   };
 
   const onSubmit = async (values: RawFileCreationInput) => {
     setIsSubmitting(true);
-    const { storageId } = await handleUpload(values.file);
-    if (!storageId) {
+    try {
+      const [{ storageId: mgfId }, { storageId: targetdIonsId }] =
+        await Promise.all([
+          handleUpload(values.mgf),
+          handleUpload(values.targetedIons),
+        ]);
+
+      const { id } = await createRawFile({
+        ...values,
+        sampleColumns,
+        mgf: mgfId,
+        targetedIons: targetdIonsId,
+      });
+      onCreate(id);
+      onClose();
+    } catch (error) {
       toast.error("Something went wrong while uploading your file, try again");
-      return;
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const { id } = await createRawFile({
-      ...values,
-      sampleColumns,
-      file: storageId,
-    });
-
-    onCreate(id);
-    onClose();
   };
 
   const getSampleColumns = async (file: File) => {
     const columns = await readFirstLine(file);
-    const fileType = form.getValues("fileType");
-    if (fileType === "MDial") {
+    const tool = form.watch("tool");
+    if (tool === "MDial") {
       return columns.slice(columns.indexOf("MS/MS spectrum") + 1);
-    } else if (fileType === "MZine") {
+    } else if (tool === "MZine") {
       return columns
         .filter((column) => column.includes(".raw Peak"))
         .map((column) => column.split(".")[0]);
@@ -122,7 +131,20 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
           >
             <FormField
               control={form.control}
-              name="fileType"
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input type="text" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="tool"
+              defaultValue="MDial"
               render={({ field: { onChange, value } }) => (
                 <FormItem>
                   <FormLabelWithTooltip tooltip="You can choose the raw file type here">
@@ -135,13 +157,13 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {Object.values(FileType.Values).map((fileType, i) => (
+                      {Object.values(MSTool.Values).map((tool, i) => (
                         <SelectItem
                           className="cursor-pointer hover:bg-slate-100"
                           key={i}
-                          value={fileType}
+                          value={tool}
                         >
-                          {fileType}
+                          {tool}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -151,11 +173,44 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
             />
             <FormField
               control={form.control}
-              name="file"
+              name="mgf"
               render={({ field: { onChange, value } }) => {
                 return (
                   <FormItem>
-                    <FormLabel>File</FormLabel>
+                    <FormLabelWithTooltip
+                      tooltip="Upload the MGF (Mascot Generic Format) file containing your mass spectrometry data. \
+                    This file should include detailed spectral data such as mass-to-charge ratios (m/z) and ion intensities from MS/MS experiments."
+                    >
+                      MGF File
+                    </FormLabelWithTooltip>
+                    <Input
+                      accept=".mgf"
+                      onChange={async (event) => {
+                        const selectedFile =
+                          event.target.files && event.target.files[0];
+                        if (selectedFile) {
+                          onChange(event.target.files && event.target.files[0]);
+                        }
+                      }}
+                      type="file"
+                    />
+                  </FormItem>
+                );
+              }}
+            />
+            <FormField
+              control={form.control}
+              name="targetedIons"
+              render={({ field: { onChange, value } }) => {
+                return (
+                  <FormItem>
+                    <FormLabelWithTooltip
+                      tooltip="Upload the file containing a list of target ions for analysis. \
+                    This file should enumerate specific ions or fragments of interest, usually identified by their mass-to-charge ratios (m/z), \
+                    which you intend to analyze or filter in your mass spectrometry data."
+                    >
+                      Ion list File
+                    </FormLabelWithTooltip>
                     <Input
                       accept=".csv,.txt"
                       onChange={async (event) => {
@@ -170,7 +225,6 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
                               (await getSampleColumns(selectedFile)) || []
                             );
                           } catch (error) {
-                            console.error("Error reading file:", error);
                             toast.error("Error processing the file");
                           }
                         }
@@ -181,19 +235,6 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
                 );
               }}
             />
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input type="text" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
             <div className="flex gap-2 flex-col">
               <FormLabel>Sample Columns</FormLabel>
               <div className="flex items-center justify-center gap-2 flex-wrap">

@@ -3,7 +3,7 @@ import pandas as pd
 from dagster import op
 from scipy.sparse import coo_matrix
 
-from ..utils.contants import MZ_COL, MASS_DIFF_COL
+from ..utils.contants import MASS_DIFF_COL, MZ_COL
 
 PPM_THRESHOLD = 10
 

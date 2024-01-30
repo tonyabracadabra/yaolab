@@ -1,9 +1,10 @@
 import os
 
 import pandas as pd
-from dagster import multi_asset, AssetOut
+from dagster import AssetOut, multi_asset
 from matchms.importing import load_from_mgf
 from matchms.Spectrum import Spectrum
+
 from .update_metabolic_reaction_database import ReactionInput
 
 current_dir = os.path.dirname(__file__)

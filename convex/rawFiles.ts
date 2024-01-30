@@ -3,12 +3,16 @@ import { zMutation, zQuery } from "./utils";
 
 export const createRawFile = zMutation({
   args: RawFileCreationInputSchema.shape,
-  handler: async ({ db, user }, { name, file, fileType, sampleColumns }) => {
+  handler: async (
+    { db, user },
+    { name, mgf, targetedIons, tool, sampleColumns }
+  ) => {
     const id = await db.insert("rawFiles", {
-      name,
       user,
-      file,
-      fileType,
+      name,
+      mgf,
+      targetedIons,
+      tool,
       sampleColumns,
     });
 

@@ -1,16 +1,16 @@
 import { zid } from "convex-helpers/server/zod";
 import { z } from "zod";
 import {
-  TaskCreationInputSchema,
-  TaskResultSchema,
-  TaskStatus,
+  AnalysisCreationInputSchema,
+  AnalysisResultSchema,
+  AnalysisStatus,
 } from "./schema";
 import { zInternalMutation, zMutation, zQuery } from "./utils";
 
 export const create = zInternalMutation({
-  args: TaskCreationInputSchema.shape,
+  args: AnalysisCreationInputSchema.shape,
   handler: async ({ db, user }, { config, reactionDb, rawFile }) => {
-    const id = await db.insert("tasks", {
+    const id = await db.insert("analyses", {
       user,
       rawFile,
       reactionDb,
@@ -23,7 +23,7 @@ export const create = zInternalMutation({
 });
 
 export const get = zQuery({
-  args: { id: zid("tasks") },
+  args: { id: zid("analyses") },
   handler: async ({ db }, args) => {
     const task = await db.get(args.id);
     if (!task) {
@@ -40,10 +40,10 @@ export const get = zQuery({
 
 export const update = zMutation({
   args: {
-    id: zid("tasks"),
-    status: z.optional(TaskStatus),
+    id: zid("analyses"),
+    status: z.optional(AnalysisStatus),
     log: z.optional(z.string()),
-    result: z.optional(TaskResultSchema),
+    result: z.optional(AnalysisResultSchema),
   },
   handler: async ({ db }, { id, status, log, result }) => {
     db.patch(id, {
@@ -54,10 +54,10 @@ export const update = zMutation({
   },
 });
 
-export const getAllTasks = zQuery({
+export const getAll = zQuery({
   handler: async ({ db, user }) => {
     const tasks = await db
-      .query("tasks")
+      .query("analyses")
       .withIndex("user", (q) => q.eq("user", user))
       .collect();
 

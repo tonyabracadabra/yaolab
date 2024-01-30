@@ -28,9 +28,9 @@ def edge_value_matching(
     matched = edge_metrics.copy()
 
     # Ensure no NaN values
-    metabolic_reaction_df[MASS_DIFF_COL] = metabolic_reaction_df[
-        MASS_DIFF_COL
-    ].fillna(np.inf)
+    metabolic_reaction_df[MASS_DIFF_COL] = metabolic_reaction_df[MASS_DIFF_COL].fillna(
+        np.inf
+    )
     matched[MZ_DIFF_COL] = edge_metrics[MZ_DIFF_COL].fillna(np.inf)
 
     # Calculate the closest match within the threshold

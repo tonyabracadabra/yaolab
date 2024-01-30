@@ -17,9 +17,7 @@ def calculate_edge_metrics(
     targeted_ions_df: pd.DataFrame, edge_data_df: pd.DataFrame
 ) -> pd.DataFrame:
     # Pre-calculate and map ID to mz and rt values for efficient lookup
-    id_to_mz_rt = targeted_ions_df.set_index(ID_COL)[[MZ_COL, RT_COL]].to_dict(
-        "index"
-    )
+    id_to_mz_rt = targeted_ions_df.set_index(ID_COL)[[MZ_COL, RT_COL]].to_dict("index")
 
     def calculate_metrics(row):
         id1, id2 = row[ID_COL + "1"], row[ID_COL + "2"]
@@ -47,9 +45,9 @@ def calculate_edge_metrics(
 
         return correlation, rt_difference, mz_difference
 
-    edge_data_df[
-        [CORRELATION_COL, RT_DIFF_COL, MZ_DIFF_COL]
-    ] = edge_data_df.apply(calculate_metrics, axis=1, result_type="expand")
+    edge_data_df[[CORRELATION_COL, RT_DIFF_COL, MZ_DIFF_COL]] = edge_data_df.apply(
+        calculate_metrics, axis=1, result_type="expand"
+    )
 
     return edge_data_df
 

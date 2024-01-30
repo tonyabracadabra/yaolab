@@ -1,20 +1,22 @@
-from dagster import job
-from scipy.sparse import coo_matrix
-from matchms.Spectrum import Spectrum
 import pandas as pd
+from dagster import job
+from matchms.Spectrum import Spectrum
+from scipy.sparse import coo_matrix
+
 from convex import ConvexClient
 
 from .steps import (
     calculate_edge_metrics,
-    create_similarity_matrix,
     combine_matrices_and_extract_edges,
-    edge_value_matching,
     create_ion_interaction_matrix,
+    create_similarity_matrix,
+    edge_value_matching,
     load_data,
     update_metabolic_reaction_database,
 )
 
-client = ConvexClient('https://example-lion-123.convex.cloud')
+client = ConvexClient("https://example-lion-123.convex.cloud")
+
 
 @job
 def full_workflow():

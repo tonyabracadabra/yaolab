@@ -351,7 +351,6 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
                                 );
                                 form.setValue("name", selectedFile.name);
                               } else {
-                                console.log(columns);
                                 toast.error(
                                   "Your file is missing the required headers: formula, description and mass, \
                                   make sure you have them in the first row of your csv file"

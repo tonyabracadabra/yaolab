@@ -12,15 +12,11 @@ def update_metabolic_reaction_database(
     metabolic_reaction_df: pd.DataFrame, reaction_input: ReactionInput
 ) -> pd.DataFrame:
     # Calculate mass difference
-    mass_difference = pyteomics.mass.calculate_mass(
-        reaction_input.formula_change
-    )
+    mass_difference = pyteomics.mass.calculate_mass(reaction_input.formula_change)
 
     # Add reaction to database
     next_id = (
-        1
-        if metabolic_reaction_df.empty
-        else metabolic_reaction_df["ID"].max() + 1
+        1 if metabolic_reaction_df.empty else metabolic_reaction_df["ID"].max() + 1
     )
     new_row = {
         "ID": next_id,
