@@ -4,12 +4,11 @@ from scipy.sparse import coo_matrix
 
 from ..utils.contants import MASS_DIFF_COL, MZ_COL
 
-PPM_THRESHOLD = 10
-
 
 def create_ion_interaction_matrix(
     targeted_ions_df: pd.DataFrame,
     metabolic_reactions_df: pd.DataFrame,
+    mzErrorThreshold: float = 10,
 ) -> coo_matrix:
     ion_mass_values = targeted_ions_df[MZ_COL].values
     ion_count = len(ion_mass_values)
@@ -42,6 +41,6 @@ def create_ion_interaction_matrix(
     ppm_diff = np.abs(mz_differences - nearest_diffs) / nearest_diffs * 1e6
 
     # Construct the interaction matrix with the same shape as mz_differences
-    ion_interaction_matrix = coo_matrix((ppm_diff < PPM_THRESHOLD).astype(int))
+    ion_interaction_matrix = coo_matrix((ppm_diff < mzErrorThreshold).astype(int))
 
     return ion_interaction_matrix

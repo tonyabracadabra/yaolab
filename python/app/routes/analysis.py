@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 
 async def analysis_workflow(convex: ConvexClient, analysis: Analysis):
+    config = analysis.config
+
     # f1, f2, f3
     (
         spectra,
@@ -31,21 +33,26 @@ async def analysis_workflow(convex: ConvexClient, analysis: Analysis):
     # this is to extract the interaction between ions that has m/z and mass difference within MASS_DIFF_THRESHOLD
     # given the metabolic reaction database (metabolic_reaction_df)
     ion_interaction_matrix = create_ion_interaction_matrix(
-        targeted_ions_df, reaction_df
+        targeted_ions_df, reaction_df, mzErrorThreshold=config.mzErrorThreshold
     )
     # f7
     # this is to calculate the similarity between each pair of spectra
     similarity_matrix: coo_matrix = create_similarity_matrix(spectra, targeted_ions_df)
     # f9
     edge_data_df = combine_matrices_and_extract_edges(
-        ion_interaction_matrix, similarity_matrix
+        ion_interaction_matrix,
+        similarity_matrix,
+        ms2SimilarityThreshold=config.ms2SimilarityThreshold,
     )
     # f10
     edge_metrics = calculate_edge_metrics(targeted_ions_df, edge_data_df)
     # f11, f12
     matched_df, formula_change_counts = edge_value_matching(edge_metrics, reaction_df)
 
-    convex.mutation("analyses:update", {"id": input.id, "result": {"edges": []}})
+    convex.mutation(
+        "analyses:update",
+        {"id": input.id, "result": {"edges": []}, "status": AnalysisStatus.COMPLETED},
+    )
 
 
 @router.post("/start")

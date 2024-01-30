@@ -456,8 +456,9 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                     render={({ field: { onChange, value } }) => (
                       <FormItem>
                         <FormLabelWithTooltip
-                          tooltip="Set the threshold for MS2 similarity filtering. A
-                        default value of 0.7 is recommended."
+                          tooltip="Set the threshold for MS2 similarity filtering. A default value of 0.7 is recommended. 
+                          The range of this value is between 0.5 and 1.
+                        "
                         >
                           MS2 Similarity Filter Threshold
                         </FormLabelWithTooltip>
@@ -465,6 +466,8 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                           <Input
                             type="number"
                             placeholder="0.7"
+                            min={0.5}
+                            max={1}
                             onChange={(event) => onChange(+event.target.value)}
                             value={value}
                           />

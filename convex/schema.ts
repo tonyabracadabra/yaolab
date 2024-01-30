@@ -17,7 +17,7 @@ export const CustomReactionSchema = z.object({
 export const AnalysisConfigSchema = z.object({
   maxResponseThreshold: z.number(),
   minResponseRatio: z.number().default(0.1),
-  ms2SimilarityThreshold: z.number().default(0.7),
+  ms2SimilarityThreshold: z.number().min(0.5).max(1).default(0.7),
   mzErrorThreshold: z.number().default(10),
   rtTimeWindow: z.number().default(0.02),
   experimentGroups: z.array(ExperimentSchema),

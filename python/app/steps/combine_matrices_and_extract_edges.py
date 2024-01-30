@@ -1,12 +1,11 @@
 import pandas as pd
 from scipy.sparse import coo_matrix
 
-FILTERING_THRESHOLD = 1.5
-
 
 def combine_matrices_and_extract_edges(
     ion_interaction_matrix: coo_matrix,
     similarity_matrix: coo_matrix,
+    ms2SimilarityThreshold: float = 0.7,
 ) -> pd.DataFrame:
     # Perform addition operation on sparse matrices
     result_matrix: coo_matrix = (ion_interaction_matrix + similarity_matrix).tocoo()
@@ -15,7 +14,7 @@ def combine_matrices_and_extract_edges(
     row, col, data = result_matrix.row, result_matrix.col, result_matrix.data
 
     # Apply threshold and ensure ID1 - ID2 <= 0 to reduce the amount of data processed
-    valid_indices = (data > FILTERING_THRESHOLD) & (row <= col)
+    valid_indices = (data > 1 + ms2SimilarityThreshold) & (row <= col)
 
     # Create a DataFrame from filtered data
     edge_data = pd.DataFrame(

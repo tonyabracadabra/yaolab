@@ -84,6 +84,7 @@ class Analysis(BaseModel):
     id: str
     reactionDatabase: ReactionDatabase
     rawFile: RawFile
+    config: AnalysisConfig
 
     class Config:
         arbitrary_types_allowed = True
