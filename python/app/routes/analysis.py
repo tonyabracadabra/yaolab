@@ -1,11 +1,12 @@
+import logging
+
 import pandas as pd
 import pyteomics.mass
-from app.models.analysis import Analysis, AnalysisTriggerInput
+from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput
 from app.steps import (calculate_edge_metrics,
                        combine_matrices_and_extract_edges,
                        create_ion_interaction_matrix, create_similarity_matrix,
-                       edge_value_matching, load_data,
-                       )
+                       edge_value_matching, load_data)
 from app.utils.convex import get_convex
 from fastapi import APIRouter, Depends, HTTPException
 from scipy.sparse import coo_matrix
@@ -13,6 +14,9 @@ from scipy.sparse import coo_matrix
 from convex import ConvexClient
 
 router = APIRouter()
+
+# define the log format
+logger = logging.getLogger(__name__)
 
 
 async def analysis_workflow(convex: ConvexClient, analysis: Analysis):
@@ -39,9 +43,7 @@ async def analysis_workflow(convex: ConvexClient, analysis: Analysis):
     # f10
     edge_metrics = calculate_edge_metrics(targeted_ions_df, edge_data_df)
     # f11, f12
-    matched_df, formula_change_counts = edge_value_matching(
-        edge_metrics, reaction_df
-    )
+    matched_df, formula_change_counts = edge_value_matching(edge_metrics, reaction_df)
 
     convex.mutation("analyses:update", {"id": input.id, "result": {"edges": []}})
 
@@ -54,7 +56,10 @@ async def metabolite_analysis(input: AnalysisTriggerInput, convex=Depends(get_co
         analysis_workflow(analysis=analysis)
         return {"status": "success"}
     except Exception as e:
-        convex.mutation("analyses:update", {"id": input.id, "status": "error"})
+        logger.log("error", e)
+        convex.mutation(
+            "analyses:update", {"id": input.id, "status": AnalysisStatus.FAILED}
+        )
         return {"status": "error"}
 
 

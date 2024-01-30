@@ -89,5 +89,12 @@ class Analysis(BaseModel):
         arbitrary_types_allowed = True
 
 
+class AnalysisStatus(str, Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    FAILED = "failed"
+    COMPLETED = "completed"
+
+
 class AnalysisTriggerInput(BaseModel):
     id: str

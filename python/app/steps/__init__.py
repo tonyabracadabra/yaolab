@@ -6,7 +6,6 @@ from .create_similarity_matrix import create_similarity_matrix
 from .edge_value_matching import edge_value_matching
 from .load_data import load_data
 
-
 __all__ = [
     "calculate_edge_metrics",
     "combine_matrices_and_extract_edges",
