@@ -3,17 +3,10 @@ import pandas as pd
 from dagster import Out, op
 from dagster_pandas import DataFrame
 
-from ..utils.contants import (
-    CORRELATION_COL,
-    FORMULA_CHANGE_COL,
-    MASS_DIFF_COL,
-    MODCOS_COL,
-    MZ_DIFF_COL,
-    REACTION_DESCRIPTION_COL,
-    REDUNDANT_DATA_COL,
-    RT_DIFF_COL,
-    VALUE_COL,
-)
+from ..utils.contants import (CORRELATION_COL, FORMULA_CHANGE_COL,
+                              MASS_DIFF_COL, MODCOS_COL, MZ_DIFF_COL,
+                              REACTION_DESCRIPTION_COL, REDUNDANT_DATA_COL,
+                              RT_DIFF_COL, VALUE_COL)
 
 MATCHED_MZ_DIFF_COL = "Matched MZ Difference"
 MATCHED_FORMULA_CHANGE_COL = "Matched FormulaChange"

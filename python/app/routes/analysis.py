@@ -1,20 +1,17 @@
 import pandas as pd
 import pyteomics.mass
-from convex import ConvexClient
 from app.models.analysis import Task
-from app.steps import (
-    calculate_edge_metrics,
-    combine_matrices_and_extract_edges,
-    create_ion_interaction_matrix,
-    create_similarity_matrix,
-    edge_value_matching,
-    load_data,
-    update_metabolic_reaction_database,
-)
+from app.steps import (calculate_edge_metrics,
+                       combine_matrices_and_extract_edges,
+                       create_ion_interaction_matrix, create_similarity_matrix,
+                       edge_value_matching, load_data,
+                       update_metabolic_reaction_database)
 from app.utils.convex import get_convex
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from scipy.sparse import coo_matrix
+
+from convex import ConvexClient
 
 router = APIRouter()
 

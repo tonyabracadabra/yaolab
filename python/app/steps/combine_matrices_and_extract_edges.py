@@ -1,6 +1,4 @@
 import pandas as pd
-from dagster import Out, op
-from dagster_pandas import DataFrame
 from scipy.sparse import coo_matrix
 
 FILTERING_THRESHOLD = 1.5
