@@ -56,7 +56,7 @@ async def metabolite_analysis(input: AnalysisTriggerInput, convex=Depends(get_co
         analysis_workflow(analysis=analysis)
         return {"status": "success"}
     except Exception as e:
-        logger.log("error", e)
+        logger.log(logging.ERROR, e)
         convex.mutation(
             "analyses:update", {"id": input.id, "status": AnalysisStatus.FAILED}
         )
