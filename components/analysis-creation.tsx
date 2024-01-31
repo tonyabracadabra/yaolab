@@ -122,8 +122,9 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
         maxResponseThreshold: 1,
         minResponseRatio: 0.1,
         ms2SimilarityThreshold: 0.7,
-        mzErrorThreshold: 10,
+        mzErrorThreshold: 0.01,
         rtTimeWindow: 0.02,
+        correlationThreshold: 0.95,
       },
     },
   });
@@ -477,15 +478,35 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                   />
                   <FormField
                     control={form.control}
+                    name="config.correlationThreshold"
+                    defaultValue={0.95}
+                    render={({ field: { onChange, value } }) => (
+                      <FormItem>
+                        <FormLabelWithTooltip tooltip="Set the minimum acceptable correlation">
+                          Correlation Threshold
+                        </FormLabelWithTooltip>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="10"
+                            onChange={(event) => onChange(+event.target.value)}
+                            value={value}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
                     name="config.mzErrorThreshold"
                     render={({ field: { onChange, value } }) => (
                       <FormItem>
                         <FormLabelWithTooltip
                           tooltip="Set the maximum allowable ∆m/z error for matching
-                          metabolite responses. A value within 10ppm is
+                          metabolite responses. A value within 0.01 ppm is
                           recommended for accurate matching."
                         >
-                          ∆m/z Error Threshold
+                          ∆m/z Error Threshold (ppm)
                         </FormLabelWithTooltip>
                         <FormControl>
                           <Input

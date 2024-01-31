@@ -29,6 +29,7 @@ class AnalysisConfig(BaseModel):
     mzErrorThreshold: float
     rtTimeWindow: float
     experimentGroups: list[Experiment]
+    correlationThreshold: float
 
     class Config:
         arbitrary_types_allowed = True

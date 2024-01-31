@@ -70,6 +70,7 @@ class AnalysisWorker(BaseModel):
             reaction_df,
             rtTimeWindow=config.rtTimeWindow,
             mzErrorThreshold=self.analysis.config.mzErrorThreshold,
+            correlationThreshold=self.analysis.config.correlationThreshold,
         )
 
         await self._complete(self.id)

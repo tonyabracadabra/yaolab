@@ -18,8 +18,9 @@ export const AnalysisConfigSchema = z.object({
   maxResponseThreshold: z.number(),
   minResponseRatio: z.number().default(0.1),
   ms2SimilarityThreshold: z.number().min(0.5).max(1).default(0.7),
-  mzErrorThreshold: z.number().default(10),
+  mzErrorThreshold: z.number().default(0.01),
   rtTimeWindow: z.number().default(0.02),
+  correlationThreshold: z.number().default(0.95),
   experimentGroups: z.array(ExperimentSchema),
 });
 
