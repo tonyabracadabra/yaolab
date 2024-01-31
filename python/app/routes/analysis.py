@@ -1,6 +1,5 @@
 import logging
 
-import pandas as pd
 import pyteomics.mass
 from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput
 from app.steps import (calculate_edge_metrics,
@@ -9,8 +8,8 @@ from app.steps import (calculate_edge_metrics,
                        edge_value_matching, load_data)
 from app.utils.convex import get_convex
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from scipy.sparse import coo_matrix
 from pydantic import BaseModel
+from scipy.sparse import coo_matrix
 
 from convex import ConvexClient
 
