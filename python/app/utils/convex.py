@@ -1,14 +1,16 @@
+import ast
 import io
 import os
 from functools import lru_cache
-from typing import Generator
+from typing import Generator, TextIO
 
+import numpy as np
 import pandas as pd
 import requests
 from dotenv import load_dotenv
 from fastapi import Request
-from matchms.importing import load_from_mgf
 from matchms.Spectrum import Spectrum
+from pyteomics.mgf import MGF
 
 from convex import ConvexClient
 
@@ -49,13 +51,48 @@ async def load_mgf(
 ) -> Generator[Spectrum, None, None]:
     blob = download_file(storage_id)
 
+    def _load_from_mgf(
+        filename: str | TextIO, metadata_harmonization: bool = True
+    ) -> Generator[Spectrum, None, None]:
+        """Load spectrum(s) from mgf file."""
+
+        def process_file(file):
+            for pyteomics_spectrum in MGF(file, convert_arrays=1):
+                metadata = pyteomics_spectrum.get("params", {})
+                mz = pyteomics_spectrum["m/z array"]
+                intensities = pyteomics_spectrum["intensity array"]
+
+                if "peak_comments" in metadata:
+                    metadata["peak_comments"] = ast.literal_eval(
+                        str(metadata["peak_comments"])
+                    )
+
+                # Sort by mz
+                if not np.all(mz[:-1] <= mz[1:]):
+                    idx_sorted = np.argsort(mz)
+                    mz = mz[idx_sorted]
+                    intensities = intensities[idx_sorted]
+
+                yield Spectrum(
+                    mz=mz,
+                    intensities=intensities,
+                    metadata=metadata,
+                    metadata_harmonization=metadata_harmonization,
+                )
+
+        if isinstance(filename, str):
+            with open(filename, "r", encoding="utf-8") as file:
+                yield from process_file(file)
+        else:
+            yield from process_file(filename)
+
     try:
         decoded_content = blob.decode(ENCODING)
     except UnicodeDecodeError:
         raise Exception("Failed to decode the blob with encoding {}".format(encoding))
 
     with io.StringIO(decoded_content) as string_io:
-        return load_from_mgf(string_io)
+        return _load_from_mgf(string_io)
 
 
 @lru_cache(maxsize=128, typed=False)

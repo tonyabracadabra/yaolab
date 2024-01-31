@@ -160,7 +160,7 @@ const ReactionsFieldsArray = ({
         </Popover>
       </div>
 
-      <div className="flex flex-col overflow-scroll gap-2 h-[200px] w-[450px]">
+      <div className="flex flex-col overflow-scroll gap-2 max-h-[200px] w-[450px]">
         <Table>
           <TableHeader>
             <TableRow>
