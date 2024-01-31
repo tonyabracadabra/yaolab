@@ -56,3 +56,12 @@ export const calculateMass = zAction({
     formula: z.string(),
   }),
 });
+
+export const download = zAction({
+  args: {
+    storageId: zid("_storage"),
+  },
+  handler: async (ctx, { storageId }) => {
+    return await ctx.storage.get(storageId);
+  },
+});

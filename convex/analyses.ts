@@ -1,10 +1,6 @@
 import { zid } from "convex-helpers/server/zod";
 import { z } from "zod";
-import {
-  AnalysisCreationInputSchema,
-  AnalysisResultSchema,
-  AnalysisStatus,
-} from "./schema";
+import { AnalysisCreationInputSchema, AnalysisStatus } from "./schema";
 import { zInternalMutation, zMutation, zQuery } from "./utils";
 
 export const create = zInternalMutation({
@@ -43,13 +39,11 @@ export const update = zMutation({
     id: zid("analyses"),
     status: z.optional(AnalysisStatus),
     log: z.optional(z.string()),
-    result: z.optional(AnalysisResultSchema),
   },
-  handler: async ({ db }, { id, status, log, result }) => {
+  handler: async ({ db }, { id, status, log }) => {
     db.patch(id, {
       ...(status && { status }),
       ...(log && { log }),
-      ...(result && { result }),
     });
   },
 });
