@@ -22,7 +22,7 @@ MATCHED_REACTION_DESCRIPTION_COL = "Matched Reaction Description"
 @log("Edge value matching")
 async def edge_value_matching(
     edge_metrics: pd.DataFrame,
-    metabolic_reaction_df: pd.DataFrame,
+    reaction_df: pd.DataFrame,
     rt_time_window: float = 0.015,
     mz_error_threshold: float = 0.01,
     correlation_threshold: float = 0.95,
@@ -30,16 +30,13 @@ async def edge_value_matching(
     matched = edge_metrics.copy()
 
     # Ensure no NaN values
-    metabolic_reaction_df[MASS_DIFF_COL] = metabolic_reaction_df[MASS_DIFF_COL].fillna(
-        np.inf
-    )
+    reaction_df[MASS_DIFF_COL] = reaction_df[MASS_DIFF_COL].fillna(np.inf)
     matched[MZ_DIFF_COL] = edge_metrics[MZ_DIFF_COL].fillna(np.inf)
 
     # Calculate the closest match within the threshold
-    closest_matches = metabolic_reaction_df.iloc[
+    closest_matches = reaction_df.iloc[
         np.abs(
-            metabolic_reaction_df[MASS_DIFF_COL].values[:, None]
-            - matched[MZ_DIFF_COL].values
+            reaction_df[MASS_DIFF_COL].values[:, None] - matched[MZ_DIFF_COL].values
         ).argmin(axis=0)
     ]
     matched[

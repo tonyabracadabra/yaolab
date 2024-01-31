@@ -5,7 +5,7 @@ import pandas as pd
 import pyteomics.mass
 from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput
 from app.utils.convex import get_convex, upload_file
-from app.utils.logger import with_logging_and_context
+from app.utils.logger import logger, with_logging_and_context
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 from scipy.sparse import coo_matrix
@@ -13,9 +13,6 @@ from scipy.sparse import coo_matrix
 from convex import ConvexClient
 
 router = APIRouter()
-
-# define the log format
-logger = logging.getLogger(__name__)
 
 
 class AnalysisWorker(BaseModel):
@@ -127,21 +124,28 @@ class MassInput(BaseModel):
 
 
 @router.post("/mass")
-async def mass(input: MassInput) -> list[float]:
+async def mass(input: MassInput) -> dict[str, list[float]]:
     """
     Calculate the mass of a given chemical formula.
     """
     try:
-        return {
-            "masses": [
-                pyteomics.mass.calculate_mass(
-                    formula=formulaChange
-                    if formulaChange[0] != "(" and formulaChange[-1] != ")"
-                    else formulaChange[1:-1]
+        masses = []
+        for formula_change in input.formulaChanges:
+            if formula_change[0] == "(" and formula_change[-1] == ")":
+                formula_change = formula_change[1:-1]
+            try:
+                mass = sum(
+                    [
+                        -pyteomics.mass.calculate_mass(formula=formula[1:])
+                        if formula[0] == "-"
+                        else pyteomics.mass.calculate_mass(formula=formula)
+                        for formula in formula_change.split("+")
+                    ]
                 )
-                for formulaChange in input.formulaChanges
-            ]
-        }
+            except Exception:
+                mass = 0
+            masses.append(mass)
+        return {"masses": masses}
     except Exception as e:
         logger.log(logging.ERROR, e)
         raise HTTPException(status_code=400, detail=str(e))

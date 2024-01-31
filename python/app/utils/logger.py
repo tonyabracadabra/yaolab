@@ -1,6 +1,8 @@
 import functools
 import logging
 
+from app.models.analysis import AnalysisStatus
+
 from convex import ConvexClient
 
 # Configure your logger
@@ -38,6 +40,10 @@ def with_logging_and_context(convex: ConvexClient, analysis_id: str):
             except Exception as e:
                 logger.error(
                     f"Error occurred while executing '{func.__name__}' for analysis {analysis_id}"
+                )
+                convex.mutation(
+                    "analyses:update",
+                    {"id": analysis_id, "status": AnalysisStatus.FAILED, "log": str(e)},
                 )
                 # Handle exception logging
                 raise e

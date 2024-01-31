@@ -6,30 +6,9 @@ from app.utils.convex import load_csv, load_mgf
 from app.utils.logger import log
 from matchms.Spectrum import Spectrum
 
-REACTION_COLUMNS = ["Reaction Description", "Mass Difference(Da)", "Formula Change"]
-
 
 async def _load_reaction_db(reaction_db: ReactionDatabase) -> pd.DataFrame:
-    reaction_df: pd.DataFrame = await load_csv(reaction_db.file)
-
-    # Check if customReactions is empty
-    if not reaction_db.customReactions:
-        return reaction_df
-
-    # Convert customReactions to DataFrame
-    custom_reactions_df = pd.DataFrame(
-        [reaction.dict() for reaction in reaction_db.customReactions]
-    )
-    custom_reactions_df.columns = REACTION_COLUMNS
-
-    # Merge DataFrames
-    merged_df = reaction_df.merge(
-        custom_reactions_df,
-        how="outer",
-        on=REACTION_COLUMNS,
-    )
-
-    return merged_df
+    return pd.DataFrame([reaction.dict() for reaction in reaction_db.reactions])
 
 
 def _filter_metabolites(

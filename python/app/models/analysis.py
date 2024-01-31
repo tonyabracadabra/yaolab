@@ -49,16 +49,15 @@ class MSTool(str, Enum):
     MDial = "MDial"
 
 
-class CustomReaction(BaseModel):
-    formula: str
+class Reaction(BaseModel):
+    formulaChange: str
     description: str
     mass: float
 
 
 class ReactionDatabase(BaseModel):
     name: str
-    file: str
-    customReactions: list[CustomReaction]
+    reactions: list[Reaction]
 
     class Config:
         arbitrary_types_allowed = True

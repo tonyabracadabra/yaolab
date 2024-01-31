@@ -160,7 +160,7 @@ const ReactionsFieldsArray = ({
         </Popover>
       </div>
 
-      <div className="flex flex-col overflow-scroll gap-2">
+      <div className="flex flex-col overflow-scroll gap-2 h-[200px] w-[450px]">
         <Table>
           <TableHeader>
             <TableRow>
@@ -323,11 +323,9 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
                       const lowerCased = columns.map((column) =>
                         column.toLowerCase()
                       );
-
                       const columnFormulaIndex = lowerCased.findIndex(
                         (column) => column.includes("formula")
                       );
-                      console.log("lowerCased", lowerCased, columnFormulaIndex);
                       const columnDescriptionIndex = lowerCased.findIndex(
                         (column) => column.includes("description")
                       );
@@ -364,17 +362,15 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
                             });
 
                             // append to the form reactions field array
-                            form.setValue(
-                              "reactions",
-                              form.getValues().reactions.concat(
-                                partialReactions.map((reaction, index) => {
-                                  return {
-                                    ...reaction,
-                                    mass: masses[index],
-                                  };
-                                })
-                              )
-                            );
+                            form.setValue("reactions", [
+                              ...form.getValues().reactions,
+                              ...partialReactions.map((reaction, index) => {
+                                return {
+                                  ...reaction,
+                                  mass: masses[index],
+                                };
+                              }),
+                            ]);
                           },
                         });
                       } else {
