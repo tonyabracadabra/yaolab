@@ -3,10 +3,6 @@ import logging
 import app.steps as steps
 import pyteomics.mass
 from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput
-from app.steps import (calculate_edge_metrics,
-                       combine_matrices_and_extract_edges,
-                       create_ion_interaction_matrix, create_similarity_matrix,
-                       edge_value_matching, load_data)
 from app.utils.convex import get_convex
 from app.utils.logger import with_logging_and_context
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
@@ -40,8 +36,13 @@ class AnalysisWorker(BaseModel):
         arbitrary_types_allowed = True
 
     async def run(self) -> None:
-        config = self.analysis.config
+        from app.steps import (calculate_edge_metrics,
+                               combine_matrices_and_extract_edges,
+                               create_ion_interaction_matrix,
+                               create_similarity_matrix, edge_value_matching,
+                               load_data)
 
+        config = self.analysis.config
         spectra, targeted_ions_df, reaction_df = load_data(self.analysis)
 
         ion_interaction_matrix = create_ion_interaction_matrix(
