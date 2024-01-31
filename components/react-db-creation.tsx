@@ -1,15 +1,17 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { CustomReactionSchema, ReactionDatabaseSchema } from "@/convex/schema";
+import { ReactionDatabaseSchema, ReactionSchema } from "@/convex/schema";
 import { readFirstLine, useFileUpload } from "@/lib/utils";
 import { useAction, useMutation } from "convex/react";
 import { Loader2, Plus, Trash } from "lucide-react";
+import Papa from "papaparse";
 import { useState } from "react";
 import { Control, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { FormLabelWithTooltip } from "./form-label-tooltip";
 import { Button } from "./ui/button";
+
 import {
   Dialog,
   DialogContent,
@@ -31,30 +33,31 @@ import {
   TableRow,
 } from "./ui/table";
 
-const LocalReactionDbInputSchema = ReactionDatabaseSchema.extend({
-  file: z.instanceof(File),
-});
-type LocalReactionDbInput = z.infer<typeof LocalReactionDbInputSchema>;
-type CustomReaction = z.infer<typeof CustomReactionSchema>;
+type ReactionDatabaseInput = z.infer<typeof ReactionDatabaseSchema>;
+type Reaction = z.infer<typeof ReactionSchema>;
 
-const CustomReactionFieldArray = ({
+const ReactionsFieldsArray = ({
   control,
 }: {
-  control: Control<LocalReactionDbInput>;
+  control: Control<ReactionDatabaseInput>;
 }) => {
-  const { fields, append, remove } = useFieldArray<LocalReactionDbInput>({
+  const { fields, append, remove } = useFieldArray<ReactionDatabaseInput>({
     control,
-    name: "customReactions",
+    name: "reactions",
   });
   const [popoverOpen, setPopoverOpen] = useState(false);
 
   interface ReactionFormInterface {
-    onReactionAdd: (reaction: CustomReaction) => void;
+    onReactionAdd: (reaction: Reaction) => void;
+    onReactionsAdd?: (reactions: Reaction[]) => void;
   }
 
-  const ReactionForm = ({ onReactionAdd }: ReactionFormInterface) => {
+  const ReactionForm = ({
+    onReactionAdd,
+    onReactionsAdd,
+  }: ReactionFormInterface) => {
     const calculateMass = useAction(api.actions.calculateMass);
-    const [formula, setFormula] = useState("");
+    const [formulaChange, setFormulaChange] = useState("");
     const [description, setDescription] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
@@ -67,8 +70,8 @@ const CustomReactionFieldArray = ({
           </FormLabel>
           <Input
             defaultValue=""
-            value={formula}
-            onChange={(e) => setFormula(e.target.value)}
+            value={formulaChange}
+            onChange={(e) => setFormulaChange(e.target.value)}
           />
         </FormItem>
         <FormItem>
@@ -88,7 +91,7 @@ const CustomReactionFieldArray = ({
           <Button
             type="button"
             onClick={async () => {
-              if (!formula) {
+              if (!formulaChange) {
                 toast.error("You need to provide a valid formula");
                 return;
               }
@@ -96,13 +99,18 @@ const CustomReactionFieldArray = ({
               setIsLoading(true);
 
               try {
-                const { mass } = await calculateMass({
-                  formula,
+                const result = await calculateMass({
+                  formulaChanges: [formulaChange],
                 });
+                if (!result || !result.length || !result[0].mass) {
+                  toast.error("Error calculating mass, please try again later");
+                  return;
+                }
+
                 onReactionAdd({
-                  formula,
+                  formulaChange,
                   description,
-                  mass,
+                  mass: result[0].mass,
                 });
               } catch {
                 toast.error("Error calculating mass, please try again later");
@@ -129,7 +137,7 @@ const CustomReactionFieldArray = ({
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-4">
         <FormLabelWithTooltip tooltip="You can additional define custom reactions here">
-          Custom Reactions
+          Reactions
         </FormLabelWithTooltip>
 
         <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
@@ -205,7 +213,7 @@ const CustomReactionFieldArray = ({
                     />
                   </Button>
                 </TableCell>
-                <TableCell>{field.formula}</TableCell>
+                <TableCell>{field.formulaChange}</TableCell>
                 <TableCell>{field.description}</TableCell>
                 <TableCell>{field.mass}</TableCell>
               </TableRow>
@@ -222,14 +230,13 @@ interface ReactionDbCreationInterface {
 }
 
 export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
-  const form = useForm<LocalReactionDbInput>();
+  const form = useForm<ReactionDatabaseInput>();
   const [open, setOpen] = useState(false);
   const { handleUpload } = useFileUpload();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const calculateMass = useAction(api.actions.calculateMass);
 
-  const createReactionDatabase = useMutation(
-    api.reactions.createReactionDatabase
-  );
+  const createReactionDatabase = useMutation(api.reactions.create);
 
   const onClose = () => {
     form.reset();
@@ -237,25 +244,11 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
     setIsSubmitting(false);
   };
 
-  const onSubmit = async (values: LocalReactionDbInput) => {
+  const onSubmit = async (values: ReactionDatabaseInput) => {
     setIsSubmitting(true);
-    if (!values.file) {
-      toast.error("You need to upload a file");
-      setIsSubmitting(false);
-      return;
-    }
-
-    const { storageId } = await handleUpload(values.file);
-    if (!storageId) {
-      toast.error("Something went wrong while uploading your file, try again");
-      setIsSubmitting(false);
-      return;
-    }
-
     const { id } = await createReactionDatabase({
       name: values.name,
-      file: storageId,
-      customReactions: values.customReactions,
+      reactions: values.reactions,
     });
 
     onCreate(id);
@@ -314,60 +307,90 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="file"
-              render={({ field: { onChange } }) => {
-                return (
-                  <FormItem>
-                    <FormLabelWithTooltip tooltip="Preparing a csv file with three columns: formula, description and mass">
-                      File
-                    </FormLabelWithTooltip>
-                    <Input
-                      accept=".csv"
-                      onChange={(event) => {
-                        const selectedFile =
-                          event.target.files && event.target.files[0];
-                        if (selectedFile) {
-                          readFirstLine(selectedFile).then(
-                            (columns: string[]) => {
-                              // TODO: use gpt for fuzzy matching later
-                              const lowerCased = columns.map((column) =>
-                                column.toLowerCase()
-                              );
-                              if (
-                                !lowerCased.every(
-                                  (column) => !column.includes("formula")
-                                ) &&
-                                !lowerCased.every(
-                                  (column) => !column.includes("description")
-                                ) &&
-                                !lowerCased.every(
-                                  (column) => !column.includes("mass")
-                                )
-                              ) {
-                                onChange(
-                                  event.target.files && event.target.files[0]
-                                );
-                                form.setValue("name", selectedFile.name);
-                              } else {
-                                toast.error(
-                                  "Your file is missing the required headers: formula, description and mass, \
+
+            <FormItem>
+              <FormLabelWithTooltip tooltip="Preparing a csv file with two columns: formula, description">
+                Batch Upload Reactions
+              </FormLabelWithTooltip>
+              <Input
+                accept=".csv"
+                onChange={(event) => {
+                  const selectedFile =
+                    event.target.files && event.target.files[0];
+                  if (selectedFile) {
+                    readFirstLine(selectedFile).then((columns: string[]) => {
+                      // TODO: use gpt for fuzzy matching later
+                      const lowerCased = columns.map((column) =>
+                        column.toLowerCase()
+                      );
+
+                      const columnFormulaIndex = lowerCased.findIndex(
+                        (column) => column.includes("formula")
+                      );
+                      console.log("lowerCased", lowerCased, columnFormulaIndex);
+                      const columnDescriptionIndex = lowerCased.findIndex(
+                        (column) => column.includes("description")
+                      );
+
+                      if (
+                        columnFormulaIndex !== -1 &&
+                        columnDescriptionIndex !== -1
+                      ) {
+                        form.setValue("name", selectedFile.name);
+
+                        // parse the csv file with papa parse, then convert all data to reaction objects and call
+                        // append for each reaction
+
+                        type CsvRowType = { [key: string]: string };
+                        Papa.parse<CsvRowType>(selectedFile, {
+                          header: true,
+                          skipEmptyLines: true,
+                          complete: async function (results) {
+                            const partialReactions = results.data.map((row) => {
+                              // Cast the row to the specific structure
+                              const formula = row[columns[columnFormulaIndex]];
+                              const description =
+                                row[columns[columnDescriptionIndex]];
+
+                              return {
+                                formulaChange: formula,
+                                description,
+                              };
+                            });
+                            const masses = await calculateMass({
+                              formulaChanges: partialReactions.map(
+                                (reaction) => reaction.formulaChange
+                              ),
+                            });
+
+                            // append to the form reactions field array
+                            form.setValue(
+                              "reactions",
+                              form.getValues().reactions.concat(
+                                partialReactions.map((reaction, index) => {
+                                  return {
+                                    ...reaction,
+                                    mass: masses[index].mass,
+                                  };
+                                })
+                              )
+                            );
+                          },
+                        });
+                      } else {
+                        toast.error(
+                          "Your file is missing the required headers: formula, description, \
                                   make sure you have them in the first row of your csv file"
-                                );
-                                form.reset();
-                              }
-                            }
-                          );
-                        }
-                      }}
-                      type="file"
-                    />
-                  </FormItem>
-                );
-              }}
-            />
-            <CustomReactionFieldArray control={form.control} />
+                        );
+                        form.reset();
+                      }
+                    });
+                  }
+                }}
+                type="file"
+              />
+            </FormItem>
+            <ReactionsFieldsArray control={form.control} />
             <DialogFooter>
               <Button type="submit">
                 {isSubmitting ? (

@@ -64,7 +64,7 @@ export const readFirstLine = (file: File): Promise<string[]> => {
 
       if (newlineIndex !== -1) {
         firstLine += chunk.substring(0, newlineIndex);
-        resolve(firstLine.split(","));
+        resolve(firstLine.split(",").map((s) => s.trim()));
         reader.cancel();
       } else {
         firstLine += chunk;

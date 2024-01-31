@@ -32,11 +32,11 @@ export const triggerAnalysis = zAction({
 
 export const calculateMass = zAction({
   args: {
-    formula: z.string(),
+    formulaChanges: z.array(z.string()),
   },
-  handler: async (_, { formula }) => {
+  handler: async (_, { formulaChanges }) => {
     const response = await fetch(
-      `${process.env.FASTAPI_URL}/analysis/mass?formula=${formula}`,
+      `${process.env.FASTAPI_URL}/analysis/mass?formulaChanges=${formulaChanges}`,
       {
         method: "GET",
         headers: {
@@ -51,10 +51,12 @@ export const calculateMass = zAction({
 
     return data;
   },
-  output: z.object({
-    mass: z.number(),
-    formula: z.string(),
-  }),
+  output: z.array(
+    z.object({
+      mass: z.number(),
+      formulaChange: z.string(),
+    })
+  ),
 });
 
 export const download = zAction({

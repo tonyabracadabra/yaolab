@@ -123,12 +123,14 @@ async def metabolite_analysis(
 
 
 @router.get("/mass")
-async def mass(formula: str) -> dict[str, float]:
+async def mass(formulaChanges: list[str]) -> list[dict[str, float]]:
     """
     Calculate the mass of a given chemical formula.
     """
     try:
-        mass = pyteomics.mass.calculate_mass(formula=formula)
-        return {"formula": formula, "mass": mass}
+        return [
+            {"formulaChange": formulaChange, "mass": pyteomics.mass.calculate_mass(formula=formulaChange)}
+            for formulaChange in formulaChanges
+        ]
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

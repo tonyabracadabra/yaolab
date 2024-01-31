@@ -8,8 +8,8 @@ export const ExperimentSchema = z.object({
   blankGroups: z.array(z.string()),
 });
 
-export const CustomReactionSchema = z.object({
-  formula: z.string(),
+export const ReactionSchema = z.object({
+  formulaChange: z.string(),
   description: z.string(),
   mass: z.number(),
 });
@@ -72,8 +72,7 @@ export const MSTool = z.enum(["MZine", "MDial"]);
 export const ReactionDatabaseSchema = z.object({
   user: z.string(),
   name: z.string(),
-  file: zid("_storage"),
-  customReactions: z.array(CustomReactionSchema),
+  reactions: z.array(ReactionSchema),
 });
 
 export const RawFileCreationInputSchema = z.object({

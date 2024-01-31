@@ -1,20 +1,17 @@
-import { zid } from "convex-helpers/server/zod";
 import { z } from "zod";
-import { CustomReactionSchema } from "./schema";
+import { ReactionSchema } from "./schema";
 import { zMutation, zQuery } from "./utils";
 
-export const createReactionDatabase = zMutation({
+export const create = zMutation({
   args: {
-    file: zid("_storage"),
     name: z.string(),
-    customReactions: z.array(CustomReactionSchema),
+    reactions: z.array(ReactionSchema),
   },
-  handler: async ({ db, user }, { customReactions, file, name }) => {
+  handler: async ({ db, user }, { reactions, name }) => {
     const id = await db.insert("reactionDatabases", {
       user,
       name,
-      file,
-      customReactions,
+      reactions,
     });
 
     return { id };
