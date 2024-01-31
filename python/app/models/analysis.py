@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Extra
 
 
 class AnalysisCreationInput(BaseModel):
@@ -87,6 +87,7 @@ class Analysis(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+        extra = Extra.ignore
 
 
 class AnalysisStatus(str, Enum):

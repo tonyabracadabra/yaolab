@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
@@ -15,17 +14,14 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
 
   return (
     <div>
-      {analysis.status === "failed" && <Button>Retry</Button>}
       <div>
         Log:
         {analysis.log}
       </div>
-      {/* {analysis.status === "complete" && <div>{
-      
-      analysis.result?.edges
-      
-      
-      }</div>} */}
+      <div>
+        Status:
+        {analysis.status}
+      </div>
     </div>
   );
 }
