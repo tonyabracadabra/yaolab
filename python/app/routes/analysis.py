@@ -140,4 +140,5 @@ async def mass(input: MassInput) -> list[dict[str, float]]:
             for formulaChange in input.formulaChanges
         ]
     except Exception as e:
+        logger.log(logging.ERROR, e)
         raise HTTPException(status_code=400, detail=str(e))
