@@ -217,28 +217,12 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
                         const selectedFile =
                           event.target.files && event.target.files[0];
                         if (selectedFile) {
+                          onChange(selectedFile);
                           form.setValue("name", selectedFile.name);
                           try {
                             const cols =
                               (await getSampleColumns(selectedFile)) || [];
                             setSampleColumns(cols);
-                            // if mzine, then replace its first line with the new columns
-                            if (form.watch("tool") === "MZine") {
-                              const file = await selectedFile.text();
-                              const lines = file.split("\n");
-                              lines[0] = cols.join(",");
-                              const newFile = new File(
-                                [lines.join("\n")],
-                                selectedFile.name,
-                                {
-                                  type: selectedFile.type,
-                                  lastModified: selectedFile.lastModified,
-                                }
-                              );
-                              onChange(newFile);
-                            } else {
-                              onChange(selectedFile);
-                            }
                           } catch (error) {
                             toast.error("Error processing the file");
                           }
