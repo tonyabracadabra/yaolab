@@ -65,7 +65,7 @@ class AnalysisWorker(BaseModel):
 
         edge_metrics = calculate_edge_metrics(targeted_ions_df, edge_data_df)
 
-        matched_df, formula_change_counts = edge_value_matching(
+        matched_df, formula_change_counts = await edge_value_matching(
             edge_metrics,
             reaction_df,
             rtTimeWindow=config.rtTimeWindow,

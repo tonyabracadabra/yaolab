@@ -13,12 +13,12 @@ MATCHED_REACTION_DESCRIPTION_COL = "Matched Reaction Description"
 
 
 @log("Edge value matching")
-def edge_value_matching(
+async def edge_value_matching(
     edge_metrics: pd.DataFrame,
     metabolic_reaction_df: pd.DataFrame,
     rtTimeWindow: float = 0.015,
     mzErrorThreshold: float = 0.01,
-    correlationThreshold: float = 0.9,
+    correlationThreshold: float = 0.95,
 ) -> tuple[pd.DataFrame, pd.Series]:
     matched = edge_metrics.copy()
 
