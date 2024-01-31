@@ -53,7 +53,7 @@ class AnalysisWorker(BaseModel):
         ion_interaction_matrix: coo_matrix = await create_ion_interaction_matrix(
             targeted_ions_df,
             reaction_df,
-            mzErrorThreshold=self.analysis.config.mzErrorThreshold,
+            mz_error_threshold=self.analysis.config.mzErrorThreshold,
         )
 
         similarity_matrix: coo_matrix = await create_similarity_matrix(
@@ -63,7 +63,7 @@ class AnalysisWorker(BaseModel):
         edge_data_df: pd.DataFrame = await combine_matrices_and_extract_edges(
             ion_interaction_matrix,
             similarity_matrix,
-            ms2SimilarityThreshold=self.analysis.config.ms2SimilarityThreshold,
+            ms2_similarity_threshold=config.ms2SimilarityThreshold,
         )
 
         edge_metrics = await calculate_edge_metrics(targeted_ions_df, edge_data_df)
@@ -71,9 +71,9 @@ class AnalysisWorker(BaseModel):
         matched_df = await edge_value_matching(
             edge_metrics,
             reaction_df,
-            rtTimeWindow=config.rtTimeWindow,
-            mzErrorThreshold=self.analysis.config.mzErrorThreshold,
-            correlationThreshold=self.analysis.config.correlationThreshold,
+            rt_time_window=config.rtTimeWindow,
+            mz_error_threshold=config.mzErrorThreshold,
+            correlation_threshold=config.correlationThreshold,
         )
 
         # Upload matched_df to convex as a file, and update analysis result
