@@ -19,62 +19,41 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-async def analysis_workflow(convex: ConvexClient, analysis: Analysis):
+async def perform_analysis(convex: ConvexClient, analysis: Analysis) -> None:
     config = analysis.config
 
-    # f1, f2, f3
-    (
-        spectra,
-        targeted_ions_df,
-        reaction_df,
-    ) = load_data(analysis=analysis)
+    spectra, targeted_ions_df, reaction_df = load_data(analysis)
 
-    # f6
-    # this is to extract the interaction between ions that has m/z and mass difference within MASS_DIFF_THRESHOLD
-    # given the metabolic reaction database (metabolic_reaction_df)
-    convex.mutation(
-        "analyses:update",
-        {"id": input.id, "log": "Calculating ion interaction matrix"},
-    )
+    _update_analysis_status(convex, analysis.id, "Calculating ion interaction matrix")
     ion_interaction_matrix = create_ion_interaction_matrix(
         targeted_ions_df, reaction_df, mzErrorThreshold=config.mzErrorThreshold
     )
-    # f7
-    # this is to calculate the similarity between each pair of spectra
-    convex.mutation(
-        "analyses:update",
-        {"id": input.id, "log": "Calculating similarity matrix"},
-    )
+
+    _update_analysis_status(convex, analysis.id, "Calculating similarity matrix")
     similarity_matrix: coo_matrix = create_similarity_matrix(spectra, targeted_ions_df)
-    # f9
 
-    convex.update(
-        "analyses",
-        {"id": input.id, "log": "Combining matrices and extracting edges"},
-    )
+    _update_analysis_status(convex, analysis.id, "Combining matrices and extracting edges")
     edge_data_df = combine_matrices_and_extract_edges(
-        ion_interaction_matrix,
-        similarity_matrix,
-        ms2SimilarityThreshold=config.ms2SimilarityThreshold,
-    )
-    # f10
-    convex.mutation(
-        "analyses:update",
-        {"id": input.id, "log": "Calculating edge metrics"},
-    )
-    edge_metrics = calculate_edge_metrics(targeted_ions_df, edge_data_df)
-    # f11, f12
-    matched_df, formula_change_counts = edge_value_matching(
-        edge_metrics,
-        reaction_df,
-        rtTimeWindow=config.rtTimeWindow,
-        mzErrorThreshold=config.mzErrorThreshold,
+        ion_interaction_matrix, similarity_matrix, ms2SimilarityThreshold=config.ms2SimilarityThreshold
     )
 
-    convex.mutation(
-        "analyses:update",
-        {"id": input.id, "result": {"edges": []}, "status": AnalysisStatus.COMPLETED},
+    _update_analysis_status(convex, analysis.id, "Calculating edge metrics")
+    edge_metrics = calculate_edge_metrics(targeted_ions_df, edge_data_df)
+
+    _update_analysis_status(convex, analysis.id, "Matching edges")
+    matched_df, formula_change_counts = edge_value_matching(
+        edge_metrics, reaction_df, rtTimeWindow=config.rtTimeWindow, mzErrorThreshold=config.mzErrorThreshold
     )
+
+    _complete_analysis(convex, analysis.id)
+
+
+async def _update_analysis_status(convex: ConvexClient, analysis_id: str, log_message: str) -> None:
+    convex.mutation("analyses:update", {"id": analysis_id, "log": log_message})
+
+
+async def _complete_analysis(convex: ConvexClient, analysis_id: str) -> None:
+    convex.mutation("analyses:update", {"id": analysis_id, "result": {"edges": []}, "status": AnalysisStatus.COMPLETED})
 
 
 @router.post("/start")
@@ -82,7 +61,7 @@ async def metabolite_analysis(input: AnalysisTriggerInput, convex=Depends(get_co
     analysis: Analysis = convex.query("analyses:get", {"id": input.id})
 
     try:
-        analysis_workflow(analysis=analysis)
+        perform_analysis(analysis=analysis)
         return {"status": "success"}
     except Exception as e:
         logger.log(logging.ERROR, e)
@@ -93,7 +72,7 @@ async def metabolite_analysis(input: AnalysisTriggerInput, convex=Depends(get_co
 
 
 @router.get("/mass")
-async def mass(formula: str):
+async def mass(formula: str) -> dict[str, float]:
     """
     Calculate the mass of a given chemical formula.
     """
