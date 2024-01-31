@@ -35,15 +35,13 @@ export const calculateMass = zAction({
     formulaChanges: z.array(z.string()),
   },
   handler: async (_, { formulaChanges }) => {
-    const response = await fetch(
-      `${process.env.FASTAPI_URL}/analysis/mass?formulaChanges=${formulaChanges}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`${process.env.FASTAPI_URL}/analysis/mass`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ formulaChanges }),
+    });
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
