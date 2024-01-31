@@ -36,6 +36,15 @@ def download_file(storageId: str):
     return response.content
 
 
+def upload_file(df: pd.DataFrame, convex: ConvexClient) -> str:
+    postUrl = convex.mutation("utils:generateUploadUrl")
+    result = requests.post(postUrl, data=df.to_csv(index=False))
+
+    if result.status_code != 200:
+        raise Exception(f"Failed to upload file: {result.text}")
+    return result.json()["storageId"]
+
+
 @lru_cache(maxsize=128, typed=False)
 async def load_mgf(
     storage_id: str, encoding: str = ENCODING

@@ -2,10 +2,17 @@ import numpy as np
 import pandas as pd
 from app.utils.logger import log
 
-from ..utils.contants import (CORRELATION_COL, FORMULA_CHANGE_COL,
-                              MASS_DIFF_COL, MODCOS_COL, MZ_DIFF_COL,
-                              REACTION_DESCRIPTION_COL, REDUNDANT_DATA_COL,
-                              RT_DIFF_COL, VALUE_COL)
+from ..utils.contants import (
+    CORRELATION_COL,
+    FORMULA_CHANGE_COL,
+    MASS_DIFF_COL,
+    MODCOS_COL,
+    MZ_DIFF_COL,
+    REACTION_DESCRIPTION_COL,
+    REDUNDANT_DATA_COL,
+    RT_DIFF_COL,
+    VALUE_COL,
+)
 
 MATCHED_MZ_DIFF_COL = "Matched MZ Difference"
 MATCHED_FORMULA_CHANGE_COL = "Matched FormulaChange"

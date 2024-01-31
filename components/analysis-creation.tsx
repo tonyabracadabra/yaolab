@@ -463,10 +463,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                         <FormControl>
                           <Input
                             type="number"
-                            placeholder="0.7"
                             defaultValue={0.7}
-                            min={0.5}
-                            max={1}
                             onChange={(event) => onChange(+event.target.value)}
                             value={value}
                           />

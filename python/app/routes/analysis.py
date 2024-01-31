@@ -4,7 +4,7 @@ import app.steps as steps
 import pandas as pd
 import pyteomics.mass
 from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput
-from app.utils.convex import get_convex
+from app.utils.convex import get_convex, upload_file
 from app.utils.logger import with_logging_and_context
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
@@ -38,11 +38,14 @@ class AnalysisWorker(BaseModel):
         arbitrary_types_allowed = True
 
     async def run(self) -> None:
-        from app.steps import (calculate_edge_metrics,
-                               combine_matrices_and_extract_edges,
-                               create_ion_interaction_matrix,
-                               create_similarity_matrix, edge_value_matching,
-                               load_data)
+        from app.steps import (
+            calculate_edge_metrics,
+            combine_matrices_and_extract_edges,
+            create_ion_interaction_matrix,
+            create_similarity_matrix,
+            edge_value_matching,
+            load_data,
+        )
 
         config = self.analysis.config
         spectra, targeted_ions_df, reaction_df = await load_data(self.analysis)
@@ -65,12 +68,22 @@ class AnalysisWorker(BaseModel):
 
         edge_metrics = await calculate_edge_metrics(targeted_ions_df, edge_data_df)
 
-        matched_df, formula_change_counts = await edge_value_matching(
+        matched_df = await edge_value_matching(
             edge_metrics,
             reaction_df,
             rtTimeWindow=config.rtTimeWindow,
             mzErrorThreshold=self.analysis.config.mzErrorThreshold,
             correlationThreshold=self.analysis.config.correlationThreshold,
+        )
+
+        # Upload matched_df to convex as a file, and update analysis result
+        storageId = upload_file(matched_df, self.convex)
+        self.convex.mutation(
+            "analyses:update",
+            {
+                "id": self.id,
+                "result": storageId,
+            },
         )
 
         await self._complete(self.id)

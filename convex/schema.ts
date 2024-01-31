@@ -64,7 +64,7 @@ export const AnalysisSchema = z.object({
   user: z.string(),
   status: AnalysisStatus,
   log: z.optional(z.string()),
-  result: z.optional(AnalysisResultSchema),
+  result: z.optional(zid("_storage")),
 });
 
 export const MSTool = z.enum(["MZine", "MDial"]);
