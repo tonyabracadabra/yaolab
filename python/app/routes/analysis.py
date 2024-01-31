@@ -10,6 +10,7 @@ from app.steps import (calculate_edge_metrics,
 from app.utils.convex import get_convex
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from scipy.sparse import coo_matrix
+from pydantic import BaseModel
 
 from convex import ConvexClient
 
@@ -19,10 +20,13 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-class AnalysisWorker:
-    def __init__(self, analysis: Analysis, convex: ConvexClient):
-        self.convex = convex
-        self.analysis = analysis
+class AnalysisWorker(BaseModel):
+    id: str
+    analysis: Analysis
+    convex: ConvexClient
+
+    class Config:
+        arbitrary_types_allowed = True
 
     async def run(self) -> None:
         config = self.analysis.config
@@ -58,18 +62,18 @@ class AnalysisWorker:
             mzErrorThreshold=self.analysis.config.mzErrorThreshold,
         )
 
-        await self._complete(self.analysis.id)
+        await self._complete(self.id)
 
     async def _update(self, log_message: str) -> None:
         await self.convex.mutation(
-            "analyses:update", {"id": self.analysis.id, "log": log_message}
+            "analyses:update", {"id": self.id, "log": log_message}
         )
 
     async def _complete(self) -> None:
         await self.convex.mutation(
             "analyses:update",
             {
-                "id": self.analysis.id,
+                "id": self.id,
                 "result": {"edges": []},
                 "status": AnalysisStatus.COMPLETED,
             },
@@ -87,7 +91,7 @@ async def metabolite_analysis(
     analysis: Analysis = Analysis.parse_obj(raw)
     print(f"analysis: {analysis}")
     try:
-        worker = AnalysisWorker(convex=convex, analysis=analysis)
+        worker = AnalysisWorker(id=input.id, convex=convex, analysis=analysis)
         # Add run method to background tasks
         background_tasks.add_task(worker.run)
         return {"status": "processing"}
