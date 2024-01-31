@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 import app.steps as steps
@@ -46,7 +45,7 @@ class AnalysisWorker(BaseModel):
                                load_data)
 
         config = self.analysis.config
-        spectra, targeted_ions_df, reaction_df = asyncio.run(load_data(self.analysis))
+        spectra, targeted_ions_df, reaction_df = await load_data(self.analysis)
 
         ion_interaction_matrix: coo_matrix = create_ion_interaction_matrix(
             targeted_ions_df,
