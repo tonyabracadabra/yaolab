@@ -134,7 +134,11 @@ async def mass(input: MassInput) -> list[float]:
     try:
         return {
             "masses": [
-                pyteomics.mass.calculate_mass(formula=formulaChange)
+                pyteomics.mass.calculate_mass(
+                    formula=formulaChange
+                    if formulaChange[0] != "(" and formulaChange[-1] != ")"
+                    else formulaChange[1:-1]
+                )
                 for formulaChange in input.formulaChanges
             ]
         }
