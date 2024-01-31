@@ -6,7 +6,6 @@ from convex import ConvexClient
 # Configure your logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-import logging
 
 
 def log(message: str):
