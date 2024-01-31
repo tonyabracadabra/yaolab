@@ -22,7 +22,6 @@ class AnalysisWorker(BaseModel):
     id: str
     analysis: Analysis
     convex: ConvexClient
-    _steps: dict[str, callable]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
