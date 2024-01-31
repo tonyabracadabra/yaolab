@@ -132,10 +132,12 @@ async def mass(input: MassInput) -> list[float]:
     Calculate the mass of a given chemical formula.
     """
     try:
-        return [
-            pyteomics.mass.calculate_mass(formula=formulaChange)
-            for formulaChange in input.formulaChanges
-        ]
+        return {
+            "masses": [
+                pyteomics.mass.calculate_mass(formula=formulaChange)
+                for formulaChange in input.formulaChanges
+            ]
+        }
     except Exception as e:
         logger.log(logging.ERROR, e)
         raise HTTPException(status_code=400, detail=str(e))
