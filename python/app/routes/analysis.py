@@ -36,7 +36,7 @@ class AnalysisWorker(BaseModel):
         arbitrary_types_allowed = True
 
     async def run(self) -> None:
-        from app.steps import (calculate_edge_metrics,
+        from steps import (calculate_edge_metrics,
                                combine_matrices_and_extract_edges,
                                create_ion_interaction_matrix,
                                create_similarity_matrix, edge_value_matching,
@@ -72,9 +72,6 @@ class AnalysisWorker(BaseModel):
 
         await self._complete(self.id)
 
-    def _update(self, log_message: str) -> None:
-        self.convex.mutation("analyses:update", {"id": self.id, "log": log_message})
-
     def _complete(self) -> None:
         self.convex.mutation(
             "analyses:update",
@@ -92,10 +89,9 @@ async def metabolite_analysis(
     background_tasks: BackgroundTasks,
     convex: ConvexClient = Depends(get_convex),
 ):
-    raw = convex.query("analyses:get", {"id": input.id})
-    print(f"raw: {raw}")
-    analysis: Analysis = Analysis.parse_obj(raw)
-    print(f"analysis: {analysis}")
+    analysis: Analysis = Analysis.parse_obj(
+        convex.query("analyses:get", {"id": input.id})
+    )
     try:
         worker = AnalysisWorker(id=input.id, convex=convex, analysis=analysis)
         # Add run method to background tasks
