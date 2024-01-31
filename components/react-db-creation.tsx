@@ -99,10 +99,10 @@ const ReactionsFieldsArray = ({
               setIsLoading(true);
 
               try {
-                const result = await calculateMass({
+                const { masses } = await calculateMass({
                   formulaChanges: [formulaChange],
                 });
-                if (!result || !result.length || !result[0].mass) {
+                if (masses.length === 0) {
                   toast.error("Error calculating mass, please try again later");
                   return;
                 }
@@ -110,7 +110,7 @@ const ReactionsFieldsArray = ({
                 onReactionAdd({
                   formulaChange,
                   description,
-                  mass: result[0].mass,
+                  mass: masses[0],
                 });
               } catch {
                 toast.error("Error calculating mass, please try again later");
@@ -357,7 +357,7 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
                                 description,
                               };
                             });
-                            const masses = await calculateMass({
+                            const { masses } = await calculateMass({
                               formulaChanges: partialReactions.map(
                                 (reaction) => reaction.formulaChange
                               ),
@@ -370,7 +370,7 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
                                 partialReactions.map((reaction, index) => {
                                   return {
                                     ...reaction,
-                                    mass: masses[index].mass,
+                                    mass: masses[index],
                                   };
                                 })
                               )
