@@ -25,7 +25,7 @@ def load_data(
 ) -> tuple[list[Spectrum], pd.DataFrame, pd.DataFrame]:
     spectra = load_mgf(analysis.rawFile.mgf)
     targeted_ions_df = load_csv(analysis.rawFile.targetedIons)
-    reaction_df = _load_reaction_db(analysis.reactionDatabase.file)
+    reaction_df = _load_reaction_db(analysis.reactionDb.file)
 
     input_dir = os.path.join(current_dir, "../input")
     spectra: list[Spectrum] = list(

@@ -81,8 +81,7 @@ class Edge(BaseModel):
 
 
 class Analysis(BaseModel):
-    id: str
-    reactionDatabase: ReactionDatabase
+    reactionDb: ReactionDatabase
     rawFile: RawFile
     config: AnalysisConfig
 

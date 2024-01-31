@@ -31,7 +31,7 @@ export const get = zQuery({
     }
 
     return {
-      ...analysis,
+      config: analysis.config,
       rawFile: await db.get(analysis.rawFile),
       reactionDb: await db.get(analysis.reactionDb),
     };
