@@ -8,7 +8,7 @@ from app.steps import (calculate_edge_metrics,
                        create_ion_interaction_matrix, create_similarity_matrix,
                        edge_value_matching, load_data)
 from app.utils.convex import get_convex
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from scipy.sparse import coo_matrix
 
 from convex import ConvexClient
@@ -28,29 +28,29 @@ class AnalysisWorker:
         config = self.analysis.config
         spectra, targeted_ions_df, reaction_df = load_data(self.analysis)
 
-        self._update("Calculating ion interaction matrix")
+        await self._update("Calculating ion interaction matrix")
         ion_interaction_matrix = create_ion_interaction_matrix(
             targeted_ions_df,
             reaction_df,
             mzErrorThreshold=self.analysis.config.mzErrorThreshold,
         )
 
-        self._update("Calculating similarity matrix")
+        await self._update("Calculating similarity matrix")
         similarity_matrix: coo_matrix = create_similarity_matrix(
             spectra, targeted_ions_df
         )
 
-        self._update("Combining matrices and extracting edges")
+        await self._update("Combining matrices and extracting edges")
         edge_data_df = combine_matrices_and_extract_edges(
             ion_interaction_matrix,
             similarity_matrix,
             ms2SimilarityThreshold=self.analysis.config.ms2SimilarityThreshold,
         )
 
-        self._update("Calculating edge metrics")
+        await self._update("Calculating edge metrics")
         edge_metrics = calculate_edge_metrics(targeted_ions_df, edge_data_df)
 
-        self._update("Matching edges")
+        await self._update("Matching edges")
         matched_df, formula_change_counts = edge_value_matching(
             edge_metrics,
             reaction_df,
@@ -58,7 +58,7 @@ class AnalysisWorker:
             mzErrorThreshold=self.analysis.config.mzErrorThreshold,
         )
 
-        self._complete(self.analysis.id)
+        await self._complete(self.analysis.id)
 
     async def _update(self, log_message: str) -> None:
         await self.convex.mutation(
@@ -77,13 +77,18 @@ class AnalysisWorker:
 
 
 @router.post("/start")
-async def metabolite_analysis(input: AnalysisTriggerInput, convex=Depends(get_convex)):
+async def metabolite_analysis(
+    input: AnalysisTriggerInput,
+    background_tasks: BackgroundTasks,
+    convex=Depends(get_convex),
+):
     analysis: Analysis = convex.query("analyses:get", {"id": input.id})
 
     try:
         worker = AnalysisWorker(convex=convex, analysis=analysis)
-        worker.run()
-        return {"status": "success"}
+        # Add run method to background tasks
+        background_tasks.add_task(worker.run)
+        return {"status": "processing"}
     except Exception as e:
         logger.log(logging.ERROR, e)
         convex.mutation(
