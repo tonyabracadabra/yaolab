@@ -1,5 +1,6 @@
 from .calculate_edge_metrics import calculate_edge_metrics
-from .combine_matrices_and_extract_edges import combine_matrices_and_extract_edges
+from .combine_matrices_and_extract_edges import \
+    combine_matrices_and_extract_edges
 from .create_ion_interaction_matrix import create_ion_interaction_matrix
 from .create_similarity_matrix import create_similarity_matrix
 from .edge_value_matching import edge_value_matching

@@ -22,6 +22,10 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         Status:
         {analysis.status}
       </div>
+      <div>
+        Result:
+        {/* {analysis.result} */}
+      </div>
     </div>
   );
 }

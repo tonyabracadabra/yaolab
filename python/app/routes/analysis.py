@@ -83,9 +83,9 @@ async def metabolite_analysis(
     convex: ConvexClient = Depends(get_convex),
 ):
     raw = convex.query("analyses:get", {"id": input.id})
-    print(f'raw: {raw}')
+    print(f"raw: {raw}")
     analysis: Analysis = Analysis.parse_obj(raw)
-    print(f'analysis: {analysis}')
+    print(f"analysis: {analysis}")
     try:
         worker = AnalysisWorker(convex=convex, analysis=analysis)
         # Add run method to background tasks

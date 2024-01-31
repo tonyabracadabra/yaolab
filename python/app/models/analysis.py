@@ -5,44 +5,15 @@ from enum import Enum
 from pydantic import BaseModel, Extra
 
 
-class AnalysisCreationInput(BaseModel):
-    rawFile: str
-    reactionDb: str
-    config: AnalysisConfig
-
-    class Config:
-        arbitrary_types_allowed = True
+class AnalysisStatus(str, Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    FAILED = "failed"
+    COMPLETED = "completed"
 
 
-class MSTool(str, Enum):
-    MZine = "MZine"
-    MDial = "MDial"
-
-
-class ReactionDatabase(BaseModel):
-    name: str
-    file: str
-    customReactions: list[CustomReaction]
-
-    class Config:
-        arbitrary_types_allowed = True
-
-
-class CustomReaction(BaseModel):
-    formula: str
-    description: str
-    mass: float
-
-
-class RawFile(BaseModel):
-    name: str
-    tool: MSTool
-    mgf: str
-    targetedIons: str
-    sampleColumns: list[str]
-
-    class Config:
-        arbitrary_types_allowed = True
+class AnalysisTriggerInput(BaseModel):
+    id: str
 
 
 class Experiment(BaseModel):
@@ -58,6 +29,46 @@ class AnalysisConfig(BaseModel):
     mzErrorThreshold: float
     rtTimeWindow: float
     experimentGroups: list[Experiment]
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class AnalysisCreationInput(BaseModel):
+    rawFile: str
+    reactionDb: str
+    config: AnalysisConfig
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class MSTool(str, Enum):
+    MZine = "MZine"
+    MDial = "MDial"
+
+
+class CustomReaction(BaseModel):
+    formula: str
+    description: str
+    mass: float
+
+
+class ReactionDatabase(BaseModel):
+    name: str
+    file: str
+    customReactions: list[CustomReaction]
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class RawFile(BaseModel):
+    name: str
+    tool: MSTool
+    mgf: str
+    targetedIons: str
+    sampleColumns: list[str]
 
     class Config:
         arbitrary_types_allowed = True
@@ -88,14 +99,3 @@ class Analysis(BaseModel):
     class Config:
         arbitrary_types_allowed = True
         extra = Extra.ignore
-
-
-class AnalysisStatus(str, Enum):
-    PENDING = "pending"
-    RUNNING = "running"
-    FAILED = "failed"
-    COMPLETED = "completed"
-
-
-class AnalysisTriggerInput(BaseModel):
-    id: str

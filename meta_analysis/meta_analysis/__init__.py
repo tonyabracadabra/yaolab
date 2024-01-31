@@ -5,15 +5,10 @@ from scipy.sparse import coo_matrix
 
 from convex import ConvexClient
 
-from .steps import (
-    calculate_edge_metrics,
-    combine_matrices_and_extract_edges,
-    create_ion_interaction_matrix,
-    create_similarity_matrix,
-    edge_value_matching,
-    load_data,
-    update_metabolic_reaction_database,
-)
+from .steps import (calculate_edge_metrics, combine_matrices_and_extract_edges,
+                    create_ion_interaction_matrix, create_similarity_matrix,
+                    edge_value_matching, load_data,
+                    update_metabolic_reaction_database)
 
 client = ConvexClient("https://example-lion-123.convex.cloud")
 
