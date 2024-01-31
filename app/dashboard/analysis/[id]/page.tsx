@@ -13,5 +13,19 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     return <LoaderIcon className="animate-spin" />;
   }
 
-  return <div>{analysis.status === "failed" && <Button>Retry</Button>}</div>;
+  return (
+    <div>
+      {analysis.status === "failed" && <Button>Retry</Button>}
+      <div>
+        Log:
+        {analysis.log}
+      </div>
+      {/* {analysis.status === "complete" && <div>{
+      
+      analysis.result?.edges
+      
+      
+      }</div>} */}
+    </div>
+  );
 }

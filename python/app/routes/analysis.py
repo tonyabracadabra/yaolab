@@ -19,41 +19,61 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-async def perform_analysis(convex: ConvexClient, analysis: Analysis) -> None:
-    config = analysis.config
+class AnalysisWorker:
+    def __init__(self, analysis: Analysis, convex: ConvexClient):
+        self.convex = convex
+        self.analysis = analysis
 
-    spectra, targeted_ions_df, reaction_df = load_data(analysis)
+    async def run(self) -> None:
+        config = self.analysis.config
+        spectra, targeted_ions_df, reaction_df = load_data(self.analysis)
 
-    _update_analysis_status(convex, analysis.id, "Calculating ion interaction matrix")
-    ion_interaction_matrix = create_ion_interaction_matrix(
-        targeted_ions_df, reaction_df, mzErrorThreshold=config.mzErrorThreshold
-    )
+        self._update_analysis_status("Calculating ion interaction matrix")
+        ion_interaction_matrix = create_ion_interaction_matrix(
+            targeted_ions_df,
+            reaction_df,
+            mzErrorThreshold=self.analysis.config.mzErrorThreshold,
+        )
 
-    _update_analysis_status(convex, analysis.id, "Calculating similarity matrix")
-    similarity_matrix: coo_matrix = create_similarity_matrix(spectra, targeted_ions_df)
+        self._update_analysis_status("Calculating similarity matrix")
+        similarity_matrix: coo_matrix = create_similarity_matrix(
+            spectra, targeted_ions_df
+        )
 
-    _update_analysis_status(convex, analysis.id, "Combining matrices and extracting edges")
-    edge_data_df = combine_matrices_and_extract_edges(
-        ion_interaction_matrix, similarity_matrix, ms2SimilarityThreshold=config.ms2SimilarityThreshold
-    )
+        self._update_analysis_status("Combining matrices and extracting edges")
+        edge_data_df = combine_matrices_and_extract_edges(
+            ion_interaction_matrix,
+            similarity_matrix,
+            ms2SimilarityThreshold=self.analysis.config.ms2SimilarityThreshold,
+        )
 
-    _update_analysis_status(convex, analysis.id, "Calculating edge metrics")
-    edge_metrics = calculate_edge_metrics(targeted_ions_df, edge_data_df)
+        self._update_analysis_status("Calculating edge metrics")
+        edge_metrics = calculate_edge_metrics(targeted_ions_df, edge_data_df)
 
-    _update_analysis_status(convex, analysis.id, "Matching edges")
-    matched_df, formula_change_counts = edge_value_matching(
-        edge_metrics, reaction_df, rtTimeWindow=config.rtTimeWindow, mzErrorThreshold=config.mzErrorThreshold
-    )
+        self._update_analysis_status("Matching edges")
+        matched_df, formula_change_counts = edge_value_matching(
+            edge_metrics,
+            reaction_df,
+            rtTimeWindow=config.rtTimeWindow,
+            mzErrorThreshold=self.analysis.config.mzErrorThreshold,
+        )
 
-    _complete_analysis(convex, analysis.id)
+        self._complete(self.analysis.id)
 
+    async def _update_analysis_status(self, log_message: str) -> None:
+        await self.convex.mutation(
+            "analyses:update", {"id": self.analysis.id, "log": log_message}
+        )
 
-async def _update_analysis_status(convex: ConvexClient, analysis_id: str, log_message: str) -> None:
-    convex.mutation("analyses:update", {"id": analysis_id, "log": log_message})
-
-
-async def _complete_analysis(convex: ConvexClient, analysis_id: str) -> None:
-    convex.mutation("analyses:update", {"id": analysis_id, "result": {"edges": []}, "status": AnalysisStatus.COMPLETED})
+    async def _complete(self) -> None:
+        await self.convex.mutation(
+            "analyses:update",
+            {
+                "id": self.analysis.id,
+                "result": {"edges": []},
+                "status": AnalysisStatus.COMPLETED,
+            },
+        )
 
 
 @router.post("/start")
@@ -61,7 +81,8 @@ async def metabolite_analysis(input: AnalysisTriggerInput, convex=Depends(get_co
     analysis: Analysis = convex.query("analyses:get", {"id": input.id})
 
     try:
-        perform_analysis(analysis=analysis)
+        worker = AnalysisWorker(convex=convex, analysis=analysis)
+        worker.run()
         return {"status": "success"}
     except Exception as e:
         logger.log(logging.ERROR, e)
