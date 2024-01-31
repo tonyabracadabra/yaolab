@@ -43,9 +43,4 @@ def load_data(
     targeted_ions_df = load_csv(analysis.rawFile.targetedIons)
     reaction_df = _load_reaction_db(analysis.reactionDb)
 
-    input_dir = os.path.join(current_dir, "../input")
-    spectra: list[Spectrum] = list(
-        load_from_mgf(os.path.join(input_dir, "F1-MSDIAL-MS2.mgf"))
-    )
-
     return spectra, targeted_ions_df, reaction_df
