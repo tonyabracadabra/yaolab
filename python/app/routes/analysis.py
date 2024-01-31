@@ -21,6 +21,7 @@ class AnalysisWorker(BaseModel):
     id: str
     analysis: Analysis
     convex: ConvexClient
+    _steps: dict[str, callable]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -31,12 +32,13 @@ class AnalysisWorker(BaseModel):
             if callable(func):
                 decorated_func = log_and_context(func)
                 setattr(steps, name, decorated_func)
+                logger.info(f"Decorated {name} with log_and_context, {decorated_func}")
 
     class Config:
         arbitrary_types_allowed = True
 
     async def run(self) -> None:
-        from steps import (calculate_edge_metrics,
+        from app.steps import (calculate_edge_metrics,
                                combine_matrices_and_extract_edges,
                                create_ion_interaction_matrix,
                                create_similarity_matrix, edge_value_matching,
