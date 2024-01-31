@@ -10,6 +10,8 @@ from app.utils.convex import get_convex
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 from scipy.sparse import coo_matrix
+import app.steps as steps
+from app.utils.logger import with_logging_and_context
 
 from convex import ConvexClient
 
@@ -19,41 +21,53 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+from types import ModuleType
+
+
+def apply_decorator_to_all(module: ModuleType, decorator: callable):
+    for name in module.__all__:
+        func = getattr(module, name, None)
+        if callable(func):
+            decorated_func = decorator(func)
+            setattr(module, name, decorated_func)
+
+
 class AnalysisWorker(BaseModel):
     id: str
     analysis: Analysis
     convex: ConvexClient
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        log_and_context = with_logging_and_context(self.convex, self.id)
+        apply_decorator_to_all(steps, log_and_context)
 
     class Config:
         arbitrary_types_allowed = True
 
     async def run(self) -> None:
         config = self.analysis.config
+
         spectra, targeted_ions_df, reaction_df = load_data(self.analysis)
 
-        await self._update("Calculating ion interaction matrix")
         ion_interaction_matrix = create_ion_interaction_matrix(
             targeted_ions_df,
             reaction_df,
             mzErrorThreshold=self.analysis.config.mzErrorThreshold,
         )
 
-        await self._update("Calculating similarity matrix")
         similarity_matrix: coo_matrix = create_similarity_matrix(
             spectra, targeted_ions_df
         )
 
-        await self._update("Combining matrices and extracting edges")
         edge_data_df = combine_matrices_and_extract_edges(
             ion_interaction_matrix,
             similarity_matrix,
             ms2SimilarityThreshold=self.analysis.config.ms2SimilarityThreshold,
         )
 
-        await self._update("Calculating edge metrics")
         edge_metrics = calculate_edge_metrics(targeted_ions_df, edge_data_df)
 
-        await self._update("Matching edges")
         matched_df, formula_change_counts = edge_value_matching(
             edge_metrics,
             reaction_df,
@@ -63,13 +77,11 @@ class AnalysisWorker(BaseModel):
 
         await self._complete(self.id)
 
-    async def _update(self, log_message: str) -> None:
-        await self.convex.mutation(
-            "analyses:update", {"id": self.id, "log": log_message}
-        )
+    def _update(self, log_message: str) -> None:
+        self.convex.mutation("analyses:update", {"id": self.id, "log": log_message})
 
-    async def _complete(self) -> None:
-        await self.convex.mutation(
+    def _complete(self) -> None:
+        self.convex.mutation(
             "analyses:update",
             {
                 "id": self.id,
@@ -97,7 +109,8 @@ async def metabolite_analysis(
     except Exception as e:
         logger.log(logging.ERROR, e)
         convex.mutation(
-            "analyses:update", {"id": input.id, "status": AnalysisStatus.FAILED}
+            "analyses:update",
+            {"id": input.id, "status": AnalysisStatus.FAILED, "log": str(e)},
         )
         return {"status": "error"}
 
