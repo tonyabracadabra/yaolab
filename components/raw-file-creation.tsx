@@ -237,7 +237,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
             />
             <div className="flex gap-2 flex-col">
               <FormLabel>Sample Columns</FormLabel>
-              <div className="flex items-center justify-center gap-2 flex-wrap">
+              <div className="flex items-center justify-center gap-2 flex-wrap max-h-[120px] overflow-auto">
                 {sampleColumns.map((sampleName: string, index: number) => (
                   <Badge key={index}>{sampleName}</Badge>
                 ))}
