@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from app.models.analysis import Analysis, ReactionDatabase
 from app.utils.convex import load_csv, load_mgf
-from matchms.importing import load_from_mgf
+from app.utils.logger import log
 from matchms.Spectrum import Spectrum
 
 current_dir = os.path.dirname(__file__)
@@ -35,7 +35,7 @@ def _load_reaction_db(reaction_db: ReactionDatabase) -> pd.DataFrame:
 
     return merged_df
 
-
+@log("Loading data")
 def load_data(
     analysis: Analysis,
 ) -> tuple[list[Spectrum], pd.DataFrame, pd.DataFrame]:

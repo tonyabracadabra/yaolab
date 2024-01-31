@@ -4,9 +4,12 @@ import pandas as pd
 from ..utils.contants import (CORRELATION_COL, ID_COL, MZ_COL, MZ_DIFF_COL,
                               RT_COL, RT_DIFF_COL)
 
+from app.utils.logger import log
+
 CORRELATION_COLS = ["KF", "YF", "KN", "YN", "KX", "YX"]
 
 
+@log("Calculating edge metrics")
 def calculate_edge_metrics(
     targeted_ions_df: pd.DataFrame, edge_data_df: pd.DataFrame
 ) -> pd.DataFrame:

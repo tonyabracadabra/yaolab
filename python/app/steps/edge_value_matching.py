@@ -5,6 +5,7 @@ from ..utils.contants import (CORRELATION_COL, FORMULA_CHANGE_COL,
                               MASS_DIFF_COL, MODCOS_COL, MZ_DIFF_COL,
                               REACTION_DESCRIPTION_COL, REDUNDANT_DATA_COL,
                               RT_DIFF_COL, VALUE_COL)
+from app.utils.logger import log
 
 MATCHED_MZ_DIFF_COL = "Matched MZ Difference"
 MATCHED_FORMULA_CHANGE_COL = "Matched FormulaChange"
@@ -13,7 +14,7 @@ CORRELATION_THRESHOLD = 0.9
 RT_DIFF_THRESHOLD = 0.015
 MZ_DIFF_THRESHOLD = 0.01
 
-
+@log("Edge value matching")
 def edge_value_matching(
     edge_metrics: pd.DataFrame,
     metabolic_reaction_df: pd.DataFrame,
