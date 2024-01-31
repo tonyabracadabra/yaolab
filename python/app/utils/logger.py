@@ -11,9 +11,10 @@ import logging
 
 def log(message: str):
     def decorator(func):
+        setattr(func, "log_message", message)  # Set attribute on func
+
         @functools.wraps(func)
         async def wrapper(*args, **kwargs):
-            setattr(wrapper, "log_message", message)
             return await func(*args, **kwargs)
 
         return wrapper

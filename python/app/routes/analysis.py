@@ -1,6 +1,7 @@
 import logging
 
 import app.steps as steps
+import pandas as pd
 import pyteomics.mass
 from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput
 from app.utils.convex import get_convex
@@ -47,7 +48,7 @@ class AnalysisWorker(BaseModel):
         config = self.analysis.config
         spectra, targeted_ions_df, reaction_df = load_data(self.analysis)
 
-        ion_interaction_matrix = create_ion_interaction_matrix(
+        ion_interaction_matrix: coo_matrix = create_ion_interaction_matrix(
             targeted_ions_df,
             reaction_df,
             mzErrorThreshold=self.analysis.config.mzErrorThreshold,
@@ -57,7 +58,7 @@ class AnalysisWorker(BaseModel):
             spectra, targeted_ions_df
         )
 
-        edge_data_df = combine_matrices_and_extract_edges(
+        edge_data_df: pd.DataFrame = combine_matrices_and_extract_edges(
             ion_interaction_matrix,
             similarity_matrix,
             ms2SimilarityThreshold=self.analysis.config.ms2SimilarityThreshold,
