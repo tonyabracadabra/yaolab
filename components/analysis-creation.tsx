@@ -119,8 +119,8 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
             blankGroups: [],
           },
         ],
-        maxResponseThreshold: 1,
-        minResponseRatio: 0.1,
+        signalEnrichmentFactor: 30,
+        minSignalThreshold: 5e5,
         ms2SimilarityThreshold: 0.7,
         mzErrorThreshold: 0.01,
         rtTimeWindow: 0.02,
@@ -403,15 +403,14 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                 <AccordionContent className="flex gap-4 flex-col px-1">
                   <FormField
                     control={form.control}
-                    name="config.maxResponseThreshold"
+                    name="config.minSignalThreshold"
                     render={({ field: { onChange, value } }) => (
                       <FormItem>
                         <FormLabelWithTooltip
-                          tooltip="Define the Minimum acceptable maximum response value for the compound
-          in the dosed sample group. The compound&rsquo;s response must meet or
-          exceed this threshold to be considered significant"
+                          tooltip="This value determines the minimum signal value required for a metabolite to be considered enriched in the treated sample group. 
+                        Higher values will result in a stricter filter, focusing on metabolites with more pronounced signals."
                         >
-                          Maximum Response Threshold
+                          Minimum Signal Threshold
                         </FormLabelWithTooltip>
                         <FormControl>
                           <Input
@@ -428,16 +427,14 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                   />
                   <FormField
                     control={form.control}
-                    name="config.minResponseRatio"
+                    name="config.signalEnrichmentFactor"
                     render={({ field: { onChange, value } }) => (
                       <FormItem>
                         <FormLabelWithTooltip
-                          tooltip="Set the threshold for the lowest acceptable ratio of the
-                        compound&rsquo;s maximum response value in the dosed
-                        sample group to that in the blank group. A ratio less
-                        than this value indicates insufficient response."
+                          tooltip="This value sets the minimum ratio of a metabolite's signal in the treated sample group compared to the blank group for it to be considered enriched. 
+                          Higher values will result in a stricter filter, focusing on metabolites with more pronounced enrichment."
                         >
-                          Minimum Response Ratio
+                          Signal Enrichment Factor
                         </FormLabelWithTooltip>
                         <FormControl>
                           <Input

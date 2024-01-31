@@ -10,7 +10,7 @@ from ..utils.contants import MASS_DIFF_COL, MZ_COL
 def create_ion_interaction_matrix(
     targeted_ions_df: pd.DataFrame,
     metabolic_reactions_df: pd.DataFrame,
-    mz_error_threshold: float = 10,
+    mz_error_threshold: float = 0.01,
 ) -> coo_matrix:
     ion_mass_values = targeted_ions_df[MZ_COL].values
     ion_count = len(ion_mass_values)

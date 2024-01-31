@@ -1,13 +1,12 @@
 import asyncio
-import os
 
 import pandas as pd
-from app.models.analysis import Analysis, ReactionDatabase
+from app.models.analysis import Analysis, Experiment, ReactionDatabase
 from app.utils.convex import load_csv, load_mgf
 from app.utils.logger import log
 from matchms.Spectrum import Spectrum
 
-current_dir = os.path.dirname(__file__)
+REACTION_COLUMNS = ["Reaction Description", "Mass Difference(Da)", "Formula Change"]
 
 
 async def _load_reaction_db(reaction_db: ReactionDatabase) -> pd.DataFrame:
@@ -21,20 +20,35 @@ async def _load_reaction_db(reaction_db: ReactionDatabase) -> pd.DataFrame:
     custom_reactions_df = pd.DataFrame(
         [reaction.dict() for reaction in reaction_db.customReactions]
     )
-    custom_reactions_df.columns = [
-        "Reaction Description",
-        "Mass Difference(Da)",
-        "Formula Change",
-    ]
+    custom_reactions_df.columns = REACTION_COLUMNS
 
     # Merge DataFrames
     merged_df = reaction_df.merge(
         custom_reactions_df,
         how="outer",
-        on=["Reaction Description", "Mass Difference(Da)", "Formula Change"],
+        on=REACTION_COLUMNS,
     )
 
     return merged_df
+
+
+def _filter_metabolites(
+    data: pd.DataFrame,
+    experiments: list[Experiment],
+    minSignalThreshold: float,
+    signalEnrichmentFactor: float,
+):
+    cond = True
+    for experiment in experiments:
+        sample_group = experiment.sampleGroups
+        blank_group = experiment.blankGroups
+        cond &= (data[sample_group].max(axis=1) > minSignalThreshold) & (
+            data[blank_group].mean(axis=1) > signalEnrichmentFactor
+        )
+        group_columns = sample_group + blank_group
+        data[experiment.name] = data[group_columns].mean(axis=1).round().astype(int)
+
+    return data[cond]
 
 
 @log("Loading data")
@@ -47,5 +61,11 @@ async def load_data(
         _load_reaction_db(analysis.reactionDb),
     ]
     spectra, targeted_ions_df, reaction_df = await asyncio.gather(*tasks)
+    targeted_ions_df = _filter_metabolites(
+        analysis,
+        targeted_ions_df,
+        minSignalThreshold=analysis.config.minSignalThreshold,
+        signalEnrichmentFactor=analysis.config.signalEnrichmentFactor,
+    )
 
     return spectra, targeted_ions_df, reaction_df

@@ -23,8 +23,8 @@ class Experiment(BaseModel):
 
 
 class AnalysisConfig(BaseModel):
-    maxResponseThreshold: float
-    minResponseRatio: float
+    minSignalThreshold: float
+    signalEnrichmentFactor: float
     ms2SimilarityThreshold: float
     mzErrorThreshold: float
     rtTimeWindow: float

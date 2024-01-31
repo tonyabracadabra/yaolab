@@ -16,9 +16,9 @@ MATCHED_REACTION_DESCRIPTION_COL = "Matched Reaction Description"
 async def edge_value_matching(
     edge_metrics: pd.DataFrame,
     metabolic_reaction_df: pd.DataFrame,
-    rtTimeWindow: float = 0.015,
-    mzErrorThreshold: float = 0.01,
-    correlationThreshold: float = 0.95,
+    rt_time_window: float = 0.015,
+    mz_error_threshold: float = 0.01,
+    correlation_threshold: float = 0.95,
 ) -> tuple[pd.DataFrame, pd.Series]:
     matched = edge_metrics.copy()
 
@@ -48,18 +48,13 @@ async def edge_value_matching(
         matched[MATCHED_MZ_DIFF_COL]
         .sub(matched[MZ_DIFF_COL])
         .abs()
-        .lt(mzErrorThreshold)
+        .lt(mz_error_threshold)
     ]
 
     # Add Redundant Data and ModCos columns
-    matched[REDUNDANT_DATA_COL] = (matched[CORRELATION_COL] >= correlationThreshold) & (
-        matched[RT_DIFF_COL] <= rtTimeWindow
-    )
+    matched[REDUNDANT_DATA_COL] = (
+        matched[CORRELATION_COL] >= correlation_threshold
+    ) & (matched[RT_DIFF_COL] <= rt_time_window)
     matched[MODCOS_COL] = matched[VALUE_COL] - 1
 
-    # Counting Formula Changes
-    formula_change_counts = (
-        matched[MATCHED_FORMULA_CHANGE_COL].value_counts().to_frame()
-    )
-
-    return matched, formula_change_counts
+    return matched
