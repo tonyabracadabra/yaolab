@@ -17,6 +17,8 @@ MZ_DIFF_THRESHOLD = 0.01
 def edge_value_matching(
     edge_metrics: pd.DataFrame,
     metabolic_reaction_df: pd.DataFrame,
+    rtTimeWindow: float = 0.015,
+    mzErrorThreshold: float = 10,
 ) -> tuple[pd.DataFrame, pd.Series]:
     matched = edge_metrics.copy()
 
