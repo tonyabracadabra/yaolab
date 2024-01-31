@@ -76,7 +76,7 @@ const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
         }))}
         onSelect={async (val: string) => {
           const currExperiment =
-            form.getValues().config.experimentGroups[experiment];
+            form.getValues().config.experiments[experiment];
           const otherGroup =
             groupName === "sampleGroups" ? "blankGroups" : "sampleGroups";
 
@@ -87,19 +87,19 @@ const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
 
           if (currExperiment[groupName].includes(val)) {
             form.setValue(
-              `config.experimentGroups.${experiment}.${groupName}`,
+              `config.experiments.${experiment}.${groupName}`,
               currExperiment[groupName].filter((v) => v !== val)
             );
           } else {
-            form.setValue(
-              `config.experimentGroups.${experiment}.${groupName}`,
-              [...currExperiment[groupName], val]
-            );
+            form.setValue(`config.experiments.${experiment}.${groupName}`, [
+              ...currExperiment[groupName],
+              val,
+            ]);
           }
         }}
         selectedValues={
           form.watch(
-            `config.experimentGroups.${experiment}.${groupName}`
+            `config.experiments.${experiment}.${groupName}`
           ) as string[]
         }
       />
@@ -112,7 +112,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
     resolver: zodResolver(AnalysisCreationInputSchema),
     defaultValues: {
       config: {
-        experimentGroups: [
+        experiments: [
           {
             name: "new sample 1",
             sampleGroups: [],
@@ -133,7 +133,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
   const triggerAnalysis = useAction(api.actions.triggerAnalysis);
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "config.experimentGroups",
+    name: "config.experiments",
   });
   const [currExperiment, setCurrExperiment] = useState(0);
 
@@ -348,7 +348,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                         <FormField
                           key={`experiment-group-name-${currExperiment}`} // Adding a unique key
                           control={form.control}
-                          name={`config.experimentGroups.${currExperiment}.name`}
+                          name={`config.experiments.${currExperiment}.name`}
                           render={({ field: { onChange, value } }) => {
                             return (
                               <FormItem>

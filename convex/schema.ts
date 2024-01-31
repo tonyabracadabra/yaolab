@@ -25,7 +25,7 @@ export const AnalysisConfigSchema = z.object({
   mzErrorThreshold: z.number().default(0.01),
   rtTimeWindow: z.number().default(0.02),
   correlationThreshold: z.number().default(0.95),
-  experimentGroups: z.array(ExperimentSchema),
+  experiments: z.array(ExperimentSchema),
 });
 
 export const AnalysisCreationInputSchema = z.object({

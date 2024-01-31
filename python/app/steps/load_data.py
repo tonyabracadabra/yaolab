@@ -62,8 +62,8 @@ async def load_data(
     ]
     spectra, targeted_ions_df, reaction_df = await asyncio.gather(*tasks)
     targeted_ions_df = _filter_metabolites(
-        analysis,
-        targeted_ions_df,
+        data=targeted_ions_df,
+        experiments=analysis.config.experiments,
         minSignalThreshold=analysis.config.minSignalThreshold,
         signalEnrichmentFactor=analysis.config.signalEnrichmentFactor,
     )

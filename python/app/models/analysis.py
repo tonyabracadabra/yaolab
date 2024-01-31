@@ -28,7 +28,7 @@ class AnalysisConfig(BaseModel):
     ms2SimilarityThreshold: float
     mzErrorThreshold: float
     rtTimeWindow: float
-    experimentGroups: list[Experiment]
+    experiments: list[Experiment]
     correlationThreshold: float
 
     class Config:
