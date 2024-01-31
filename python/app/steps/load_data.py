@@ -35,6 +35,7 @@ def _load_reaction_db(reaction_db: ReactionDatabase) -> pd.DataFrame:
 
     return merged_df
 
+
 @log("Loading data")
 def load_data(
     analysis: Analysis,

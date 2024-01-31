@@ -1,5 +1,6 @@
 import logging
 
+import app.steps as steps
 import pyteomics.mass
 from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput
 from app.steps import (calculate_edge_metrics,
@@ -7,11 +8,10 @@ from app.steps import (calculate_edge_metrics,
                        create_ion_interaction_matrix, create_similarity_matrix,
                        edge_value_matching, load_data)
 from app.utils.convex import get_convex
+from app.utils.logger import with_logging_and_context
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 from scipy.sparse import coo_matrix
-import app.steps as steps
-from app.utils.logger import with_logging_and_context
 
 from convex import ConvexClient
 
@@ -19,17 +19,6 @@ router = APIRouter()
 
 # define the log format
 logger = logging.getLogger(__name__)
-
-
-from types import ModuleType
-
-
-def apply_decorator_to_all(module: ModuleType, decorator: callable):
-    for name in module.__all__:
-        func = getattr(module, name, None)
-        if callable(func):
-            decorated_func = decorator(func)
-            setattr(module, name, decorated_func)
 
 
 class AnalysisWorker(BaseModel):
@@ -40,7 +29,12 @@ class AnalysisWorker(BaseModel):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         log_and_context = with_logging_and_context(self.convex, self.id)
-        apply_decorator_to_all(steps, log_and_context)
+        # Apply decorator to all functions in steps module
+        for name in steps.__all__:
+            func = getattr(steps, name, None)
+            if callable(func):
+                decorated_func = log_and_context(func)
+                setattr(steps, name, decorated_func)
 
     class Config:
         arbitrary_types_allowed = True

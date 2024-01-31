@@ -1,10 +1,9 @@
 import numpy as np
 import pandas as pd
+from app.utils.logger import log
 
 from ..utils.contants import (CORRELATION_COL, ID_COL, MZ_COL, MZ_DIFF_COL,
                               RT_COL, RT_DIFF_COL)
-
-from app.utils.logger import log
 
 CORRELATION_COLS = ["KF", "YF", "KN", "YN", "KX", "YX"]
 

@@ -1,6 +1,7 @@
 import pandas as pd
-from scipy.sparse import coo_matrix
 from app.utils.logger import log
+from scipy.sparse import coo_matrix
+
 
 @log("Combining matrices and extracting edges")
 def combine_matrices_and_extract_edges(

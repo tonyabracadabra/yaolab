@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
+from app.utils.logger import log
 from scipy.sparse import coo_matrix
 
 from ..utils.contants import MASS_DIFF_COL, MZ_COL
-from app.utils.logger import log
+
 
 @log("Creating ion interaction matrix")
 def create_ion_interaction_matrix(
