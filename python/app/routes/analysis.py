@@ -122,15 +122,22 @@ async def metabolite_analysis(
         return {"status": "error"}
 
 
-@router.get("/mass")
-async def mass(formulaChanges: list[str]) -> list[dict[str, float]]:
+class MassInput(BaseModel):
+    formulaChanges: list[str]
+
+
+@router.post("/mass")
+async def mass(input: MassInput) -> list[dict[str, float]]:
     """
     Calculate the mass of a given chemical formula.
     """
     try:
         return [
-            {"formulaChange": formulaChange, "mass": pyteomics.mass.calculate_mass(formula=formulaChange)}
-            for formulaChange in formulaChanges
+            {
+                "formulaChange": formulaChange,
+                "mass": pyteomics.mass.calculate_mass(formula=formulaChange),
+            }
+            for formulaChange in input.formulaChanges
         ]
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
