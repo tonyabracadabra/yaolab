@@ -15,7 +15,7 @@ def _load_reaction_db(reaction_db: ReactionDatabase) -> pd.DataFrame:
 
     # Convert customReactions to DataFrame
     custom_reactions_df = pd.DataFrame(
-        [reaction.to_dict() for reaction in reaction_db.customReactions]
+        [reaction.dict() for reaction in reaction_db.customReactions]
     )
     custom_reactions_df.columns = [
         "Reaction Description",
