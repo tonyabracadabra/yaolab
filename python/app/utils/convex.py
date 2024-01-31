@@ -51,40 +51,30 @@ async def load_mgf(
 ) -> Generator[Spectrum, None, None]:
     blob = download_file(storage_id)
 
-    def _load_from_mgf(
-        filename: str | TextIO, metadata_harmonization: bool = True
-    ) -> Generator[Spectrum, None, None]:
+    def _load_from_mgf(file: TextIO) -> Generator[Spectrum, None, None]:
         """Load spectrum(s) from mgf file."""
+        for pyteomics_spectrum in MGF(file, convert_arrays=1):
+            metadata = pyteomics_spectrum.get("params", {})
+            mz = pyteomics_spectrum["m/z array"]
+            intensities = pyteomics_spectrum["intensity array"]
 
-        def process_file(file):
-            for pyteomics_spectrum in MGF(file, convert_arrays=1):
-                metadata = pyteomics_spectrum.get("params", {})
-                mz = pyteomics_spectrum["m/z array"]
-                intensities = pyteomics_spectrum["intensity array"]
-
-                if "peak_comments" in metadata:
-                    metadata["peak_comments"] = ast.literal_eval(
-                        str(metadata["peak_comments"])
-                    )
-
-                # Sort by mz
-                if not np.all(mz[:-1] <= mz[1:]):
-                    idx_sorted = np.argsort(mz)
-                    mz = mz[idx_sorted]
-                    intensities = intensities[idx_sorted]
-
-                yield Spectrum(
-                    mz=mz,
-                    intensities=intensities,
-                    metadata=metadata,
-                    metadata_harmonization=metadata_harmonization,
+            if "peak_comments" in metadata:
+                metadata["peak_comments"] = ast.literal_eval(
+                    str(metadata["peak_comments"])
                 )
 
-        if isinstance(filename, str):
-            with open(filename, "r", encoding="utf-8") as file:
-                yield from process_file(file)
-        else:
-            yield from process_file(filename)
+            # Sort by mz
+            if not np.all(mz[:-1] <= mz[1:]):
+                idx_sorted = np.argsort(mz)
+                mz = mz[idx_sorted]
+                intensities = intensities[idx_sorted]
+
+            yield Spectrum(
+                mz=mz,
+                intensities=intensities,
+                metadata=metadata,
+                metadata_harmonization=True,
+            )
 
     try:
         decoded_content = blob.decode(ENCODING)
