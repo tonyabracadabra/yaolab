@@ -28,29 +28,29 @@ class AnalysisWorker:
         config = self.analysis.config
         spectra, targeted_ions_df, reaction_df = load_data(self.analysis)
 
-        self._update_analysis_status("Calculating ion interaction matrix")
+        self._update("Calculating ion interaction matrix")
         ion_interaction_matrix = create_ion_interaction_matrix(
             targeted_ions_df,
             reaction_df,
             mzErrorThreshold=self.analysis.config.mzErrorThreshold,
         )
 
-        self._update_analysis_status("Calculating similarity matrix")
+        self._update("Calculating similarity matrix")
         similarity_matrix: coo_matrix = create_similarity_matrix(
             spectra, targeted_ions_df
         )
 
-        self._update_analysis_status("Combining matrices and extracting edges")
+        self._update("Combining matrices and extracting edges")
         edge_data_df = combine_matrices_and_extract_edges(
             ion_interaction_matrix,
             similarity_matrix,
             ms2SimilarityThreshold=self.analysis.config.ms2SimilarityThreshold,
         )
 
-        self._update_analysis_status("Calculating edge metrics")
+        self._update("Calculating edge metrics")
         edge_metrics = calculate_edge_metrics(targeted_ions_df, edge_data_df)
 
-        self._update_analysis_status("Matching edges")
+        self._update("Matching edges")
         matched_df, formula_change_counts = edge_value_matching(
             edge_metrics,
             reaction_df,
@@ -60,7 +60,7 @@ class AnalysisWorker:
 
         self._complete(self.analysis.id)
 
-    async def _update_analysis_status(self, log_message: str) -> None:
+    async def _update(self, log_message: str) -> None:
         await self.convex.mutation(
             "analyses:update", {"id": self.analysis.id, "log": log_message}
         )
