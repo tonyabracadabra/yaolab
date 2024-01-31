@@ -36,6 +36,9 @@ def with_logging_and_context(convex: ConvexClient, analysis_id: str):
                 # similar logging for completion
                 return result
             except Exception as e:
+                logger.error(
+                    f"Error occurred while executing '{func.__name__}' for analysis {analysis_id}"
+                )
                 # Handle exception logging
                 raise
 
