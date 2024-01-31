@@ -1,5 +1,4 @@
 import os
-import tempfile
 
 import pandas as pd
 from app.models.analysis import Analysis, ReactionDatabase
@@ -12,6 +11,10 @@ current_dir = os.path.dirname(__file__)
 
 def _load_reaction_db(reaction_db: ReactionDatabase) -> pd.DataFrame:
     reaction_df: pd.DataFrame = load_csv(reaction_db.file)
+
+    # Check if customReactions is empty
+    if not reaction_db.customReactions:
+        return reaction_df
 
     # Convert customReactions to DataFrame
     custom_reactions_df = pd.DataFrame(
