@@ -53,8 +53,10 @@ export function MultiSelectCombobox({
             <div className="flex items-center justify-center gap-[4px] flex-wrap">
               {options
                 .filter((op) => isSelected(op.value))
-                .map((op) => (
-                  <Badge variant="secondary">{op.label}</Badge>
+                .map((op, i) => (
+                  <Badge key={i} variant="secondary">
+                    {op.label}
+                  </Badge>
                 ))}
             </div>
           ) : (
