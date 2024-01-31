@@ -7,7 +7,7 @@ from ..utils.contants import MASS_DIFF_COL, MZ_COL
 
 
 @log("Creating ion interaction matrix")
-def create_ion_interaction_matrix(
+async def create_ion_interaction_matrix(
     targeted_ions_df: pd.DataFrame,
     reaction_df: pd.DataFrame,
     mz_error_threshold: float = 0.01,
