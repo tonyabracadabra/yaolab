@@ -49,12 +49,7 @@ export const calculateMass = zAction({
 
     return data;
   },
-  output: z.array(
-    z.object({
-      mass: z.number(),
-      formulaChange: z.string(),
-    })
-  ),
+  output: z.array(z.number()),
 });
 
 export const download = zAction({

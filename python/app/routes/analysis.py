@@ -127,16 +127,13 @@ class MassInput(BaseModel):
 
 
 @router.post("/mass")
-async def mass(input: MassInput) -> list[dict[str, str]]:
+async def mass(input: MassInput) -> list[float]:
     """
     Calculate the mass of a given chemical formula.
     """
     try:
         return [
-            {
-                "formulaChange": formulaChange,
-                "mass": pyteomics.mass.calculate_mass(formula=formulaChange),
-            }
+            pyteomics.mass.calculate_mass(formula=formulaChange)
             for formulaChange in input.formulaChanges
         ]
     except Exception as e:
