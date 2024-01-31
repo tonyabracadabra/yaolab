@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 import pandas as pd
@@ -9,8 +10,8 @@ from matchms.Spectrum import Spectrum
 current_dir = os.path.dirname(__file__)
 
 
-def _load_reaction_db(reaction_db: ReactionDatabase) -> pd.DataFrame:
-    reaction_df: pd.DataFrame = load_csv(reaction_db.file)
+async def _load_reaction_db(reaction_db: ReactionDatabase) -> pd.DataFrame:
+    reaction_df: pd.DataFrame = await load_csv(reaction_db.file)
 
     # Check if customReactions is empty
     if not reaction_db.customReactions:
@@ -37,11 +38,14 @@ def _load_reaction_db(reaction_db: ReactionDatabase) -> pd.DataFrame:
 
 
 @log("Loading data")
-def load_data(
+async def load_data(
     analysis: Analysis,
 ) -> tuple[list[Spectrum], pd.DataFrame, pd.DataFrame]:
-    spectra = load_mgf(analysis.rawFile.mgf)
-    targeted_ions_df = load_csv(analysis.rawFile.targetedIons)
-    reaction_df = _load_reaction_db(analysis.reactionDb)
+    tasks = [
+        load_mgf(analysis.rawFile.mgf),
+        load_csv(analysis.rawFile.targetedIons),
+        _load_reaction_db(analysis.reactionDb),
+    ]
+    spectra, targeted_ions_df, reaction_df = await asyncio.gather(*tasks)
 
     return spectra, targeted_ions_df, reaction_df

@@ -37,7 +37,7 @@ def download_file(storageId: str):
 
 
 @lru_cache(maxsize=128, typed=False)
-def load_mgf(
+async def load_mgf(
     storage_id: str, encoding: str = ENCODING
 ) -> Generator[Spectrum, None, None]:
     blob = download_file(storage_id)
@@ -52,7 +52,7 @@ def load_mgf(
 
 
 @lru_cache(maxsize=128, typed=False)
-def load_csv(storage_id: str, encoding: str = ENCODING) -> pd.DataFrame:
+async def load_csv(storage_id: str, encoding: str = ENCODING) -> pd.DataFrame:
     blob = download_file(storage_id)
     try:
         decoded_content = blob.decode(encoding)
