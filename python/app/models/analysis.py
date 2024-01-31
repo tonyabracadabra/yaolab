@@ -45,7 +45,7 @@ class AnalysisCreationInput(BaseModel):
 
 
 class MSTool(str, Enum):
-    MZine = "MZine"
+    MZmine3 = "MZmine3"
     MDial = "MDial"
 
 

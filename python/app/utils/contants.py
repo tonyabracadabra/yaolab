@@ -1,7 +1,8 @@
-# Constants for DataFrame column names
-ID_COL = "ID"
+# constants for standard target ions
+ID_COL = "id"
 MZ_COL = "m/z"
 RT_COL = "Rt(min)"
+
 CORRELATION_COL = "Correlation"
 RT_DIFF_COL = "Retention Time Difference"
 MZ_DIFF_COL = "MZ Difference"

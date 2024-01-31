@@ -67,7 +67,7 @@ export const AnalysisSchema = z.object({
   result: z.optional(zid("_storage")),
 });
 
-export const MSTool = z.enum(["MZine", "MDial"]);
+export const MSTool = z.enum(["MZmine3", "MDial"]);
 
 export const ReactionDatabaseSchema = z.object({
   user: z.string(),

@@ -89,7 +89,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
     const tool = form.watch("tool");
     if (tool === "MDial") {
       return columns.slice(columns.indexOf("MS/MS spectrum") + 1);
-    } else if (tool === "MZine") {
+    } else if (tool === "MZmine3") {
       return columns
         .filter((column) => column.includes(".raw Peak"))
         .map((column) => column.split(".")[0]);
