@@ -13,13 +13,13 @@ from matchms.Spectrum import Spectrum
 from convex import ConvexClient
 
 ENCODING: str = "utf-8"
-
+CONVEX_STORAGE_URL = os.environ["CONVEX_STORAGE_URL"]
+CONVEX_URL = os.environ["CONVEX_URL"]
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "../../.env.local"))
 
 
 def get_convex(request: Request) -> ConvexClient:
-    CONVEX_URL = os.environ["CONVEX_URL"]
     convex = ConvexClient(CONVEX_URL)
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     convex.set_auth(token)
@@ -27,9 +27,7 @@ def get_convex(request: Request) -> ConvexClient:
 
 
 def download_file(storageId: str):
-    response = requests.get(
-        f"{os.environ['CONVEX_STORAGE_URL']}/downloadFile?storageId={storageId}"
-    )
+    response = requests.get(f"{CONVEX_STORAGE_URL}/downloadFile?storageId={storageId}")
     if response.status_code != 200:
         raise Exception(f"Failed to get file from storage: {response.text}")
 

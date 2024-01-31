@@ -9,7 +9,7 @@ from ..utils.contants import MASS_DIFF_COL, MZ_COL
 @log("Creating ion interaction matrix")
 def create_ion_interaction_matrix(
     targeted_ions_df: pd.DataFrame,
-    metabolic_reactions_df: pd.DataFrame,
+    reaction_df: pd.DataFrame,
     mz_error_threshold: float = 0.01,
 ) -> coo_matrix:
     ion_mass_values = targeted_ions_df[MZ_COL].values
@@ -22,7 +22,7 @@ def create_ion_interaction_matrix(
     mz_differences = np.abs(ion_mass_values[row_indices] - ion_mass_values[col_indices])
 
     # Prepare sorted mass differences for reaction potential check
-    sorted_mass_diffs = np.sort(metabolic_reactions_df[MASS_DIFF_COL].values)
+    sorted_mass_diffs = np.sort(reaction_df[MASS_DIFF_COL].values)
 
     # Broadcasting sorted_mass_diffs to match the shape of mz_differences
     # sorted_mass_diffs is reshaped to (1, m) and then broadcasted to (n, m)
