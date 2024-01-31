@@ -127,7 +127,7 @@ class MassInput(BaseModel):
 
 
 @router.post("/mass")
-async def mass(input: MassInput) -> list[dict[str, float]]:
+async def mass(input: MassInput) -> list[dict[str, str]]:
     """
     Calculate the mass of a given chemical formula.
     """
