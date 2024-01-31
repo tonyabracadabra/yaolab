@@ -4,7 +4,7 @@ from scipy.sparse import coo_matrix
 
 
 @log("Combining matrices and extracting edges")
-def combine_matrices_and_extract_edges(
+async def combine_matrices_and_extract_edges(
     ion_interaction_matrix: coo_matrix,
     similarity_matrix: coo_matrix,
     ms2SimilarityThreshold: float = 0.7,

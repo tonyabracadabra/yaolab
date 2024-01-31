@@ -9,7 +9,7 @@ CORRELATION_COLS = ["KF", "YF", "KN", "YN", "KX", "YX"]
 
 
 @log("Calculating edge metrics")
-def calculate_edge_metrics(
+async def calculate_edge_metrics(
     targeted_ions_df: pd.DataFrame, edge_data_df: pd.DataFrame
 ) -> pd.DataFrame:
     # Pre-calculate and map ID to mz and rt values for efficient lookup

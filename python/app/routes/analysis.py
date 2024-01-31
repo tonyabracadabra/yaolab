@@ -47,23 +47,23 @@ class AnalysisWorker(BaseModel):
         config = self.analysis.config
         spectra, targeted_ions_df, reaction_df = await load_data(self.analysis)
 
-        ion_interaction_matrix: coo_matrix = create_ion_interaction_matrix(
+        ion_interaction_matrix: coo_matrix = await create_ion_interaction_matrix(
             targeted_ions_df,
             reaction_df,
             mzErrorThreshold=self.analysis.config.mzErrorThreshold,
         )
 
-        similarity_matrix: coo_matrix = create_similarity_matrix(
+        similarity_matrix: coo_matrix = await create_similarity_matrix(
             spectra, targeted_ions_df
         )
 
-        edge_data_df: pd.DataFrame = combine_matrices_and_extract_edges(
+        edge_data_df: pd.DataFrame = await combine_matrices_and_extract_edges(
             ion_interaction_matrix,
             similarity_matrix,
             ms2SimilarityThreshold=self.analysis.config.ms2SimilarityThreshold,
         )
 
-        edge_metrics = calculate_edge_metrics(targeted_ions_df, edge_data_df)
+        edge_metrics = await calculate_edge_metrics(targeted_ions_df, edge_data_df)
 
         matched_df, formula_change_counts = await edge_value_matching(
             edge_metrics,
