@@ -225,8 +225,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
               render={({ field: { onChange, value } }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-2 text-md">
-                    <Badge variant="secondary">2</Badge> Choose your reaction
-                    database
+                    <Badge variant="secondary">2</Badge>Choose reaction database
                   </FormLabel>
                   <FormControl>
                     <Select

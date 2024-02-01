@@ -18,7 +18,10 @@ def _preprocess_mzmine3(targeted_ions_df: pd.DataFrame) -> pd.DataFrame:
     ]
     actual_sample_names = [col.split(".")[0] for col in sample_columns]
 
-    return targeted_ions_df.rename(
+    # Drop columns with all NaN values
+    df = targeted_ions_df.dropna(axis=1, how='all')
+    # Normalize column names
+    df = df.rename(
         columns={
             "row m/z": MZ_COL,
             "row retention time": RT_COL,
@@ -27,15 +30,37 @@ def _preprocess_mzmine3(targeted_ions_df: pd.DataFrame) -> pd.DataFrame:
         | dict(zip(sample_columns, actual_sample_names))
     )
 
+    return df
+
 
 def _preprocess_mdial(targeted_ions_df: pd.DataFrame) -> pd.DataFrame:
-    return targeted_ions_df.rename(
+    # Drop rows and columns with all NaN values
+    df = (
+        targeted_ions_df.rename(
+            columns=targeted_ions_df.iloc[3][
+                : targeted_ions_df.columns.get_loc("Class") + 1
+            ].to_dict()
+        )
+        .drop(targeted_ions_df.index[0:4])
+        .drop([col for col in targeted_ions_df.columns if col.startswith("NA")], axis=1)
+        .drop(
+            targeted_ions_df.columns[
+                targeted_ions_df.iloc[1:].isna().all()
+                | targeted_ions_df.iloc[1:].eq("").all()
+            ],
+            axis=1,
+        )
+    )
+    # Normalize column names
+    df = df.rename(
         columns={
             "Average Mz": MZ_COL,
             "Average Rt(min)": RT_COL,
             "Alignment ID": ID_COL,
         }
     )
+
+    return df
 
 
 preprocessors: dict[MSTool, callable] = {

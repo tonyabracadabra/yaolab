@@ -111,12 +111,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
           <span>✨ Create </span>
         </Button>
       </DialogTrigger>
-      <DialogContent
-        onInteractOutside={(e) => {
-          e.preventDefault();
-        }}
-        className="sm:max-w-[425px]"
-      >
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Upload your raw file</DialogTitle>
           <DialogDescription>
@@ -201,7 +196,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
             <FormField
               control={form.control}
               name="targetedIons"
-              render={({ field: { onChange, value } }) => {
+              render={({ field: { onChange } }) => {
                 return (
                   <FormItem>
                     <FormLabelWithTooltip
@@ -212,7 +207,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
                       Ion list File
                     </FormLabelWithTooltip>
                     <Input
-                      accept=".csv,.txt"
+                      accept={form.watch("tool") === "MDial" ? ".txt" : ".csv"}
                       onChange={async (event) => {
                         const selectedFile =
                           event.target.files && event.target.files[0];

@@ -1,9 +1,9 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { ReactionDatabaseSchema, ReactionSchema } from "@/convex/schema";
-import { readFirstLine, useFileUpload } from "@/lib/utils";
+import { readFirstLine } from "@/lib/utils";
 import { useAction, useMutation } from "convex/react";
-import { Loader2, Plus, Trash } from "lucide-react";
+import { Atom, DownloadCloud, Loader2, Minus, Plus } from "lucide-react";
 import Papa from "papaparse";
 import { useState } from "react";
 import { Control, useFieldArray, useForm } from "react-hook-form";
@@ -36,6 +36,86 @@ import {
 type ReactionDatabaseInput = z.infer<typeof ReactionDatabaseSchema>;
 type Reaction = z.infer<typeof ReactionSchema>;
 
+interface ReactionFormInterface {
+  onReactionAdd: (reaction: Reaction) => void;
+}
+
+const ReactionForm = ({ onReactionAdd }: ReactionFormInterface) => {
+  const calculateMass = useAction(api.actions.calculateMass);
+  const [formulaChange, setFormulaChange] = useState("");
+  const [description, setDescription] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  return (
+    <div className="flex flex-col justify-center gap-2">
+      <FormItem>
+        <FormLabel>
+          Formula Change{" "}
+          <span className="text-sm text-gray-400">(e.g. C6H12O6)</span>
+        </FormLabel>
+        <Input
+          defaultValue=""
+          value={formulaChange}
+          onChange={(e) => setFormulaChange(e.target.value)}
+        />
+      </FormItem>
+      <FormItem>
+        <FormLabel>
+          Reaction Description{" "}
+          <span className="text-sm text-gray-400">
+            (e.g. glucose to fructose)
+          </span>
+        </FormLabel>
+        <Input
+          defaultValue=""
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </FormItem>
+      <div className="flex justify-end mt-4">
+        <Button
+          type="button"
+          onClick={async () => {
+            if (!formulaChange) {
+              toast.error("You need to provide a valid formula");
+              return;
+            }
+
+            setIsLoading(true);
+
+            try {
+              const { masses } = await calculateMass({
+                formulaChanges: [formulaChange],
+              });
+              if (masses.length === 0) {
+                toast.error("Error calculating mass, please try again later");
+                return;
+              }
+
+              onReactionAdd({
+                formulaChange,
+                description,
+                mass: masses[0],
+              });
+            } catch {
+              toast.error("Error calculating mass, please try again later");
+            }
+          }}
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2">
+              Caculating Mass...
+              <Loader2 className="animate-spin" />
+            </div>
+          ) : (
+            "Confirm"
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const ReactionsFieldsArray = ({
   control,
 }: {
@@ -47,180 +127,98 @@ const ReactionsFieldsArray = ({
   });
   const [popoverOpen, setPopoverOpen] = useState(false);
 
-  interface ReactionFormInterface {
-    onReactionAdd: (reaction: Reaction) => void;
-    onReactionsAdd?: (reactions: Reaction[]) => void;
-  }
-
-  const ReactionForm = ({
-    onReactionAdd,
-    onReactionsAdd,
-  }: ReactionFormInterface) => {
-    const calculateMass = useAction(api.actions.calculateMass);
-    const [formulaChange, setFormulaChange] = useState("");
-    const [description, setDescription] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-
-    return (
-      <div className="flex flex-col justify-center gap-2">
-        <FormItem>
-          <FormLabel>
-            Formula Change{" "}
-            <span className="text-sm text-gray-400">(e.g. C6H12O6)</span>
-          </FormLabel>
-          <Input
-            defaultValue=""
-            value={formulaChange}
-            onChange={(e) => setFormulaChange(e.target.value)}
-          />
-        </FormItem>
-        <FormItem>
-          <FormLabel>
-            Reaction Description{" "}
-            <span className="text-sm text-gray-400">
-              (e.g. glucose to fructose)
-            </span>
-          </FormLabel>
-          <Input
-            defaultValue=""
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </FormItem>
-        <div className="flex justify-end mt-4">
-          <Button
-            type="button"
-            onClick={async () => {
-              if (!formulaChange) {
-                toast.error("You need to provide a valid formula");
-                return;
-              }
-
-              setIsLoading(true);
-
-              try {
-                const { masses } = await calculateMass({
-                  formulaChanges: [formulaChange],
-                });
-                if (masses.length === 0) {
-                  toast.error("Error calculating mass, please try again later");
-                  return;
-                }
-
-                onReactionAdd({
-                  formulaChange,
-                  description,
-                  mass: masses[0],
-                });
-              } catch {
-                toast.error("Error calculating mass, please try again later");
-              } finally {
-                setPopoverOpen(false);
-              }
-            }}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center gap-2">
-                Caculating Mass...
-                <Loader2 className="animate-spin" />
-              </div>
-            ) : (
-              "Confirm"
-            )}
-          </Button>
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-4">
-        <FormLabelWithTooltip tooltip="You can additional define custom reactions here">
-          Reactions
-        </FormLabelWithTooltip>
-
-        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="secondary" size="xs">
-              <Plus size={14} />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            onClick={(event) => {
-              event.stopPropagation();
-            }}
-          >
-            <ReactionForm
-              onReactionAdd={(r) => {
-                append(r);
-              }}
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      <div className="flex flex-col overflow-scroll gap-2 max-h-[200px] w-[450px]">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[50px]"></TableHead>
-              <TableHead className="w-[200px]">
-                <FormLabelWithTooltip
-                  tooltip="Enter the chemical formula representing the change in the composition of a metabolite. 
-                This could be the addition or removal of specific elements or compounds during a metabolic reaction."
+    <div className="flex flex-col overflow-scroll gap-2 max-h-[200px] w-[450px]">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[50px]">
+              <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="xs">
+                    <Plus size={14} strokeWidth={3} />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  onClick={(event) => {
+                    event.stopPropagation();
+                  }}
                 >
-                  △ Formula
-                </FormLabelWithTooltip>
-              </TableHead>
-              <TableHead className="w-[200px]">
-                <FormLabelWithTooltip
-                  tooltip="Provide a brief description of the metabolic change or reaction. 
+                  <ReactionForm
+                    onReactionAdd={(r) => {
+                      append(r);
+                      setPopoverOpen(false);
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+            </TableHead>
+            <TableHead className="w-[200px]">
+              <FormLabelWithTooltip
+                tooltip="Enter the chemical formula representing the change in the composition of a metabolite. 
+                This could be the addition or removal of specific elements or compounds during a metabolic reaction."
+              >
+                △ Formula
+              </FormLabelWithTooltip>
+            </TableHead>
+            <TableHead className="w-[200px]">
+              <FormLabelWithTooltip
+                tooltip="Provide a brief description of the metabolic change or reaction. 
                 Include information about the context in which the formula change occurs, such as the metabolic process, the compounds involved, or any relevant biochemical details. 
                 This description should help users understand the nature of the formula change and its significance in the metabolic pathway."
-                >
-                  Description
-                </FormLabelWithTooltip>
-              </TableHead>
-              <TableHead className="w-[200px]">
-                <div className="flex items-center justify-center gap-2">
-                  <FormLabelWithTooltip
-                    tooltip="This field displays the calculated mass difference resulting from the formula change. 
+              >
+                Description
+              </FormLabelWithTooltip>
+            </TableHead>
+            <TableHead className="w-[200px]">
+              <div className="flex items-center justify-center gap-2">
+                <FormLabelWithTooltip
+                  tooltip="This field displays the calculated mass difference resulting from the formula change. 
               The mass is calculated based on the atomic weights of the elements added or removed in the formula change. 
               It represents the net change in mass of the metabolite as a result of the metabolic reaction. 
               This information is crucial for understanding the impact of the reaction on the metabolite's physical properties."
-                  >
-                    △ Mass
-                  </FormLabelWithTooltip>
-                </div>
-              </TableHead>
+                >
+                  △ Mass
+                </FormLabelWithTooltip>
+              </div>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {/* fields map to table rows then table cells */}
+          {fields.map((field, index) => (
+            <TableRow key={field.id} className="py-0">
+              <TableCell>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => remove(index)}
+                >
+                  <Minus className="stroke-red-400" size={12} strokeWidth={4} />
+                </Button>
+              </TableCell>
+              <TableCell className="flex items-center justify-center">
+                {field.formulaChange}
+              </TableCell>
+              <TableCell>{field.description}</TableCell>
+              <TableCell>{field.mass}</TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {/* fields map to table rows then table cells */}
-            {fields.map((field, index) => (
-              <TableRow key={field.id} className="py-0">
-                <TableCell>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => remove(index)}
-                    className="opacity-80 group"
-                  >
-                    <Trash
-                      size={12}
-                      className="dark:stroke-red-800 dark:group-hover:stroke-red-700 stroke-red-400 group-hover:stroke-red-500"
-                    />
-                  </Button>
-                </TableCell>
-                <TableCell>{field.formulaChange}</TableCell>
-                <TableCell>{field.description}</TableCell>
-                <TableCell>{field.mass}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+          ))}
+        </TableBody>
+      </Table>
+      <DialogDescription className="flex items-center justify-start flex-wrap gap-2 py-2 text-sm">
+        <Atom size={18} color="grey" />
+        By default, the reaction database contains{" "}
+        <Button
+          size="xs"
+          variant="secondary"
+          className="flex items-center gap-2"
+        >
+          <div>119 reactions</div>
+          <DownloadCloud size={12} />
+        </Button>
+      </DialogDescription>
     </div>
   );
 };
@@ -232,9 +230,13 @@ interface ReactionDbCreationInterface {
 export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
   const form = useForm<ReactionDatabaseInput>();
   const [open, setOpen] = useState(false);
-  const { handleUpload } = useFileUpload();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const calculateMass = useAction(api.actions.calculateMass);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const { append } = useFieldArray<ReactionDatabaseInput>({
+    control: form.control,
+    name: "reactions",
+  });
 
   const createReactionDatabase = useMutation(api.reactions.create);
 
@@ -275,23 +277,18 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
           <span>✨ Create </span>
         </Button>
       </DialogTrigger>
-      <DialogContent
-        onInteractOutside={(e) => {
-          e.preventDefault();
-        }}
-        className="sm:max-w-[500px]"
-      >
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Upload your reactions database</DialogTitle>
-          <DialogDescription>
-            Once you upload your reaction database file, you will automatically
-            select it for your next analysis
+          <DialogTitle>Customize reactions database</DialogTitle>
+          <DialogDescription className="flex items-end justify-start flex-wrap gap-2 py-2">
+            You can add your own by batch uploading a csv file or adding them
+            one by one
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-4 py-4"
+            className="flex flex-col gap-4"
           >
             <FormField
               control={form.control}
@@ -307,10 +304,9 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
                 </FormItem>
               )}
             />
-
             <FormItem>
               <FormLabelWithTooltip tooltip="Preparing a csv file with two columns: formula, description">
-                Batch Upload Reactions
+                Batch Upload
               </FormLabelWithTooltip>
               <Input
                 accept=".csv"
