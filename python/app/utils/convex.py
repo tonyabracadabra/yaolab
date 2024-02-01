@@ -52,12 +52,12 @@ async def load_mgf(
     blob = download_file(storage_id)
 
     try:
-        decoded_content = blob.decode(ENCODING)
-        with NamedTemporaryFile("w", suffix=".mgf") as temp:
-            temp.write(decoded_content)
-            # Reset the file pointer to the beginning of the file
-            temp.seek(0)
-            return load_from_mgf(temp.name)
+        decoded_content = blob.decode(encoding)
+        with NamedTemporaryFile("w+", suffix=".mgf", delete=False) as temp_file:  # Open for reading and writing
+            temp_file.write(decoded_content)
+            temp_file.flush()  # Ensure all data is written
+            temp_file.seek(0)  # Go back to the beginning of the file before reading
+            return load_from_mgf(temp_file.name) 
     except UnicodeDecodeError:
         raise Exception("Failed to decode the blob with encoding {}".format(encoding))
 
