@@ -10,7 +10,7 @@ class AnalysisStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     FAILED = "failed"
-    COMPLETED = "completed"
+    COMPLETE = "complete"
 
 
 class AnalysisTriggerInput(BaseModel):

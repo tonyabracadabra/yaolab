@@ -80,7 +80,7 @@ class AnalysisWorker(BaseModel):
             {
                 "id": self.id,
                 "result": storageId,
-                "status": AnalysisStatus.COMPLETED,
+                "status": AnalysisStatus.COMPLETE,
             },
         )
 
