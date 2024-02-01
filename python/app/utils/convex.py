@@ -24,6 +24,7 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "../../.env.loca
 def get_convex(request: Request) -> ConvexClient:
     convex = ConvexClient(CONVEX_URL)
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    print(f'token: {token}')
     convex.set_auth(token)
     return convex
 

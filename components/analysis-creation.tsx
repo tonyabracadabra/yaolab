@@ -146,13 +146,19 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
 
   const onSubmit = async (values: AnalysisCreationInputType) => {
     setIsSubmitting(true);
-    const token = await getToken({ template: "convex" });
     try {
+      const token = await getToken({ template: "convex", skipCache: true });
+      console.log("token", token);
+
+      if (!token) {
+        toast.error("You need to be logged in to perform this action");
+        return;
+      }
       const { id } = await triggerAnalysis({
         reactionDb: values.reactionDb,
         rawFile: values.rawFile,
         config: values.config,
-        token: token || "",
+        token,
       });
       onCreate(id);
     } catch (e) {

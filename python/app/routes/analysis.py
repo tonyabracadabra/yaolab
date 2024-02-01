@@ -17,8 +17,8 @@ router = APIRouter()
 
 class AnalysisWorker(BaseModel):
     id: str
-    analysis: Analysis
     convex: ConvexClient
+    analysis: Analysis
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

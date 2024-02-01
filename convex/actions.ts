@@ -13,6 +13,8 @@ export const triggerAnalysis = zAction({
       rawFile,
     });
 
+    console.log("token", token);
+
     const response = await fetch(`${process.env.FASTAPI_URL}/analysis/start`, {
       method: "POST",
       headers: {
