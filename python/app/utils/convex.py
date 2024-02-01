@@ -4,7 +4,6 @@ from functools import lru_cache
 from tempfile import NamedTemporaryFile
 from typing import Generator
 
-import numpy as np
 import pandas as pd
 import requests
 from dotenv import load_dotenv
