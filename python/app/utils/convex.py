@@ -56,6 +56,7 @@ async def load_mgf(
         decoded_content = blob.decode(ENCODING)
         with NamedTemporaryFile("w", suffix=".mgf") as temp:
             temp.write(decoded_content)
+            # Reset the file pointer to the beginning of the file
             temp.seek(0)
             return load_from_mgf(temp.name)
     except UnicodeDecodeError:
