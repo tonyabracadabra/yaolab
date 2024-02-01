@@ -93,7 +93,7 @@ class Edge(BaseModel):
 
 
 class Analysis(BaseModel):
-    reactionDb: ReactionDatabase | Literal("default")
+    reactionDb: ReactionDatabase | Literal["default"]
     rawFile: RawFile
     config: AnalysisConfig
 

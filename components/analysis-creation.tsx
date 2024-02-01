@@ -246,14 +246,14 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                           </SelectItem>
                         ))}
                         <SelectItem key="default" value="default">
-                          Default Reaction database (119 reactions)
+                          Default Reactions (119 reactions)
                         </SelectItem>
                         {allReactionDatabases?.length === 0 && (
                           <SelectItem key={"none"} disabled value="none">
                             {allReactionDatabases === undefined ? (
                               <Loader2 className="animate-spin" />
                             ) : (
-                              "No reaction db created"
+                              "No custom reaction db created"
                             )}
                           </SelectItem>
                         )}
@@ -295,7 +295,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                           value={currExperiment.toString()}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Raw File to be analyzed" />
+                            <SelectValue placeholder="Choose raw file to be analyzed" />
                           </SelectTrigger>
                           <SelectContent>
                             {fields?.map((f, i) => {
