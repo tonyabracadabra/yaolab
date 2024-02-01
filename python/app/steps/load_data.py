@@ -3,7 +3,7 @@ from typing import Literal
 
 import pandas as pd
 from app.models.analysis import Analysis, Experiment, MSTool, ReactionDatabase
-from app.utils.contants import DEFAULT_REACTION_DF, ID_COL, MZ_COL, RT_COL
+from app.utils.constants import DEFAULT_REACTION_DF, ID_COL, MZ_COL, RT_COL
 from app.utils.convex import load_csv, load_mgf
 from app.utils.logger import log
 from matchms.Spectrum import Spectrum

@@ -35,43 +35,48 @@ export const useDialog = () => {
   return { isOpen, openDialog, closeDialog };
 };
 
-export const readFirstLine = (file: File): Promise<string[]> => {
+export const readFirstKLines = (file: File, k: number): Promise<string[]> => {
   return new Promise((resolve, reject) => {
     const reader = file.stream().getReader();
-    let decoder = new TextDecoder();
-    let isFirstLine = true;
-    let firstLine = "";
+    let decoder = new TextDecoder("utf-8");
+    let resultLines: string[] = [];
+    let currentLine = "";
 
-    const processChunk = ({
-      done,
-      value,
-    }: {
-      done: boolean;
-      value?: Uint8Array;
-    }) => {
-      if (done) {
-        if (isFirstLine) {
-          resolve(firstLine.split(",")); // Handle case where no newline in the first chunk
-        } else {
-          reject(new Error("No line found"));
+    const readNextChunk = async () => {
+      try {
+        const { done, value } = await reader.read();
+        if (done) {
+          // Handle the last line if it doesn't end with a newline character
+          if (currentLine) resultLines.push(currentLine.trim());
+          resolve(resultLines.slice(0, k));
+          return;
         }
-        return;
-      }
 
-      isFirstLine = false;
-      const chunk = decoder.decode(value, { stream: true });
-      const newlineIndex = chunk.indexOf("\n");
+        const chunkText = decoder.decode(value, { stream: true });
+        let startIndex = 0;
+        let endIndex = chunkText.indexOf("\n");
 
-      if (newlineIndex !== -1) {
-        firstLine += chunk.substring(0, newlineIndex);
-        resolve(firstLine.split(",").map((s) => s.trim()));
-        reader.cancel();
-      } else {
-        firstLine += chunk;
-        reader.read().then(processChunk).catch(reject);
+        while (endIndex !== -1) {
+          currentLine += chunkText.substring(startIndex, endIndex);
+          resultLines.push(currentLine.trim());
+          if (resultLines.length === k) {
+            resolve(resultLines);
+            reader.cancel();
+            return;
+          }
+          currentLine = "";
+          startIndex = endIndex + 1;
+          endIndex = chunkText.indexOf("\n", startIndex);
+        }
+
+        // Accumulate any remaining text in the current line
+        currentLine += chunkText.substring(startIndex);
+        readNextChunk();
+      } catch (error) {
+        reject(error);
       }
     };
 
-    reader.read().then(processChunk).catch(reject);
+    readNextChunk();
   });
 };

@@ -1,7 +1,7 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { ReactionDatabaseSchema, ReactionSchema } from "@/convex/schema";
-import { readFirstLine } from "@/lib/utils";
+import { readFirstKLines } from "@/lib/utils";
 import { useAction, useMutation } from "convex/react";
 import { Atom, DownloadCloud, Loader2, Minus, Plus } from "lucide-react";
 import Papa from "papaparse";
@@ -126,6 +126,9 @@ const ReactionsFieldsArray = ({
     name: "reactions",
   });
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const downloadDefaultReactions = useAction(
+    api.actions.downloadDefaultReactions
+  );
 
   return (
     <div className="flex flex-col overflow-scroll gap-2 max-h-[200px] w-[450px]">
@@ -212,8 +215,21 @@ const ReactionsFieldsArray = ({
         By default, the reaction database contains{" "}
         <Button
           size="xs"
+          type="button"
           variant="secondary"
           className="flex items-center gap-2"
+          onClick={async () => {
+            const { csv } = await downloadDefaultReactions();
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "default-reactions.csv"; // Sets the filename for the download
+            document.body.appendChild(a); // Append the link to the document
+            a.click(); // Trigger the download
+            document.body.removeChild(a); // Clean up and remove the link
+            URL.revokeObjectURL(url);
+          }}
         >
           <div>119 reactions</div>
           <DownloadCloud size={12} />
@@ -308,7 +324,17 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
                   const selectedFile =
                     event.target.files && event.target.files[0];
                   if (selectedFile) {
-                    readFirstLine(selectedFile).then((columns: string[]) => {
+                    readFirstKLines(selectedFile, 1).then((lines: string[]) => {
+                      if (lines.length === 0) {
+                        toast.error("Your file is empty");
+                        form.reset();
+                        return;
+                      }
+
+                      const columns = lines[0]
+                        .split(",")
+                        .map((column) => column.trim());
+
                       // TODO: use gpt for fuzzy matching later
                       const lowerCased = columns.map((column) =>
                         column.toLowerCase()
@@ -385,7 +411,7 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
                     <Loader2 className="animate-spin" />
                   </div>
                 ) : (
-                  "Upload and create"
+                  "Create"
                 )}
               </Button>
             </DialogFooter>

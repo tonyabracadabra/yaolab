@@ -1,13 +1,12 @@
 from typing import List
 
 import pandas as pd
+from app.utils.constants import ID_COL
 from app.utils.logger import log
 from matchms import Scores, calculate_scores
 from matchms.similarity import ModifiedCosine
 from matchms.Spectrum import Spectrum
 from scipy.sparse import coo_matrix
-
-from ..utils.contants import ID_COL
 
 # Constants
 SCANS_KEY = "scans"

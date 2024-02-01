@@ -1,9 +1,17 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useAction, useQuery } from "convex/react";
-import { LoaderIcon } from "lucide-react";
+import {
+  Check,
+  Download,
+  FileWarning,
+  Loader2,
+  LoaderIcon,
+} from "lucide-react";
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
 import { ForceGraph2D } from "react-force-graph";
@@ -51,21 +59,16 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     nodes: [],
     links: [],
   });
-
-  console.log("graphData", graphData);
+  const [url, setUrl] = useState<string>("");
   const getFileUrl = useAction(api.actions.getFileUrl);
 
   useEffect(() => {
-    const fetchAndProcessData = async () => {
-      if (!analysis?.result) {
-        return;
-      }
-
-      const { url } = await getFileUrl({ storageId: analysis?.result });
+    const fetchAndProcessData = async (storageId: Id<"_storage">) => {
+      const { url } = await getFileUrl({ storageId });
       if (!url) {
         return;
       }
-
+      setUrl(url);
       fetch(url)
         .then((response) => response.blob())
         .then((blob: Blob | null) => {
@@ -111,39 +114,56 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
           }
         });
     };
-    fetchAndProcessData();
+
+    if (analysis?.result) {
+      fetchAndProcessData(analysis.result);
+    }
   }, [analysis?.result]);
 
   if (!analysis) {
     return <LoaderIcon className="animate-spin" />;
   }
 
-  function correlationToColor(correlation: number): string {
+  const correlationToColor = (correlation: number) => {
     const intensity = Math.round(255 * (1 - correlation)); // Higher correlation, darker color
     return `rgb(${intensity},${intensity},${intensity})`; // Generating a shade of gray
-  }
+  };
 
   return (
     <div>
-      <div>
-        Log:
-        {analysis.log}
+      <div className="w-full gap-4 items-center flex">
+        <Badge
+          color="green"
+          className="flex items-center justify-center gap-2 w-fit"
+        >
+          {analysis.status === "complete" && <Check size={12} />}
+          {analysis.status === "pending" && (
+            <Loader2 className="animate-spin" size={12} />
+          )}
+          {analysis.status === "failed" && <FileWarning size={12} />}
+          <div>{analysis.status}</div>
+        </Badge>
+        {url && (
+          <Button
+            size="xs"
+            onClick={() => {
+              window.open(url, "_blank");
+            }}
+            className="flex items-center justify-center gap-2"
+          >
+            <span>Download</span>
+            <Download size={12} />
+          </Button>
+        )}
       </div>
-      <div>
-        Status:
-        {analysis.status}
-      </div>
-      <div>
-        Result:
-        <ForceGraph2D
-          graphData={graphData}
-          nodeLabel="id"
-          linkDirectionalParticles="value"
-          linkDirectionalParticleWidth={(link: Link) => Math.sqrt(link.value)}
-          linkColor={(link: Link) => correlationToColor(link.correlation)}
-          // linkWidth={(link: Link) => link.correlation * 2 + 1} // Ensuring the line is always visible
-        />
-      </div>
+      {analysis.status === "pending" && <div>{analysis.log}</div>}
+      <ForceGraph2D
+        graphData={graphData}
+        nodeLabel="id"
+        linkDirectionalParticles="value"
+        linkDirectionalParticleWidth={(link: Link) => Math.sqrt(link.value)}
+        linkColor={(link: Link) => correlationToColor(link.correlation)}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import pandas as pd
-from app.utils.contants import ID_COL_1, ID_COL_2, VALUE_COL
+from app.utils.constants import ID_COL_1, ID_COL_2, VALUE_COL
 from app.utils.logger import log
 from scipy.sparse import coo_matrix
 

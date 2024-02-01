@@ -4,6 +4,7 @@ import app.steps as steps
 import pandas as pd
 import pyteomics.mass
 from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput
+from app.utils.constants import DEFAULT_REACTION_DF
 from app.utils.convex import get_convex, upload_file
 from app.utils.logger import logger, with_logging_and_context
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
@@ -138,3 +139,8 @@ async def mass(input: MassInput) -> dict[str, list[float]]:
     except Exception as e:
         logger.log(logging.ERROR, e)
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/defaultReactions")
+async def download_default_reactions() -> dict[str, str]:
+    return {"csv": DEFAULT_REACTION_DF.to_csv(index=False)}

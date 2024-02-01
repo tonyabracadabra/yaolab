@@ -62,3 +62,18 @@ export const getFileUrl = zAction({
     return { url };
   },
 });
+
+export const downloadDefaultReactions = zAction({
+  args: {},
+  handler: async (_) => {
+    const response = await fetch(
+      `${process.env.FASTAPI_URL}/analysis/defaultReactions`
+    );
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+  output: z.object({ csv: z.string() }),
+});

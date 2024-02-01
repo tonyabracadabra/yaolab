@@ -1,7 +1,7 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { MSTool, RawFileCreationInputSchema } from "@/convex/schema";
-import { readFirstLine, useFileUpload } from "@/lib/utils";
+import { readFirstKLines, useFileUpload } from "@/lib/utils";
 import { useMutation } from "convex/react";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -85,11 +85,22 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
   };
 
   const getSampleColumns = async (file: File) => {
-    const columns = await readFirstLine(file);
     const tool = form.watch("tool");
     if (tool === "MDial") {
+      if (!file.name.endsWith(".txt")) {
+        toast.error("Invalid file type, MSDial format requires a .txt file");
+        return;
+      }
+
+      const firstFiveLines = await readFirstKLines(file, 5);
+      const headerLine = firstFiveLines[firstFiveLines.length - 1];
+      const columns = headerLine.split("\t").map((column) => column.trim());
+
       return columns.slice(columns.indexOf("MS/MS spectrum") + 1);
     } else if (tool === "MZmine3") {
+      const firstLine = await readFirstKLines(file, 1);
+      const columns = firstLine[0].split(",");
+
       return columns
         .filter((column) => column.includes(".raw Peak"))
         .map((column) => column.split(".")[0]);
