@@ -31,6 +31,9 @@ def _preprocess_mzmine3(targeted_ions_df: pd.DataFrame) -> pd.DataFrame:
     ]
     actual_sample_names = [col.split(".")[0] for col in sample_columns]
 
+    # Drop columns with all NaN values
+    df = targeted_ions_df.dropna(axis=1, how="all")
+
     # Normalize column names
     df = df.rename(
         columns={
@@ -40,9 +43,6 @@ def _preprocess_mzmine3(targeted_ions_df: pd.DataFrame) -> pd.DataFrame:
         }
         | dict(zip(sample_columns, actual_sample_names))
     )
-
-    # Drop columns with all NaN values
-    df = targeted_ions_df.dropna(axis=1, how="all")
 
     return df
 
