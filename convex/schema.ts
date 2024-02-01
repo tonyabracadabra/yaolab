@@ -11,7 +11,7 @@ export const ExperimentSchema = z.object({
 export const ReactionSchema = z.object({
   formulaChange: z.string(),
   description: z.string(),
-  mass: z.number(),
+  massDiff: z.number(),
 });
 
 export const AnalysisConfigSchema = z.object({
@@ -30,7 +30,7 @@ export const AnalysisConfigSchema = z.object({
 
 export const AnalysisCreationInputSchema = z.object({
   rawFile: zid("rawFiles"),
-  reactionDb: zid("reactionDatabases"),
+  reactionDb: z.union([zid("reactionDatabases"), z.literal("default")]),
   config: AnalysisConfigSchema,
 });
 

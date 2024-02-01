@@ -1,15 +1,28 @@
 import asyncio
+from typing import Literal
 
 import pandas as pd
 from app.models.analysis import Analysis, Experiment, MSTool, ReactionDatabase
-from app.utils.contants import ID_COL, MZ_COL, RT_COL
+from app.utils.contants import DEFAULT_REACTION_DF, ID_COL, MZ_COL, RT_COL
 from app.utils.convex import load_csv, load_mgf
 from app.utils.logger import log
 from matchms.Spectrum import Spectrum
 
 
-async def _load_reaction_db(reaction_db: ReactionDatabase) -> pd.DataFrame:
-    return pd.DataFrame([reaction.dict() for reaction in reaction_db.reactions])
+async def _load_reaction_db(
+    reaction_db: ReactionDatabase | Literal["default"],
+) -> pd.DataFrame:
+    if reaction_db == "default":
+        return DEFAULT_REACTION_DF
+    else:
+        reaction_df = pd.concat(
+            [
+                DEFAULT_REACTION_DF,
+                pd.DataFrame([reaction.dict() for reaction in reaction_db.reactions]),
+            ]
+        )
+        reaction_df[ID_COL] = range(len(reaction_df)) + 1
+        return reaction_df
 
 
 def _preprocess_mzmine3(targeted_ions_df: pd.DataFrame) -> pd.DataFrame:
@@ -19,7 +32,7 @@ def _preprocess_mzmine3(targeted_ions_df: pd.DataFrame) -> pd.DataFrame:
     actual_sample_names = [col.split(".")[0] for col in sample_columns]
 
     # Drop columns with all NaN values
-    df = targeted_ions_df.dropna(axis=1, how='all')
+    df = targeted_ions_df.dropna(axis=1, how="all")
     # Normalize column names
     df = df.rename(
         columns={

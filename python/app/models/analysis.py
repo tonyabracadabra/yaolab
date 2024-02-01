@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, Extra
 
@@ -52,7 +53,7 @@ class MSTool(str, Enum):
 class Reaction(BaseModel):
     formulaChange: str
     description: str
-    mass: float
+    massDiff: float
 
 
 class ReactionDatabase(BaseModel):
@@ -92,7 +93,7 @@ class Edge(BaseModel):
 
 
 class Analysis(BaseModel):
-    reactionDb: ReactionDatabase
+    reactionDb: ReactionDatabase | Literal("default")
     rawFile: RawFile
     config: AnalysisConfig
 

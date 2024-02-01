@@ -29,7 +29,8 @@ export const get = zQuery({
     return {
       ...analysis,
       rawFile: await db.get(analysis.rawFile),
-      reactionDb: await db.get(analysis.reactionDb),
+      reactionDb:
+        analysis.reactionDb !== "default" && db.get(analysis.reactionDb),
     };
   },
 });
@@ -58,7 +59,8 @@ export const getAll = zQuery({
     return analyses.map((analysis) => ({
       ...analysis,
       rawFile: db.get(analysis.rawFile),
-      reactionDb: db.get(analysis.reactionDb),
+      reactionDb:
+        analysis.reactionDb !== "default" && db.get(analysis.reactionDb),
     }));
   },
 });

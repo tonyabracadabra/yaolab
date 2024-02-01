@@ -111,6 +111,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
   const form = useForm<AnalysisCreationInputType>({
     resolver: zodResolver(AnalysisCreationInputSchema),
     defaultValues: {
+      reactionDb: "default",
       config: {
         experiments: [
           {
@@ -244,6 +245,9 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                             {db.name}
                           </SelectItem>
                         ))}
+                        <SelectItem key="default" value="default">
+                          Default Reaction database (119 reactions)
+                        </SelectItem>
                         {allReactionDatabases?.length === 0 && (
                           <SelectItem key={"none"} disabled value="none">
                             {allReactionDatabases === undefined ? (

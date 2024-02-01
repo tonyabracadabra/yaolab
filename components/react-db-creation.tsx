@@ -95,7 +95,7 @@ const ReactionForm = ({ onReactionAdd }: ReactionFormInterface) => {
               onReactionAdd({
                 formulaChange,
                 description,
-                mass: masses[0],
+                massDiff: masses[0],
               });
             } catch {
               toast.error("Error calculating mass, please try again later");
@@ -202,13 +202,13 @@ const ReactionsFieldsArray = ({
                 {field.formulaChange}
               </TableCell>
               <TableCell>{field.description}</TableCell>
-              <TableCell>{field.mass}</TableCell>
+              <TableCell>{field.massDiff}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      <DialogDescription className="flex items-center justify-start flex-wrap gap-2 py-2 text-sm">
-        <Atom size={18} color="grey" />
+      <DialogDescription className="flex items-center justify-start flex-wrap gap-2 pt-4 text-sm">
+        <Atom size={18} />
         By default, the reaction database contains{" "}
         <Button
           size="xs"
@@ -232,12 +232,6 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const calculateMass = useAction(api.actions.calculateMass);
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const { append } = useFieldArray<ReactionDatabaseInput>({
-    control: form.control,
-    name: "reactions",
-  });
-
   const createReactionDatabase = useMutation(api.reactions.create);
 
   const onClose = () => {
@@ -363,7 +357,7 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
                               ...partialReactions.map((reaction, index) => {
                                 return {
                                   ...reaction,
-                                  mass: masses[index],
+                                  massDiff: masses[index],
                                 };
                               }),
                             ]);
