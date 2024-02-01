@@ -1,11 +1,11 @@
 import io
 import os
-from async_lru import alru_cache
 from tempfile import NamedTemporaryFile
 from typing import Generator
 
 import pandas as pd
 import requests
+from async_lru import alru_cache
 from dotenv import load_dotenv
 from fastapi import Request
 from matchms.importing import load_from_mgf
@@ -53,11 +53,13 @@ async def load_mgf(
 
     try:
         decoded_content = blob.decode(encoding)
-        with NamedTemporaryFile("w+", suffix=".mgf", delete=False) as temp_file:  # Open for reading and writing
+        with NamedTemporaryFile(
+            "w+", suffix=".mgf", delete=False
+        ) as temp_file:  # Open for reading and writing
             temp_file.write(decoded_content)
             temp_file.flush()  # Ensure all data is written
             temp_file.seek(0)  # Go back to the beginning of the file before reading
-            return load_from_mgf(temp_file.name) 
+            return load_from_mgf(temp_file.name)
     except UnicodeDecodeError:
         raise Exception("Failed to decode the blob with encoding {}".format(encoding))
 
