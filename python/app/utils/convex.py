@@ -1,6 +1,6 @@
 import io
 import os
-from functools import lru_cache
+from async_lru import alru_cache
 from tempfile import NamedTemporaryFile
 from typing import Generator
 
@@ -45,7 +45,7 @@ def upload_file(df: pd.DataFrame, convex: ConvexClient) -> str:
     return result.json()["storageId"]
 
 
-@lru_cache(maxsize=128, typed=False)
+@alru_cache(maxsize=128, typed=False)
 async def load_mgf(
     storage_id: str, encoding: str = ENCODING
 ) -> Generator[Spectrum, None, None]:
@@ -62,7 +62,7 @@ async def load_mgf(
         raise Exception("Failed to decode the blob with encoding {}".format(encoding))
 
 
-@lru_cache(maxsize=128, typed=False)
+@alru_cache(maxsize=128, typed=False)
 async def load_csv(storage_id: str, encoding: str = ENCODING) -> pd.DataFrame:
     blob = download_file(storage_id)
     try:
