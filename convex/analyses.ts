@@ -41,12 +41,14 @@ export const update = zMutation({
   args: {
     id: zid("analyses"),
     status: z.optional(AnalysisStatus),
+    result: z.optional(zid("_storage")),
     log: z.optional(z.string()),
   },
-  handler: async ({ db }, { id, status, log }) => {
+  handler: async ({ db }, { id, status, log, result }) => {
     db.patch(id, {
       ...(status && { status }),
       ...(log && { log }),
+      ...(result && { result }),
     });
   },
 });

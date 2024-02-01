@@ -80,17 +80,6 @@ class AnalysisWorker(BaseModel):
             {
                 "id": self.id,
                 "result": storageId,
-            },
-        )
-
-        await self._complete(self.id)
-
-    def _complete(self) -> None:
-        self.convex.mutation(
-            "analyses:update",
-            {
-                "id": self.id,
-                "result": {"edges": []},
                 "status": AnalysisStatus.COMPLETED,
             },
         )
