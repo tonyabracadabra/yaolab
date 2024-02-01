@@ -27,10 +27,10 @@ def with_logging_and_context(convex: ConvexClient, analysis_id: str):
     def decorator(func: callable):
         @functools.wraps(func)
         async def wrapped(*args, **kwargs):
+            print(f"token in logging: {convex.auth}")
             log_message = getattr(func, "log_message", f"Starting '{func.__name__}'")
             try:
                 logger.info(log_message + f" for analysis {analysis_id}")
-                print(f"token in logging: {convex.auth}")
                 convex.mutation(
                     "analyses:update", {"id": analysis_id, "log": log_message}
                 )
