@@ -31,8 +31,6 @@ def _preprocess_mzmine3(targeted_ions_df: pd.DataFrame) -> pd.DataFrame:
     ]
     actual_sample_names = [col.split(".")[0] for col in sample_columns]
 
-    # Drop columns with all NaN values
-    df = targeted_ions_df.dropna(axis=1, how="all")
     # Normalize column names
     df = df.rename(
         columns={
@@ -42,6 +40,9 @@ def _preprocess_mzmine3(targeted_ions_df: pd.DataFrame) -> pd.DataFrame:
         }
         | dict(zip(sample_columns, actual_sample_names))
     )
+
+    # Drop columns with all NaN values
+    df = targeted_ions_df.dropna(axis=1, how="all")
 
     return df
 
@@ -88,13 +89,18 @@ def _filter_metabolites(
     minSignalThreshold: float,
     signalEnrichmentFactor: float,
 ):
-    cond = True
+    cond = pd.Series(True, index=data.index)
     for experiment in experiments:
         sample_group = experiment.sampleGroups
         blank_group = experiment.blankGroups
-        cond &= (data[sample_group].max(axis=1) > minSignalThreshold) & (
-            data[blank_group].mean(axis=1) > signalEnrichmentFactor
+
+        blank_mean = data[blank_group].mean(axis=1)
+        sample_max = data[sample_group].max(axis=1)
+        filter_condition = (sample_max > minSignalThreshold) & (
+            sample_max > signalEnrichmentFactor * blank_mean
         )
+
+        cond &= filter_condition
         group_columns = sample_group + blank_group
         data[experiment.name] = data[group_columns].mean(axis=1).round().astype(int)
 
