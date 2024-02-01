@@ -51,54 +51,76 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     nodes: [],
     links: [],
   });
-  const download = useAction(api.actions.download);
+
+  console.log("graphData", graphData);
+  const getFileUrl = useAction(api.actions.getFileUrl);
 
   useEffect(() => {
-    if (!analysis?.result) {
-      return;
-    }
-    // Replace with your download function
-    // Ensure it returns a Promise that resolves to Blob | null
-    download({ storageId: analysis?.result }).then((blob: Blob | null) => {
-      if (blob) {
-        // Convert Blob to File
-        const file = new File([blob], "data.csv", { type: blob.type });
-
-        Papa.parse<RowData>(file, {
-          header: true,
-          dynamicTyping: true,
-          complete: (results) => {
-            const nodesSet = new Set<string>();
-            const links: Link[] = [];
-
-            results.data.forEach((row) => {
-              nodesSet.add(row.ID1);
-              nodesSet.add(row.ID2);
-              links.push({
-                source: row.ID1,
-                target: row.ID2,
-                value: row.Value,
-                correlation: row.Correlation,
-                retentionTimeDifference: row.RetentionTimeDifference,
-                mzDifference: row.MZDifference,
-                matchedMzDifference: row.MatchedMZDifference,
-                matchedFormulaChange: row.MatchedFormulaChange,
-                matchedReactionDescription: row.MatchedReactionDescription,
-                redundantData: row.RedundantData,
-                modCos: row.ModCos,
-              });
-            });
-
-            const nodes: Node[] = Array.from(nodesSet).map((id) => ({ id }));
-            setGraphData({ nodes, links });
-          },
-        });
+    const fetchAndProcessData = async () => {
+      if (!analysis?.result) {
+        return;
       }
-    });
+
+      const { url } = await getFileUrl({ storageId: analysis?.result });
+      if (!url) {
+        return;
+      }
+
+      fetch(url)
+        .then((response) => response.blob())
+        .then((blob: Blob | null) => {
+          if (blob) {
+            // // Convert Blob to File
+            const file = new File([blob], "data.csv", { type: blob.type });
+
+            Papa.parse<RowData>(file, {
+              header: true,
+              dynamicTyping: true,
+              complete: (results) => {
+                const nodesSet = new Set<string>();
+                const links: Link[] = [];
+
+                results.data.forEach((row) => {
+                  if (!row.ID1 || !row.ID2 || !row.Value) {
+                    return;
+                  }
+
+                  nodesSet.add(row.ID1);
+                  nodesSet.add(row.ID2);
+                  links.push({
+                    source: row.ID1,
+                    target: row.ID2,
+                    value: row.Value,
+                    correlation: row.Correlation,
+                    retentionTimeDifference: row.RetentionTimeDifference,
+                    mzDifference: row.MZDifference,
+                    matchedMzDifference: row.MatchedMZDifference,
+                    matchedFormulaChange: row.MatchedFormulaChange,
+                    matchedReactionDescription: row.MatchedReactionDescription,
+                    redundantData: row.RedundantData,
+                    modCos: row.ModCos,
+                  });
+                });
+
+                const nodes: Node[] = Array.from(nodesSet).map((id) => ({
+                  id,
+                }));
+                setGraphData({ nodes, links });
+              },
+            });
+          }
+        });
+    };
+    fetchAndProcessData();
   }, [analysis?.result]);
 
   if (!analysis) {
     return <LoaderIcon className="animate-spin" />;
+  }
+
+  function correlationToColor(correlation: number): string {
+    const intensity = Math.round(255 * (1 - correlation)); // Higher correlation, darker color
+    return `rgb(${intensity},${intensity},${intensity})`; // Generating a shade of gray
   }
 
   return (
@@ -116,9 +138,10 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         <ForceGraph2D
           graphData={graphData}
           nodeLabel="id"
-          nodeAutoColorBy="group"
           linkDirectionalParticles="value"
           linkDirectionalParticleWidth={(link: Link) => Math.sqrt(link.value)}
+          linkColor={(link: Link) => correlationToColor(link.correlation)}
+          // linkWidth={(link: Link) => link.correlation * 2 + 1} // Ensuring the line is always visible
         />
       </div>
     </div>

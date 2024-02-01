@@ -13,8 +13,6 @@ export const triggerAnalysis = zAction({
       rawFile,
     });
 
-    console.log("token", token);
-
     const response = await fetch(`${process.env.FASTAPI_URL}/analysis/start`, {
       method: "POST",
       headers: {
@@ -54,11 +52,13 @@ export const calculateMass = zAction({
   output: z.object({ masses: z.array(z.number()) }),
 });
 
-export const download = zAction({
+export const getFileUrl = zAction({
   args: {
     storageId: zid("_storage"),
   },
   handler: async (ctx, { storageId }) => {
-    return await ctx.storage.get(storageId);
+    const url = await ctx.storage.getUrl(storageId);
+
+    return { url };
   },
 });
