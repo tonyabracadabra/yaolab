@@ -19,6 +19,10 @@ TOLERANCE = 0.005
 async def create_similarity_matrix(
     spectra: List[Spectrum], target_ions_df: pd.DataFrame
 ) -> coo_matrix:
+    # printout some debug information
+    print("spectra:", spectra)
+    print("target_ions_df:", target_ions_df.head())
+
     # Filter spectra based on scan IDs
     ids = set(target_ions_df[ID_COL])
     filtered_spectra = [
