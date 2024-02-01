@@ -12,7 +12,7 @@ MODCOS_COL = "ModCos"
 REDUNDANT_DATA_COL = "Redundant Data"
 
 # these are columns in the reaction file
-MASS_DIFF_COL = "mass"
+MASS_DIFF_COL = "massDiff"
 FORMULA_CHANGE_COL = "formulaChange"
 REACTION_DESCRIPTION_COL = "description"
 
