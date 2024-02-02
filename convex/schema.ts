@@ -41,24 +41,6 @@ export const AnalysisStatus = z.enum([
   "failed",
 ]);
 
-export const Edge = z.object({
-  id1: z.string(),
-  id2: z.string(),
-  value: z.number(),
-  correlation: z.number(),
-  rtDiff: z.number(),
-  mzDiff: z.number(),
-  matchedMzDiff: z.number(),
-  matchedFormulaChange: z.number(),
-  matchedReactionDesc: z.number(),
-  redundantData: z.number(),
-  modCos: z.number(),
-});
-
-export const AnalysisResultSchema = z.object({
-  edges: z.array(Edge),
-});
-
 export const AnalysisSchema = z.object({
   ...AnalysisCreationInputSchema.shape,
   user: z.string(),

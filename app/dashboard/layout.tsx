@@ -2,7 +2,7 @@
 
 import { DashboardNav } from "@/components/nav";
 import { useConvexAuth } from "convex/react";
-import { BarChart2, Database, File, Loader2, Plus } from "lucide-react";
+import { BarChart2, Loader2, Plus } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -24,16 +24,6 @@ export default function DashboardLayout({
             title: "All analysis",
             icon: BarChart2,
             href: "/dashboard/analysis",
-          },
-          {
-            title: "Raw MS files",
-            icon: File,
-            href: "/dashboard/files",
-          },
-          {
-            title: "Reaction Databases",
-            icon: Database,
-            href: "/dashboard/reaction-databases",
           },
         ]}
       />
