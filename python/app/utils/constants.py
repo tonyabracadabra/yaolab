@@ -6,6 +6,7 @@ import pandas as pd
 ID_COL = "id"
 MZ_COL = "m/z"
 RT_COL = "Rt(min)"
+MSMS_COL = "MS/MS spectrum"
 
 CORRELATION_COL = "Correlation"
 RT_DIFF_COL = "Retention Time Difference"
