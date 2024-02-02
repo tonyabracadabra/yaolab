@@ -59,8 +59,6 @@ async def load_data(
         _load_reaction_db(analysis.reactionDb),
     ]
     spectra, targeted_ions_df, reaction_df = await asyncio.gather(*tasks)
-    targeted_ions_df = preprocessors[analysis.rawFile.tool](targeted_ions_df)
-
     targeted_ions_df = _filter_metabolites(
         data=targeted_ions_df,
         experiments=analysis.config.experiments,
