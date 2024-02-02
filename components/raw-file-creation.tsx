@@ -69,7 +69,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
           handleUpload(values.targetedIons),
         ]);
 
-      const token = await getToken();
+      const token = await getToken({ template: "convex", skipCache: true });
       if (!token) {
         throw new Error("No token found");
       }
