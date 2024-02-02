@@ -80,16 +80,18 @@ export const downloadDefaultReactions = zAction({
 
 export const preprocessIons = zAction({
   args: {
-    tool: z.enum(["MZmine3", "MDial"]),
     targetedIons: zid("_storage"),
+    tool: z.enum(["MZmine3", "MDial"]),
+    token: z.string(),
   },
-  handler: async (_, { tool, targetedIons }) => {
+  handler: async (_, { tool, targetedIons, token }) => {
     const response = await fetch(
       `${process.env.FASTAPI_URL}/analysis/preprocessIons`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ tool, targetedIons }),
       }

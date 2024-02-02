@@ -2,8 +2,9 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { MSTool, RawFileCreationInputSchema } from "@/convex/schema";
 import { useFileUpload } from "@/lib/utils";
+import { useAuth } from "@clerk/nextjs";
 import { useAction, useMutation } from "convex/react";
-import { Loader2 } from "lucide-react";
+import { CheckCircle2Icon, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -50,16 +51,17 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
   const preprocessIons = useAction(api.actions.preprocessIons);
   const [open, setOpen] = useState(false);
   const createRawFile = useMutation(api.rawFiles.create);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [status, setStatus] = useState<"idle" | "processing" | "done">("idle");
+  const { getToken } = useAuth();
 
   const onClose = () => {
     form.reset();
     setOpen(false);
-    setIsSubmitting(false);
+    setStatus("idle");
   };
 
   const onSubmit = async (values: RawFileCreationInput) => {
-    setIsSubmitting(true);
+    setStatus("processing");
     try {
       const [{ storageId: mgfId }, { storageId: targetedIonsId }] =
         await Promise.all([
@@ -67,11 +69,18 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
           handleUpload(values.targetedIons),
         ]);
 
+      const token = await getToken();
+      if (!token) {
+        throw new Error("No token found");
+      }
+
       const { storageId: processedId, sampleColumns } = await preprocessIons({
         targetedIons: targetedIonsId,
         tool: values.tool,
+        token,
       });
 
+      setStatus("done");
       const { id } = await createRawFile({
         ...values,
         sampleColumns,
@@ -84,9 +93,10 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
       onCreate(id);
       onClose();
     } catch (error) {
+      console.log(error);
       toast.error("Something went wrong while uploading your file, try again");
     } finally {
-      setIsSubmitting(false);
+      setStatus("idle");
     }
   };
 
@@ -218,14 +228,19 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
             />
             <DialogFooter>
               <Button type="submit">
-                {isSubmitting ? (
+                {status === "processing" && (
                   <div className="flex items-center gap-2">
-                    Uploading
+                    Preprocessing your files
                     <Loader2 className="animate-spin" />
                   </div>
-                ) : (
-                  "Upload and create"
                 )}
+                {status === "done" && (
+                  <div className="flex items-center justify-center gap-2">
+                    <CheckCircle2Icon size={16} />
+                    Done
+                  </div>
+                )}
+                {status === "idle" && "Upload"}
               </Button>
             </DialogFooter>
           </form>
