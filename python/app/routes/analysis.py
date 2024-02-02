@@ -163,7 +163,7 @@ async def preprocessIons(
             ions_blob=ions_blob, tool=input.tool
         )
         storage_id = upload_file(df, convex)
-        return {"storageId": storage_id, "sampleCols": sample_cols}
+        return {"storageId": storage_id, "sampleColumns": sample_cols}
     except Exception as e:
         logger.log(logging.ERROR, e)
         raise HTTPException(status_code=400, detail=str(e))
