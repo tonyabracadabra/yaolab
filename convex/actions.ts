@@ -106,7 +106,7 @@ export const preprocessIons = zAction({
   },
   output: z.object({
     storageId: zid("_storage"),
-    sampleColumns: z.array(z.string()),
+    sampleCols: z.array(z.string()),
   }),
 });
 
