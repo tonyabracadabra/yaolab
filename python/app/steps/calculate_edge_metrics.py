@@ -61,10 +61,3 @@ async def calculate_edge_metrics(
     )
 
     return edge_data_df
-
-
-# Example usage:
-# detected_ions_df = pd.read_csv('F2_Targeted_Ions.csv')
-# edge_data_df = pd.read_csv('F9_Mz_Similarity_RawEdge.csv')
-# updated_edge_data_df = calculate_edge_metrics(detected_ions_df, edge_data_df)
-# updated_edge_data_df.to_csv('F10_Updated_Edge_Data.csv')

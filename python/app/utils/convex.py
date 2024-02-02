@@ -13,11 +13,12 @@ from matchms.Spectrum import Spectrum
 
 from convex import ConvexClient
 
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "../../.env.local"))
+
+
 ENCODING: str = "utf-8"
 CONVEX_STORAGE_URL = os.environ["CONVEX_STORAGE_URL"]
 CONVEX_URL = os.environ["CONVEX_URL"]
-
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "../../.env.local"))
 
 
 def get_convex(request: Request) -> ConvexClient:

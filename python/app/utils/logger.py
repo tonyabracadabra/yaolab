@@ -43,7 +43,11 @@ def with_logging_and_context(convex: ConvexClient, analysis_id: str):
                 )
                 convex.mutation(
                     "analyses:update",
-                    {"id": analysis_id, "status": AnalysisStatus.FAILED, "log": str(e)},
+                    {
+                        "id": analysis_id,
+                        "status": AnalysisStatus.FAILED,
+                        "log": str(e),
+                    },
                 )
                 # Handle exception logging
                 raise e
