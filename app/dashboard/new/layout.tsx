@@ -1,8 +1,4 @@
 import type { Metadata } from "next";
-import { Inter, Urbanist } from "next/font/google";
-
-const inter = Inter({ subsets: ["latin"] });
-const urbanist = Urbanist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "YaoLab@JNU",
