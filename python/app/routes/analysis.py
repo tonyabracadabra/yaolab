@@ -157,16 +157,15 @@ async def preprocessIons(
     input: PreprocessIonsInput,
     convex: ConvexClient = Depends(get_convex),
 ) -> dict[str, str]:
-    ions_blob: bytes = download_file(input.targetedIons)
-    df, sample_cols = preprocess_targeted_ions_file(
-        ions_blob=ions_blob, tool=input.tool
-    )
-    # remove the original file
-    convex.action("actions:removeFile", {"storageId": input.targetedIons})
-    # upload the preprocessed file
-    storage_id = upload_file(df, convex)
-
-    return {
-        "storageId": storage_id,
-        "sampleCols": sample_cols,
-    }
+    try:
+        ions_blob: bytes = download_file(input.targetedIons)
+        df, sample_cols = preprocess_targeted_ions_file(
+            ions_blob=ions_blob, tool=input.tool
+        )
+        storage_id = upload_file(df, convex)
+        return {"storageId": storage_id, "sampleCols": sample_cols}
+    except Exception as e:
+        logger.log(logging.ERROR, e)
+        raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        convex.action("actions:removeFile", {"storageId": input.targetedIons})

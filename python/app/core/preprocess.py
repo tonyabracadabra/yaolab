@@ -4,7 +4,7 @@ from typing import Callable
 
 import pandas as pd
 from app.models.analysis import MSTool
-from app.utils.constants import ID_COL, MZ_COL, RT_COL, MSMS_COL
+from app.utils.constants import ID_COL, MSMS_COL, MZ_COL, RT_COL
 
 
 def _preprocess_mzmine3(io: BytesIO) -> tuple[pd.DataFrame, list[str]]:
