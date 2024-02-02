@@ -148,8 +148,6 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
     setIsSubmitting(true);
     try {
       const token = await getToken({ template: "convex", skipCache: true });
-      console.log("token", token);
-
       if (!token) {
         toast.error("You need to be logged in to perform this action");
         return;

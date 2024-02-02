@@ -81,21 +81,17 @@ export const downloadDefaultReactions = zAction({
 export const preprocessIons = zAction({
   args: {
     tool: z.enum(["MZmine3", "MDial"]),
-    targetedIons: z.instanceof(File),
+    targetedIons: zid("_storage"),
   },
   handler: async (_, { tool, targetedIons }) => {
-    const formData = new FormData();
-    formData.append("tool", tool); // Append the tool as a text field
-    formData.append("targetedIons", targetedIons); // Append the file
-
     const response = await fetch(
-      `${process.env.FASTAPI_URL}/analysis/preprocess`,
+      `${process.env.FASTAPI_URL}/analysis/preprocessIons`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
         },
-        body: formData,
+        body: JSON.stringify({ tool, targetedIons }),
       }
     );
 
@@ -110,4 +106,13 @@ export const preprocessIons = zAction({
     storageId: zid("_storage"),
     sampleColumns: z.array(z.string()),
   }),
+});
+
+export const removeFile = zAction({
+  args: {
+    storageId: zid("_storage"),
+  },
+  handler: async (ctx, { storageId }) => {
+    await ctx.storage.delete(storageId);
+  },
 });

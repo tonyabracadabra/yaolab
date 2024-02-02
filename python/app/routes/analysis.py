@@ -6,17 +6,9 @@ import pyteomics.mass
 from app.core.preprocess import preprocess_targeted_ions_file
 from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput, MSTool
 from app.utils.constants import DEFAULT_REACTION_DF
-from app.utils.convex import get_convex, upload_file
+from app.utils.convex import download_file, get_convex, upload_file
 from app.utils.logger import logger, with_logging_and_context
-from fastapi import (
-    APIRouter,
-    BackgroundTasks,
-    Depends,
-    File,
-    Form,
-    HTTPException,
-    UploadFile,
-)
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 from scipy.sparse import coo_matrix
 
@@ -155,13 +147,23 @@ async def download_default_reactions() -> dict[str, str]:
     return {"csv": DEFAULT_REACTION_DF.to_csv(index=False)}
 
 
-@router.post("/preprocess/")
-async def preprocess(
-    ions_file: UploadFile = File(...),
-    tool: MSTool = Form(...),
+class PreprocessIonsInput(BaseModel):
+    ionsFile: str
+    tool: MSTool
+
+
+@router.post("/preprocessIons")
+async def preprocessIons(
+    input: PreprocessIonsInput,
     convex: ConvexClient = Depends(get_convex),
 ) -> dict[str, str]:
-    df, sample_cols = preprocess_targeted_ions_file(file=ions_file, tool=tool)
+    ions_blob: bytes = download_file(input.ionsFile)
+    df, sample_cols = preprocess_targeted_ions_file(
+        ions_blob=ions_blob, tool=input.tool
+    )
+    # remove the original file
+    convex.action("actions:removeFile", {"storageId": input.ionsFile})
+    # upload the preprocessed file
     storage_id = upload_file(df, convex)
 
     return {

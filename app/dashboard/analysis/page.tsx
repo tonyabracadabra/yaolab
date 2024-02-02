@@ -72,7 +72,9 @@ export default function AnalysisList() {
     {
       accessorKey: "creationTime",
       header: "Created At",
-      cell: ({ row }) => new Date(row.original.creationTime),
+      cell: ({ row }) => (
+        <div>{new Date(row.original.creationTime).toLocaleDateString()}</div>
+      ),
     },
   ];
 

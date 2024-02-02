@@ -1,5 +1,6 @@
 import io
 import os
+from io import Blob
 from tempfile import NamedTemporaryFile
 from typing import Generator
 
@@ -27,7 +28,7 @@ def get_convex(request: Request) -> ConvexClient:
     return convex
 
 
-def download_file(storageId: str):
+def download_file(storageId: str) -> bytes:
     response = requests.get(f"{CONVEX_STORAGE_URL}/downloadFile?storageId={storageId}")
     if response.status_code != 200:
         raise Exception(f"Failed to get file from storage: {response.text}")
@@ -49,27 +50,26 @@ async def load_mgf(
     storage_id: str, encoding: str = ENCODING
 ) -> Generator[Spectrum, None, None]:
     blob = download_file(storage_id)
-
     try:
-        decoded_content = blob.decode(encoding)
+        content = blob.decode(encoding)
         with NamedTemporaryFile(
             "w+", suffix=".mgf", delete=False
         ) as temp_file:  # Open for reading and writing
-            temp_file.write(decoded_content)
+            temp_file.write(content)
             temp_file.flush()  # Ensure all data is written
             temp_file.seek(0)  # Go back to the beginning of the file before reading
             return load_from_mgf(temp_file.name)
+
     except UnicodeDecodeError:
         raise Exception("Failed to decode the blob with encoding {}".format(encoding))
 
 
 @alru_cache(maxsize=128, typed=False)
 async def load_csv(storage_id: str, encoding: str = ENCODING) -> pd.DataFrame:
-    blob = download_file(storage_id)
+    blob = download_file(storage_id, encoding=encoding)
     try:
-        decoded_content = blob.decode(encoding)
+        content = blob.decode(encoding)
+        with io.StringIO(content) as string_io:
+            return pd.read_csv(string_io)
     except UnicodeDecodeError:
         raise Exception("Failed to decode the blob with encoding {}".format(encoding))
-
-    with io.StringIO(decoded_content) as string_io:
-        return pd.read_csv(string_io)

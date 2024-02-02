@@ -1,12 +1,13 @@
-from typing import BinaryIO
+import io
+from io import BytesIO
+from typing import Callable
 
 import pandas as pd
 from app.models.analysis import MSTool
 from app.utils.constants import ID_COL, MZ_COL, RT_COL
-from fastapi import UploadFile
 
 
-def _preprocess_mzmine3(io: BinaryIO) -> tuple[pd.DataFrame, list[str]]:
+def _preprocess_mzmine3(io: BytesIO) -> tuple[pd.DataFrame, list[str]]:
     df = pd.read_csv(io)
     # Generate a dictionary that maps original column names to new column names
     rename_dict = {col: col.split(".")[0] for col in df.columns if ".raw Peak" in col}
@@ -29,7 +30,7 @@ def _preprocess_mzmine3(io: BinaryIO) -> tuple[pd.DataFrame, list[str]]:
     return df, sample_cols
 
 
-def _preprocess_mdial(io: BinaryIO) -> tuple[pd.DataFrame, list[str]]:
+def _preprocess_mdial(io: BytesIO) -> tuple[pd.DataFrame, list[str]]:
     # Read the first row to get the columns with NA values
     na_cols_mask = pd.read_csv(io, sep="\t", nrows=1).columns.str.contains(
         "NA", na=False
@@ -60,13 +61,13 @@ def _preprocess_mdial(io: BinaryIO) -> tuple[pd.DataFrame, list[str]]:
     return df, sample_cols
 
 
-preprocessors: dict[MSTool, callable[UploadFile, tuple[pd.DataFrame, list[str]]]] = {
+preprocessors: dict[MSTool, Callable[[BytesIO], tuple[pd.DataFrame, list[str]]]] = {
     MSTool.MZmine3: _preprocess_mzmine3,
     MSTool.MDial: _preprocess_mdial,
 }
 
 
 def preprocess_targeted_ions_file(
-    ions_file: UploadFile, tool: MSTool
+    ions_blob: bytes, tool: MSTool
 ) -> tuple[pd.DataFrame, list[str]]:
-    return preprocessors[tool](ions_file.file)
+    return preprocessors[tool](io.BytesIO(ions_blob))

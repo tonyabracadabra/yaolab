@@ -61,22 +61,22 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
   const onSubmit = async (values: RawFileCreationInput) => {
     setIsSubmitting(true);
     try {
-      const [
-        { storageId: mgfId },
-        { storageId: targetdIonsId, sampleColumns },
-      ] = await Promise.all([
-        handleUpload(values.mgf),
-        preprocessIons({
-          tool: values.tool,
-          targetedIons: values.targetedIons,
-        }),
-      ]);
+      const [{ storageId: mgfId }, { storageId: targetedIonsId }] =
+        await Promise.all([
+          handleUpload(values.mgf),
+          handleUpload(values.targetedIons),
+        ]);
+
+      const { storageId: processedId, sampleColumns } = await preprocessIons({
+        targetedIons: targetedIonsId,
+        tool: values.tool,
+      });
 
       const { id } = await createRawFile({
         ...values,
         sampleColumns,
         mgf: mgfId,
-        targetedIons: targetdIonsId,
+        targetedIons: processedId,
       });
       toast.success(
         `Raw files created successfully, with sample columns: ${sampleColumns}!`

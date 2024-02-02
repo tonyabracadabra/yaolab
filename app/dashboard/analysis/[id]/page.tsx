@@ -6,12 +6,14 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useAction, useQuery } from "convex/react";
 import {
+  ArrowBigLeft,
   Check,
   Download,
   FileWarning,
   Loader2,
   LoaderIcon,
 } from "lucide-react";
+import Link from "next/link";
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
 import { ForceGraph2D } from "react-force-graph";
@@ -130,7 +132,17 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   };
 
   return (
-    <div>
+    <div className="flex flex-col gap-4 p-8">
+      <Link href="/dashboard/analysis">
+        <Button
+          size="sm"
+          variant="secondary"
+          className="flex w-fit items-center justify-center gap-2"
+        >
+          <ArrowBigLeft size={16} /> Return to all analyses
+        </Button>
+      </Link>
+
       <div className="w-full gap-4 items-center flex">
         <Badge
           color="green"
