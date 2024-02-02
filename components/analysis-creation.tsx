@@ -146,6 +146,16 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
 
   const onSubmit = async (values: AnalysisCreationInputType) => {
     setIsSubmitting(true);
+    if (
+      values.config.experiments
+        .map((e) => e.sampleGroups.length === 0 || e.blankGroups.length === 0)
+        .includes(true)
+    ) {
+      toast.error("Please fill in all the sample and blank groups");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const token = await getToken({ template: "convex", skipCache: true });
       if (!token) {
