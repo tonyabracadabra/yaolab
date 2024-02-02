@@ -67,7 +67,7 @@ export const AnalysisOutputSchema = z.object({
     tool: z.string(),
     mgf: zid("_storage"),
     ions: zid("_storage"),
-    sampleColumns: z.array(z.string()),
+    sampleCols: z.array(z.string()),
   }),
   reactionDb: z.union([
     z.literal("default"),
@@ -121,7 +121,7 @@ export const getAll = zQuery({
             tool: rawFile.tool,
             mgf: rawFile.mgf,
             ions: rawFile.targetedIons,
-            sampleColumns: rawFile.sampleColumns,
+            sampleCols: rawFile.sampleCols,
           },
           reactionDb: finalReactionDb,
           config: analysis.config,

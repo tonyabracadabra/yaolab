@@ -62,7 +62,7 @@ export const RawFileCreationInputSchema = z.object({
   tool: MSTool,
   mgf: zid("_storage"),
   targetedIons: zid("_storage"),
-  sampleColumns: z.array(z.string()),
+  sampleCols: z.array(z.string()),
 });
 
 export const RawFileSchema = z.object({

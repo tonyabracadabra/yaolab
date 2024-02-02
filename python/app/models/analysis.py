@@ -69,7 +69,7 @@ class RawFile(BaseModel):
     tool: MSTool
     mgf: str
     targetedIons: str
-    sampleColumns: list[str]
+    sampleCols: list[str]
 
     class Config:
         arbitrary_types_allowed = True

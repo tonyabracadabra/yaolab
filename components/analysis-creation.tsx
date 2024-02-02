@@ -376,7 +376,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                           options={
                             allRawFiles?.find(
                               (rawFile) => rawFile._id === form.watch("rawFile")
-                            )?.sampleColumns || []
+                            )?.sampleCols || []
                           }
                           form={form}
                           experiment={currExperiment}
@@ -389,7 +389,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                           options={
                             allRawFiles?.find(
                               (rawFile) => rawFile._id === form.watch("rawFile")
-                            )?.sampleColumns || []
+                            )?.sampleCols || []
                           }
                           form={form}
                           experiment={currExperiment}

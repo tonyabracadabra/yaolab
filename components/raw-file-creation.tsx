@@ -74,7 +74,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
         throw new Error("No token found");
       }
 
-      const { storageId: processedId, sampleColumns } = await preprocessIons({
+      const { storageId: processedId, sampleCols } = await preprocessIons({
         targetedIons: targetedIonsId,
         tool: values.tool,
         token,
@@ -83,12 +83,12 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
       setStatus("done");
       const { id } = await createRawFile({
         ...values,
-        sampleColumns,
+        sampleCols,
         mgf: mgfId,
         targetedIons: processedId,
       });
       toast.success(
-        `Raw files created successfully, with sample columns: ${sampleColumns}!`
+        `Raw files created successfully, with sample columns: ${sampleCols}!`
       );
       onCreate(id);
       onClose();

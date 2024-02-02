@@ -5,7 +5,7 @@ export const create = zMutation({
   args: RawFileCreationInputSchema.shape,
   handler: async (
     { db, user },
-    { name, mgf, targetedIons, tool, sampleColumns }
+    { name, mgf, targetedIons, tool, sampleCols }
   ) => {
     const id = await db.insert("rawFiles", {
       user,
@@ -13,7 +13,7 @@ export const create = zMutation({
       mgf,
       targetedIons,
       tool,
-      sampleColumns,
+      sampleCols,
     });
 
     return { id };
