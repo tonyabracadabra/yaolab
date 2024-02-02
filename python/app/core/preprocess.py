@@ -54,6 +54,7 @@ def _preprocess_mdial(io: BytesIO) -> tuple[pd.DataFrame, list[str]]:
             "Alignment ID": ID_COL,
         }
     )
+    print(f'df columns: {df.columns}')
 
     # all columns after MS/MS Spectrum are sample columns
     sample_cols = df.columns[df.columns.get_loc(MSMS_COL) + 1 :].tolist()
