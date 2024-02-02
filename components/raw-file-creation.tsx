@@ -1,15 +1,14 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { MSTool, RawFileCreationInputSchema } from "@/convex/schema";
-import { readFirstKLines, useFileUpload } from "@/lib/utils";
-import { useMutation } from "convex/react";
+import { useFileUpload } from "@/lib/utils";
+import { useAction, useMutation } from "convex/react";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { FormLabelWithTooltip } from "./form-label-tooltip";
-import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -48,26 +47,30 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
     },
   });
   const { handleUpload } = useFileUpload();
+  const preprocessIons = useAction(api.actions.preprocessIons);
   const [open, setOpen] = useState(false);
-  const createRawFile = useMutation(api.rawFiles.createRawFile);
-  const [sampleColumns, setSampleColumns] = useState<string[]>([]);
+  const createRawFile = useMutation(api.rawFiles.create);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onClose = () => {
     form.reset();
     setOpen(false);
     setIsSubmitting(false);
-    setSampleColumns([]);
   };
 
   const onSubmit = async (values: RawFileCreationInput) => {
     setIsSubmitting(true);
     try {
-      const [{ storageId: mgfId }, { storageId: targetdIonsId }] =
-        await Promise.all([
-          handleUpload(values.mgf),
-          handleUpload(values.targetedIons),
-        ]);
+      const [
+        { storageId: mgfId },
+        { storageId: targetdIonsId, sampleColumns },
+      ] = await Promise.all([
+        handleUpload(values.mgf),
+        preprocessIons({
+          tool: values.tool,
+          targetedIons: values.targetedIons,
+        }),
+      ]);
 
       const { id } = await createRawFile({
         ...values,
@@ -75,35 +78,15 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
         mgf: mgfId,
         targetedIons: targetdIonsId,
       });
+      toast.success(
+        `Raw files created successfully, with sample columns: ${sampleColumns}!`
+      );
       onCreate(id);
       onClose();
     } catch (error) {
       toast.error("Something went wrong while uploading your file, try again");
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const getSampleColumns = async (file: File) => {
-    const tool = form.watch("tool");
-    if (tool === "MDial") {
-      if (!file.name.endsWith(".txt")) {
-        toast.error("Invalid file type, MSDial format requires a .txt file");
-        return;
-      }
-
-      const firstFiveLines = await readFirstKLines(file, 5);
-      const headerLine = firstFiveLines[firstFiveLines.length - 1];
-      const columns = headerLine.split("\t").map((column) => column.trim());
-
-      return columns.slice(columns.indexOf("MS/MS spectrum") + 1);
-    } else if (tool === "MZmine3") {
-      const firstLine = await readFirstKLines(file, 1);
-      const columns = firstLine[0].split(",");
-
-      return columns
-        .filter((column) => column.includes(".raw Peak"))
-        .map((column) => column.split(".")[0]);
     }
   };
 
@@ -225,13 +208,6 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
                         if (selectedFile) {
                           onChange(selectedFile);
                           form.setValue("name", selectedFile.name);
-                          try {
-                            const cols =
-                              (await getSampleColumns(selectedFile)) || [];
-                            setSampleColumns(cols);
-                          } catch (error) {
-                            toast.error("Error processing the file");
-                          }
                         }
                       }}
                       type="file"
@@ -240,14 +216,6 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
                 );
               }}
             />
-            <div className="flex gap-2 flex-col">
-              <FormLabel>Sample Columns</FormLabel>
-              <div className="flex items-center justify-center gap-2 flex-wrap max-h-[120px] overflow-auto">
-                {sampleColumns.map((sampleName: string, index: number) => (
-                  <Badge key={index}>{sampleName}</Badge>
-                ))}
-              </div>
-            </div>
             <DialogFooter>
               <Button type="submit">
                 {isSubmitting ? (

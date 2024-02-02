@@ -3,11 +3,20 @@ import logging
 import app.steps as steps
 import pandas as pd
 import pyteomics.mass
-from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput
+from app.core.preprocess import preprocess_targeted_ions_file
+from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput, MSTool
 from app.utils.constants import DEFAULT_REACTION_DF
 from app.utils.convex import get_convex, upload_file
 from app.utils.logger import logger, with_logging_and_context
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+)
 from pydantic import BaseModel
 from scipy.sparse import coo_matrix
 
@@ -144,3 +153,18 @@ async def mass(input: MassInput) -> dict[str, list[float]]:
 @router.get("/defaultReactions")
 async def download_default_reactions() -> dict[str, str]:
     return {"csv": DEFAULT_REACTION_DF.to_csv(index=False)}
+
+
+@router.post("/preprocess/")
+async def preprocess(
+    ions_file: UploadFile = File(...),
+    tool: MSTool = Form(...),
+    convex: ConvexClient = Depends(get_convex),
+) -> dict[str, str]:
+    df, sample_cols = preprocess_targeted_ions_file(file=ions_file, tool=tool)
+    storage_id = upload_file(df, convex)
+
+    return {
+        "storageId": storage_id,
+        "sampleCols": sample_cols,
+    }

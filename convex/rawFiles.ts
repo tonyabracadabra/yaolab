@@ -1,7 +1,7 @@
 import { RawFileCreationInputSchema } from "./schema";
 import { zMutation, zQuery } from "./utils";
 
-export const createRawFile = zMutation({
+export const create = zMutation({
   args: RawFileCreationInputSchema.shape,
   handler: async (
     { db, user },

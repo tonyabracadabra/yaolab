@@ -77,3 +77,37 @@ export const downloadDefaultReactions = zAction({
   },
   output: z.object({ csv: z.string() }),
 });
+
+export const preprocessIons = zAction({
+  args: {
+    tool: z.enum(["MZmine3", "MDial"]),
+    targetedIons: z.instanceof(File),
+  },
+  handler: async (_, { tool, targetedIons }) => {
+    const formData = new FormData();
+    formData.append("tool", tool); // Append the tool as a text field
+    formData.append("targetedIons", targetedIons); // Append the file
+
+    const response = await fetch(
+      `${process.env.FASTAPI_URL}/analysis/preprocess`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+    const data = await response.json();
+
+    return data;
+  },
+  output: z.object({
+    storageId: zid("_storage"),
+    sampleColumns: z.array(z.string()),
+  }),
+});
