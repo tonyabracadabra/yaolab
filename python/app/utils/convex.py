@@ -1,6 +1,5 @@
 import io
 import os
-from io import Blob
 from tempfile import NamedTemporaryFile
 from typing import Generator
 
