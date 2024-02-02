@@ -76,7 +76,7 @@ export const AnalysisOutputSchema = z.object({
       reactions: z.array(ReactionSchema),
     }),
   ]),
-  creationTime: z.date(),
+  creationTime: z.number(),
   config: AnalysisConfigSchema,
 });
 
@@ -125,7 +125,7 @@ export const getAll = zQuery({
           },
           reactionDb: finalReactionDb,
           config: analysis.config,
-          creationTime: new Date(analysis._creationTime),
+          creationTime: analysis._creationTime,
         };
       })
     );

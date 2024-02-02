@@ -72,7 +72,7 @@ export default function AnalysisList() {
     {
       accessorKey: "creationTime",
       header: "Created At",
-      cell: ({ row }) => row.original.creationTime,
+      cell: ({ row }) => new Date(row.original.creationTime),
     },
   ];
 
