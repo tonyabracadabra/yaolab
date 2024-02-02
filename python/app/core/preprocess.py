@@ -7,8 +7,8 @@ from app.models.analysis import MSTool
 from app.utils.constants import ID_COL, MSMS_COL, MZ_COL, RT_COL
 
 
-def _preprocess_mzmine3(io: BytesIO) -> tuple[pd.DataFrame, list[str]]:
-    df = pd.read_csv(io)
+def _preprocess_mzmine3(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
+    df = pd.read_csv(bytesIO)
     # Generate a dictionary that maps original column names to new column names
     rename_dict = {col: col.split(".")[0] for col in df.columns if ".raw Peak" in col}
 
@@ -30,12 +30,13 @@ def _preprocess_mzmine3(io: BytesIO) -> tuple[pd.DataFrame, list[str]]:
     return df, sample_cols
 
 
-def _preprocess_mdial(io: BytesIO) -> tuple[pd.DataFrame, list[str]]:
+def _preprocess_mdial(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
     # Read the first row to get the columns with NA values
-    na_cols_mask = pd.read_csv(io, sep="\t", nrows=1).columns.str.contains(
+    na_cols_mask = pd.read_csv(bytesIO, sep="\t", nrows=1).columns.str.contains(
         "NA", na=False
     )
-    df = pd.read_csv(io, sep="\t", skiprows=4)
+    bytesIO.seek(0)
+    df = pd.read_csv(bytesIO, sep="\t", skiprows=4)
     # Drop the selected columns
     df = df.drop(
         df.columns[
@@ -54,7 +55,6 @@ def _preprocess_mdial(io: BytesIO) -> tuple[pd.DataFrame, list[str]]:
             "Alignment ID": ID_COL,
         }
     )
-    print(f'df columns: {df.columns}')
 
     # all columns after MS/MS Spectrum are sample columns
     sample_cols = df.columns[df.columns.get_loc(MSMS_COL) + 1 :].tolist()
