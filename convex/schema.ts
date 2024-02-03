@@ -41,10 +41,20 @@ export const AnalysisStatus = z.enum([
   "failed",
 ]);
 
+export const AnalysisStep = z.enum([
+  "load_data",
+  "create_ion_interaction_matrix",
+  "create_similarity_matrix",
+  "combine_matrices_and_extract_edges",
+  "calculate_edge_metrics",
+  "edge_value_matching",
+]);
+
 export const AnalysisSchema = z.object({
   ...AnalysisCreationInputSchema.shape,
   user: z.string(),
   status: AnalysisStatus,
+  step: AnalysisStep,
   log: z.optional(z.string()),
   result: z.optional(zid("_storage")),
 });

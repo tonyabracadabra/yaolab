@@ -4,6 +4,7 @@ import {
   AnalysisConfigSchema,
   AnalysisCreationInputSchema,
   AnalysisStatus,
+  AnalysisStep,
   ReactionSchema,
 } from "./schema";
 import { zInternalMutation, zMutation, zQuery } from "./utils";
@@ -12,6 +13,7 @@ export const create = zInternalMutation({
   args: AnalysisCreationInputSchema.shape,
   handler: async ({ db, user }, { config, reactionDb, rawFile }) => {
     const id = await db.insert("analyses", {
+      step: "load_data",
       user,
       rawFile,
       reactionDb,
@@ -48,12 +50,14 @@ export const update = zMutation({
     status: z.optional(AnalysisStatus),
     result: z.optional(zid("_storage")),
     log: z.optional(z.string()),
+    step: z.optional(AnalysisStep),
   },
-  handler: async ({ db }, { id, status, log, result }) => {
+  handler: async ({ db }, { id, status, log, result, step }) => {
     db.patch(id, {
       ...(status && { status }),
       ...(log && { log }),
       ...(result && { result }),
+      ...(step && { step }),
     });
   },
 });

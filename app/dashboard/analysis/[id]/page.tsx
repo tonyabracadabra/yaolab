@@ -1,18 +1,11 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Workflow } from "@/components/workflow";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useAction, useQuery } from "convex/react";
-import {
-  ArrowBigLeft,
-  Check,
-  Download,
-  FileWarning,
-  Loader2,
-  LoaderIcon,
-} from "lucide-react";
+import { ArrowBigLeft, Download, LoaderIcon } from "lucide-react";
 import Link from "next/link";
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
@@ -143,18 +136,9 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         </Button>
       </Link>
 
+      <Workflow step={analysis.step} log={analysis.log} />
+
       <div className="w-full gap-4 items-center flex">
-        <Badge
-          color="green"
-          className="flex items-center justify-center gap-2 w-fit"
-        >
-          {analysis.status === "complete" && <Check size={12} />}
-          {analysis.status === "pending" && (
-            <Loader2 className="animate-spin" size={12} />
-          )}
-          {analysis.status === "failed" && <FileWarning size={12} />}
-          <div>{analysis.status}</div>
-        </Badge>
         {url && (
           <Button
             size="xs"
