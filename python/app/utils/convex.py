@@ -36,9 +36,15 @@ def download_file(storageId: str) -> bytes:
     return response.content
 
 
-def upload_file(df: pd.DataFrame, convex: ConvexClient) -> str:
+def upload_file(
+    df: pd.DataFrame, convex: ConvexClient, file_type: str = "text/csv"
+) -> str:
     postUrl = convex.mutation("utils:generateUploadUrl")
-    result = requests.post(postUrl, data=df.to_csv(index=False))
+    result = requests.post(
+        postUrl,
+        headers={"Content-Type": file_type},
+        data=df.to_csv(index=False),
+    )
 
     if result.status_code != 200:
         raise Exception(f"Failed to upload file: {result.text}")

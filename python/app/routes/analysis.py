@@ -90,7 +90,7 @@ async def preprocessIons(
         df, sample_cols = preprocess_targeted_ions_file(
             ions_blob=ions_blob, tool=input.tool
         )
-        storage_id = upload_file(df, convex)
+        storage_id = upload_file(df, convex, file_type="text/csv")
 
         return {"storageId": storage_id, "sampleCols": sample_cols}
     except Exception as e:

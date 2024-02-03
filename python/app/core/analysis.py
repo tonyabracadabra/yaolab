@@ -68,7 +68,7 @@ class AnalysisWorker(BaseModel):
         )
 
         # Upload matched_df to convex as a file, and update analysis result
-        storageId = upload_file(matched_df, self.convex)
+        storageId = upload_file(matched_df, self.convex, file_type="text/csv")
         self.convex.mutation(
             "analyses:update",
             {
