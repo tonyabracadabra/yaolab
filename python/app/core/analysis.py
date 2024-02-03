@@ -1,11 +1,11 @@
+import asyncio
+
 import app.core.steps as steps
 import pandas as pd
 from app.models.analysis import Analysis, AnalysisStatus
 from app.utils.convex import upload_file
 from app.utils.logger import logger, with_logging_and_context
 from pydantic import BaseModel
-from scipy.sparse import coo_matrix
-import asyncio
 
 from convex import ConvexClient
 
@@ -48,9 +48,7 @@ class AnalysisWorker(BaseModel):
                 reaction_df,
                 mz_error_threshold=self.analysis.config.mzErrorThreshold,
             ),
-            create_similarity_matrix(
-                spectra, targeted_ions_df
-            ),
+            create_similarity_matrix(spectra, targeted_ions_df),
         ]
         ion_interaction_matrix, similarity_matrix = await asyncio.gather(*tasks)
         edge_data_df: pd.DataFrame = await combine_matrices_and_extract_edges(
