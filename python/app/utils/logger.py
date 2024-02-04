@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def step(message: str):
+def log(message: str):
     def decorator(func):
         setattr(func, "log_message", message)  # Set attribute on func
 
