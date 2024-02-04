@@ -1,4 +1,5 @@
-import { AnalysisStep } from "@/convex/schema";
+import { AnalysisStep, Progress } from "@/convex/schema";
+import { useEffect } from "react";
 import ReactFlow, {
   Node,
   ReactFlowProvider,
@@ -11,7 +12,7 @@ import "reactflow/dist/style.css";
 import { z } from "zod";
 
 interface WorkflowInterface {
-  step: AnalysisStepType;
+  progress: z.infer<typeof Progress>;
   log?: string;
 }
 
@@ -26,28 +27,28 @@ const baseNodes: Node[] = [
   },
   {
     id: AnalysisStep.Enum.create_ion_interaction_matrix,
-    position: { x: 200, y: 0 },
+    position: { x: 0, y: 200 },
     data: { label: "Create Ion Interaction Matrix" },
   },
   {
     id: AnalysisStep.Enum.create_similarity_matrix,
-    position: { x: 400, y: 0 },
+    position: { x: -200, y: 300 },
     data: { label: "Create Similarity Matrix" },
   },
   {
     id: AnalysisStep.Enum.combine_matrices_and_extract_edges,
-    position: { x: 600, y: 0 },
+    position: { x: -100, y: 500 },
     data: { label: "Combine Matrices & Extract Edges" },
   },
   {
     id: AnalysisStep.Enum.calculate_edge_metrics,
-    position: { x: 800, y: 0 },
+    position: { x: -100, y: 600 },
     data: { label: "Calculate Edge Metrics" },
   },
   {
     id: AnalysisStep.Enum.edge_value_matching,
     type: "output",
-    position: { x: 1000, y: 0 },
+    position: { x: 0, y: 800 },
     data: { label: "Edge Value Matching" },
   },
 ];
@@ -103,34 +104,34 @@ const baseEdges = [
   },
 ];
 
-function Flow({ step, log }: WorkflowInterface) {
+function Flow({ progress, log }: WorkflowInterface) {
   const { fitView } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState(baseNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(baseEdges);
 
-  const getNodeStyle = (
-    step: AnalysisStepType,
-    currentStep: AnalysisStepType
-  ): React.CSSProperties => {
-    if (step < currentStep) {
-      return { background: "#D3D3D3", color: "#000" }; // Completed steps
-    } else if (step === currentStep) {
-      return { background: "#0088cc", color: "#FFF" }; // Current step
-    }
-    return { background: "#FFF", color: "#000" }; // Future steps
-  };
-
-  // Function to determine edge style or animation
-  const getEdgeStyle = (
-    source: AnalysisStepType,
-    target: AnalysisStepType,
-    currentStep: AnalysisStepType
-  ): { animated: boolean } => {
-    // Simple example logic: animate edge if both source and target steps are completed or current
-    return {
-      animated: source <= currentStep && target <= currentStep,
-    };
-  };
+  useEffect(() => {
+    setNodes(
+      nodes.map((node) => {
+        const status = progress?.find((step) => step.step === node.id)?.status;
+        if (status === "done") {
+          return {
+            ...node,
+            style: { background: "green" },
+          };
+        } else if (status === "running") {
+          return {
+            ...node,
+            style: { background: "yellow" },
+          };
+        } else {
+          return {
+            ...node,
+            style: { background: "white" },
+          };
+        }
+      })
+    );
+  }, [nodes, progress, setNodes]);
 
   return (
     <div style={{ width: "30vh", height: "80vh" }}>

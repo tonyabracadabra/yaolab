@@ -113,7 +113,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     if (analysis?.result) {
       fetchAndProcessData(analysis.result);
     }
-  }, [analysis?.result]);
+  }, [analysis?.result, getFileUrl]);
 
   if (!analysis) {
     return <LoaderIcon className="animate-spin" />;
@@ -136,7 +136,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         </Button>
       </Link>
 
-      <Workflow step={analysis.step} log={analysis.log} />
+      <Workflow progress={analysis.progress} log={analysis.log} />
 
       <div className="w-full gap-4 items-center flex">
         {url && (
