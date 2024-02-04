@@ -157,11 +157,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
                     </FormControl>
                     <SelectContent>
                       {Object.values(MSTool.Values).map((tool, i) => (
-                        <SelectItem
-                          className="cursor-pointer hover:bg-slate-100"
-                          key={i}
-                          value={tool}
-                        >
+                        <SelectItem key={i} value={tool}>
                           {tool}
                         </SelectItem>
                       ))}

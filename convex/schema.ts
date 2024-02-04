@@ -50,11 +50,18 @@ export const AnalysisStep = z.enum([
   "edge_value_matching",
 ]);
 
+export const Progress = z.array(
+  z.object({
+    step: AnalysisStep,
+    status: z.enum(["running", "done"]),
+  })
+);
+
 export const AnalysisSchema = z.object({
   ...AnalysisCreationInputSchema.shape,
   user: z.string(),
   status: AnalysisStatus,
-  step: AnalysisStep,
+  progress: Progress,
   log: z.optional(z.string()),
   result: z.optional(zid("_storage")),
 });

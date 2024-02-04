@@ -5,6 +5,7 @@ import {
   AnalysisCreationInputSchema,
   AnalysisStatus,
   AnalysisStep,
+  Progress,
   ReactionSchema,
 } from "./schema";
 import { zInternalMutation, zMutation, zQuery } from "./utils";
@@ -13,7 +14,7 @@ export const create = zInternalMutation({
   args: AnalysisCreationInputSchema.shape,
   handler: async ({ db, user }, { config, reactionDb, rawFile }) => {
     const id = await db.insert("analyses", {
-      step: "load_data",
+      progress: [],
       user,
       rawFile,
       reactionDb,
@@ -50,15 +51,45 @@ export const update = zMutation({
     status: z.optional(AnalysisStatus),
     result: z.optional(zid("_storage")),
     log: z.optional(z.string()),
-    step: z.optional(AnalysisStep),
+    progress: Progress,
   },
-  handler: async ({ db }, { id, status, log, result, step }) => {
+  handler: async ({ db }, { id, status, log, result, progress }) => {
     db.patch(id, {
       ...(status && { status }),
       ...(log && { log }),
       ...(result && { result }),
-      ...(step && { step }),
+      ...(progress && { progress }),
     });
+  },
+});
+
+export const startStep = zMutation({
+  args: { id: zid("analyses"), step: AnalysisStep },
+  handler: async ({ db }, { id, step }) => {
+    const analysis = await db.get(id);
+    if (!analysis) {
+      throw new Error("Analysis not found");
+    }
+
+    await db.patch(id, {
+      progress: [...analysis.progress, { step, status: "running" }],
+    });
+  },
+});
+
+export const completeStep = zMutation({
+  args: { id: zid("analyses"), step: Progress.element.shape.step },
+  handler: async ({ db }, { id, step }) => {
+    const analysis = await db.get(id);
+    if (!analysis) {
+      throw new Error("Analysis not found");
+    }
+
+    const progress = analysis.progress.map((p) =>
+      p.step === step ? { ...p, status: "done" as "done" } : p
+    );
+
+    await db.patch(id, { progress });
   },
 });
 

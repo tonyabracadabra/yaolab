@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def log(message: str):
+def step(message: str):
     def decorator(func):
         setattr(func, "log_message", message)  # Set attribute on func
 
@@ -27,15 +27,16 @@ def with_logging_and_context(convex: ConvexClient, analysis_id: str):
     def decorator(func: callable):
         @functools.wraps(func)
         async def wrapped(*args, **kwargs):
+            step = func.__name__
             log_message = getattr(func, "log_message", f"Starting '{func.__name__}'")
             try:
-                logger.info(log_message + f" for analysis {analysis_id}")
+                logger.info(f"start step {log_message} for analysis {analysis_id}")
+                convex.mutation("analyses:startStep", {"id": analysis_id, "step": step})
+                result = await func(*args, **kwargs)
                 convex.mutation(
-                    "analyses:update", {"id": analysis_id, "log": log_message}
+                    "analyses:completeStep", {"id": analysis_id, "step": step}
                 )
 
-                result = await func(*args, **kwargs)
-                # similar logging for completion
                 return result
             except Exception as e:
                 logger.error(
