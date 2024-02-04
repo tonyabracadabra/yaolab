@@ -6,6 +6,7 @@ from app.models.analysis import Analysis, AnalysisStatus
 from app.utils.convex import upload_file
 from app.utils.logger import logger, with_logging_and_context
 from pydantic import BaseModel
+from scipy.sparse import coo_matrix
 
 from convex import ConvexClient
 
@@ -42,15 +43,16 @@ class AnalysisWorker(BaseModel):
         config = self.analysis.config
         spectra, targeted_ions_df, reaction_df = await load_data(self.analysis)
 
-        tasks = [
-            create_ion_interaction_matrix(
-                targeted_ions_df,
-                reaction_df,
-                mz_error_threshold=self.analysis.config.mzErrorThreshold,
-            ),
-            create_similarity_matrix(spectra, targeted_ions_df),
-        ]
-        ion_interaction_matrix, similarity_matrix = await asyncio.gather(*tasks)
+        ion_interaction_matrix: coo_matrix = await create_ion_interaction_matrix(
+            targeted_ions_df,
+            reaction_df,
+            mz_error_threshold=self.analysis.config.mzErrorThreshold,
+        )
+
+        similarity_matrix: coo_matrix = await create_similarity_matrix(
+            spectra, targeted_ions_df
+        )
+
         edge_data_df: pd.DataFrame = await combine_matrices_and_extract_edges(
             ion_interaction_matrix,
             similarity_matrix,

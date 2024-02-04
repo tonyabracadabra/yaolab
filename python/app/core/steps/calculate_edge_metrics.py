@@ -13,22 +13,13 @@ from app.utils.constants import (
 from app.utils.logger import log
 
 
-def _find_last_integer_columns(df: pd.DataFrame) -> int:
-    # 从最后一列向前查找，找到最后一列列值均为整数的列序号
-    for i, col in enumerate(df.columns[::-1]):
-        if not pd.api.types.is_integer_dtype(df[col]):
-            break
-    return df.shape[1] - i
-
-
 @log("Calculating edge metrics")
 async def calculate_edge_metrics(
     targeted_ions_df: pd.DataFrame, edge_data_df: pd.DataFrame
 ) -> pd.DataFrame:
     # Pre-calculate and map ID to mz and rt values for efficient lookup
     id_to_mz_rt = targeted_ions_df.set_index(ID_COL)[[MZ_COL, RT_COL]].to_dict("index")
-
-    corr_cols = targeted_ions_df.columns[_find_last_integer_columns(targeted_ions_df) :]
+    corr_cols = targeted_ions_df["sample"]
 
     def calculate_metrics(row):
         id1, id2 = row[ID_COL_1], row[ID_COL_2]

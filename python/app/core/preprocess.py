@@ -71,4 +71,10 @@ preprocessors: dict[MSTool, Callable[[BytesIO], tuple[pd.DataFrame, list[str]]]]
 def preprocess_targeted_ions_file(
     ions_blob: bytes, tool: MSTool
 ) -> tuple[pd.DataFrame, list[str]]:
-    return preprocessors[tool](io.BytesIO(ions_blob))
+    df, sample_cols = preprocessors[tool](io.BytesIO(ions_blob))
+    # create multi-index columns for sample columns, tag them with 'sample'
+    df.columns = pd.MultiIndex.from_tuples(
+        [("sample" if col in sample_cols else "", col) for col in df.columns]
+    )
+
+    return df, sample_cols

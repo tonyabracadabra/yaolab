@@ -44,7 +44,7 @@ def _filter_metabolites(
 
         cond &= filter_condition
         group_columns = sample_group + blank_group
-        data[experiment.name] = data[group_columns].mean(axis=1).round().astype(int)
+        data[("sample", experiment.name)] = data["sample"][group_columns].mean(axis=1)
 
     return data[cond]
 
