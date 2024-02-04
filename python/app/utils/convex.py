@@ -1,7 +1,7 @@
 import io
 import os
 from tempfile import NamedTemporaryFile
-from typing import Generator
+from typing import Generator, Literal, Sequence
 
 import pandas as pd
 import requests
@@ -71,11 +71,15 @@ async def load_mgf(
 
 
 @alru_cache(maxsize=128, typed=False)
-async def load_csv(storage_id: str, encoding: str = ENCODING) -> pd.DataFrame:
+async def load_csv(
+    storage_id: str,
+    header: int | Sequence[int] | None | Literal["infer"],
+    encoding: str = ENCODING,
+) -> pd.DataFrame:
     blob = download_file(storage_id)
     try:
         content = blob.decode(encoding)
         with io.StringIO(content) as string_io:
-            return pd.read_csv(string_io)
+            return pd.read_csv(string_io, header=header)
     except UnicodeDecodeError:
         raise Exception("Failed to decode the blob with encoding {}".format(encoding))

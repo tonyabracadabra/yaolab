@@ -55,7 +55,7 @@ async def load_data(
 ) -> tuple[list[Spectrum], pd.DataFrame, pd.DataFrame]:
     tasks = [
         load_mgf(analysis.rawFile.mgf),
-        load_csv(analysis.rawFile.targetedIons),
+        load_csv(analysis.rawFile.targetedIons, header=[0, 1]),
         _load_reaction_db(analysis.reactionDb),
     ]
     spectra, targeted_ions_df, reaction_df = await asyncio.gather(*tasks)
