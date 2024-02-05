@@ -1,5 +1,6 @@
 "use client";
 
+import { MagicCard } from "@/components/magicui/magic-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -262,34 +263,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         </TooltipProvider>
       </div>
       <div className="flex flex-col gap-2 items-center justify-center w-full h-[50vh]">
-        <div className="w-full gap-4 items-center justify-end flex p-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Button
-                  disabled={!url}
-                  size="xs"
-                  onClick={() => {
-                    window.open(url, "_blank");
-                  }}
-                  className="flex items-center justify-center gap-2"
-                >
-                  <span>Download Data</span>
-                  <Download size={12} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <div className="text-neutral-400">
-                  {url ? (
-                    <span>Download the result data</span>
-                  ) : (
-                    <span>Result data is not available</span>
-                  )}
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
         {analysis.status === "running" && <div>{analysis.log}</div>}
         <div className="w-full h-full">
           {analysis.status === "failed" && (
@@ -324,7 +297,35 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             </div>
           )}
           {analysis.status === "complete" && (
-            <>
+            <MagicCard className="h-[70vh] mt-8">
+              <div className="w-full gap-4 items-center justify-end flex p-4">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Button
+                        disabled={!url}
+                        size="xs"
+                        onClick={() => {
+                          window.open(url, "_blank");
+                        }}
+                        className="flex items-center justify-center gap-2"
+                      >
+                        <span>Download Data</span>
+                        <Download size={12} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <div className="text-neutral-400">
+                        {url ? (
+                          <span>Download the result data</span>
+                        ) : (
+                          <span>Result data is not available</span>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               {graphData.links.length === 0 ? (
                 <div className="flex items-center h-full justify-center gap-2">
                   <span>No data to display</span>
@@ -343,7 +344,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   }
                 />
               )}
-            </>
+            </MagicCard>
           )}
         </div>
       </div>
