@@ -199,9 +199,11 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
           </TooltipProvider>
         </div>
       </div>
-      <div className="flex items-center justify-center gap-4 text-xs">
-        <TimerIcon size={16} />
-        {new Date(analysis._creationTime).toString()}
+      <div className="w-full flex justify-end">
+        <div className="flex items-center justify-center gap-4 text-xs max-w-[200px]">
+          <TimerIcon size={16} />
+          {new Date(analysis._creationTime).toString().split("GMT")[0]}
+        </div>
       </div>
       <Workflow progress={analysis.progress} log={analysis.log} />
       <div className="w-full gap-4 items-center flex">
