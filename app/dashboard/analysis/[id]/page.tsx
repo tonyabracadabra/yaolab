@@ -1,19 +1,18 @@
 "use client";
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Workflow } from "@/components/workflow";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useAction, useQuery } from "convex/react";
-import { Atom, Download, File, List, Loader2 } from "lucide-react";
+import { Atom, Download, File, List, Loader2, TimerIcon } from "lucide-react";
 import Link from "next/link";
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
@@ -133,7 +132,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
 
   return (
     <div className="flex flex-col gap-4 px-4 py-2 w-full">
-      <div className="flex items-center justify- gap-2 w-full">
+      <div className="flex items-center justify-between gap-2 w-full">
         <Link href="/dashboard/analysis">
           <Button
             size="sm"
@@ -143,60 +142,68 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             <List size={16} /> All analyses
           </Button>
         </Link>
-        <Badge className="flex items-center justify-center gap-1">
-          <File size={14} />
-          <span className="ml-2">{analysis.rawFile?.name}</span>
-        </Badge>
-        <Badge className="flex items-center justify-center gap-1">
-          <Atom size={14} />
-          <span className="ml-2">
-            {typeof analysis.reactionDb === "string"
-              ? "default"
-              : analysis.reactionDb?.name}
-          </span>
-        </Badge>
-      </div>
-
-      <Card className="p-3 flex items-center gap-4 w-[80vw] text-xs">
-        <Accordion type="multiple">
-          <AccordionItem value="experiment-groups" className="cursor-pointer">
-            <AccordionTrigger>Experiment Groups</AccordionTrigger>
-            <AccordionContent>
-              <div className="text-neutral-400">
-                {analysis.config.experiments.map((e, i) => (
-                  <div
-                    key={i}
-                    className="w-full flex-col flex items-center max-w-[400px]"
-                  >
-                    <div>{e.name}</div>
-                    <div className="flex items-center justify-center gap-4">
-                      <div className="flex flex-col gap-2">
-                        <div>Blank Groups</div>
-                        <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                          {e.blankGroups.map((g, j) => (
-                            <Badge key={j}>{g}</Badge>
-                          ))}
+        <div className="flex items-center justify-center gap-2">
+          <Badge className="flex items-center justify-center gap-1">
+            <File size={14} />
+            <span className="ml-2">{analysis.rawFile?.name}</span>
+          </Badge>
+          <Badge className="flex items-center justify-center gap-1">
+            <Atom size={14} />
+            <span className="ml-2">
+              {typeof analysis.reactionDb === "string"
+                ? "default"
+                : analysis.reactionDb?.name}
+            </span>
+          </Badge>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <Badge className="flex items-center justify-center gap-2">
+                  <span className="bg-secondary/50 rounded-full w-4 h-4">
+                    {analysis.config.experiments.length}
+                  </span>
+                  Experiments
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <div className="text-neutral-400">
+                  {analysis.config.experiments.map((e, i) => (
+                    <div
+                      key={i}
+                      className="w-full flex-col flex items-center max-w-[400px]"
+                    >
+                      <div>{e.name}</div>
+                      <div className="flex items-center justify-center gap-4">
+                        <div className="flex flex-col gap-2">
+                          <div>Blank Groups</div>
+                          <div className="text-neutral-500 gap-2 flex items-center justify-center">
+                            {e.blankGroups.map((g, j) => (
+                              <Badge key={j}>{g}</Badge>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <div>Sample Groups</div>
-                        <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                          {e.sampleGroups.map((g, j) => (
-                            <Badge key={j}>{g}</Badge>
-                          ))}
+                        <div className="flex flex-col gap-2">
+                          <div>Sample Groups</div>
+                          <div className="text-neutral-500 gap-2 flex items-center justify-center">
+                            {e.sampleGroups.map((g, j) => (
+                              <Badge key={j}>{g}</Badge>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      </Card>
-
+                  ))}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </div>
+      <div className="flex items-center justify-center gap-4 text-xs">
+        <TimerIcon size={16} />
+        {new Date(analysis._creationTime).toString()}
+      </div>
       <Workflow progress={analysis.progress} log={analysis.log} />
-
       <div className="w-full gap-4 items-center flex">
         {url && (
           <Button

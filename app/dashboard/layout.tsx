@@ -33,7 +33,7 @@ export default function DashboardLayout({
       </div>
 
       {isAuthenticated ? (
-        <div className="w-full">{children}</div>
+        <div className="max-w-[75vw]">{children}</div>
       ) : (
         <div className="flex items-center justify-center w-full h-full">
           <Loader2 className="animate-spin" />
