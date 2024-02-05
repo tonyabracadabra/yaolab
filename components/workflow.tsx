@@ -15,8 +15,6 @@ interface WorkflowInterface {
   log?: string;
 }
 
-type AnalysisStepType = z.infer<typeof AnalysisStep>;
-
 const baseNodes: Node[] = [
   {
     id: AnalysisStep.Enum.load_data,
@@ -142,6 +140,10 @@ function Flow({ progress, log }: WorkflowInterface) {
         fitView
         proOptions={{ hideAttribution: true }}
         nodesDraggable={false}
+        zoomOnPinch={false}
+        zoomOnDoubleClick={false}
+        zoomOnScroll={false}
+        panOnScroll={false}
       />
     </div>
   );
