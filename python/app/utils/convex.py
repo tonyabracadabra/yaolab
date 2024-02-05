@@ -80,7 +80,7 @@ async def _download_from_url(url: str) -> bytes:
 
 
 async def load_binary(storage_id: str, convex: ConvexClient) -> bytes:
-    url = await _generate_download_url(storage_id, "application/octet-stream", convex)
+    url = await _generate_download_url(storage_id, convex)
     return await _download_from_url(url)
 
 

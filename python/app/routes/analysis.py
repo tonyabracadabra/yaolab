@@ -86,7 +86,7 @@ async def preprocess_ions(
     convex: ConvexClient = Depends(get_convex),
 ) -> dict[str, str]:
     try:
-        blob: bytes = load_binary(input.targetedIons, convex=convex)
+        blob: bytes = await load_binary(input.targetedIons, convex=convex)
         df, sample_cols = preprocess_targeted_ions_file(blob=blob, tool=input.tool)
         storage_id = upload_parquet(df, convex)
 
