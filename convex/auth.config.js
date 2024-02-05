@@ -1,7 +1,7 @@
 const config = {
   providers: [
     {
-      domain: "https://sacred-flamingo-58.clerk.accounts.dev",
+      domain: process.env.CLERK_JWT_ISSUER_DOMAIN,
       applicationID: "convex",
     },
   ],
