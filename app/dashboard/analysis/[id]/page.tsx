@@ -262,18 +262,33 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         </TooltipProvider>
       </div>
       <div className="flex flex-col gap-2 items-center justify-center w-full h-[50vh]">
-        <div className="w-full gap-4 items-center flex">
-          <Button
-            disabled={!url}
-            size="xs"
-            onClick={() => {
-              window.open(url, "_blank");
-            }}
-            className="flex items-center justify-center gap-2"
-          >
-            <span>Download</span>
-            <Download size={12} />
-          </Button>
+        <div className="w-full gap-4 items-center justify-end flex p-4">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <Button
+                  disabled={!url}
+                  size="xs"
+                  onClick={() => {
+                    window.open(url, "_blank");
+                  }}
+                  className="flex items-center justify-center gap-2"
+                >
+                  <span>Download Data</span>
+                  <Download size={12} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <div className="text-neutral-400">
+                  {url ? (
+                    <span>Download the result data</span>
+                  ) : (
+                    <span>Result data is not available</span>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         {analysis.status === "running" && <div>{analysis.log}</div>}
         <div className="w-full h-full">
