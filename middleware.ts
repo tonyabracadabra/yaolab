@@ -7,10 +7,7 @@ export default authMiddleware({
     if (!auth.userId && !auth.isPublicRoute) {
       return redirectToSignIn({ returnBackUrl: "/sign-in" });
     }
-    if (
-      req.nextUrl.pathname.startsWith("/dashboard") &&
-      !req.nextUrl.pathname.startsWith("/dashboard/analysis")
-    ) {
+    if (req.nextUrl.pathname === "/dashboard") {
       return NextResponse.rewrite(new URL("/dashboard/new", req.url));
     }
   },
