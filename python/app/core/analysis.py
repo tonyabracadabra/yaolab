@@ -1,9 +1,7 @@
-import asyncio
-
 import app.core.steps as steps
 import pandas as pd
 from app.models.analysis import Analysis, AnalysisStatus
-from app.utils.convex import upload_file
+from app.utils.convex import upload_csv
 from app.utils.logger import logger, with_logging_and_context
 from pydantic import BaseModel
 from scipy.sparse import coo_matrix
@@ -70,7 +68,7 @@ class AnalysisWorker(BaseModel):
         )
 
         # Upload matched_df to convex as a file, and update analysis result
-        storageId = upload_file(matched_df, self.convex, file_type="text/csv")
+        storageId = upload_csv(matched_df, self.convex)
         self.convex.mutation(
             "analyses:update",
             {

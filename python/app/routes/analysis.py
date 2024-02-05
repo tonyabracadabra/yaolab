@@ -5,7 +5,7 @@ from app.core.analysis import AnalysisWorker
 from app.core.preprocess import preprocess_targeted_ions_file
 from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput, MSTool
 from app.utils.constants import DEFAULT_REACTION_DF
-from app.utils.convex import download_file, get_convex, upload_file
+from app.utils.convex import download_file, get_convex, upload_parquet
 from app.utils.logger import logger
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
@@ -81,7 +81,7 @@ class PreprocessIonsInput(BaseModel):
 
 
 @router.post("/preprocessIons")
-async def preprocessIons(
+async def proprocess_ions(
     input: PreprocessIonsInput,
     convex: ConvexClient = Depends(get_convex),
 ) -> dict[str, str]:
@@ -90,7 +90,7 @@ async def preprocessIons(
         df, sample_cols = preprocess_targeted_ions_file(
             ions_blob=ions_blob, tool=input.tool
         )
-        storage_id = upload_file(df, convex, file_type="text/csv")
+        storage_id = upload_parquet(df, convex)
 
         return {"storageId": storage_id, "sampleCols": sample_cols}
     except Exception as e:

@@ -4,7 +4,7 @@ from typing import Literal
 import pandas as pd
 from app.models.analysis import Analysis, Experiment, ReactionDatabase
 from app.utils.constants import DEFAULT_REACTION_DF, ID_COL, SAMPLE_COL
-from app.utils.convex import load_csv, load_mgf
+from app.utils.convex import load_mgf, load_parquet
 from app.utils.logger import log
 from frozenlist import FrozenList
 from matchms.Spectrum import Spectrum
@@ -60,10 +60,11 @@ async def load_data(
     header.freeze()
     tasks = [
         load_mgf(analysis.rawFile.mgf),
-        load_csv(analysis.rawFile.targetedIons, header=header),
+        load_parquet(analysis.rawFile.targetedIons, header=header),
         _load_reaction_db(analysis.reactionDb),
     ]
     spectra, targeted_ions_df, reaction_df = await asyncio.gather(*tasks)
+
     targeted_ions_df = _filter_metabolites(
         data=targeted_ions_df,
         experiments=analysis.config.experiments,

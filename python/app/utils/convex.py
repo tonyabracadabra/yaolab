@@ -36,19 +36,35 @@ def download_file(storage_id: str) -> bytes:
     return response.content
 
 
-def upload_file(
-    df: pd.DataFrame, convex: ConvexClient, file_type: str = "text/csv"
-) -> str:
+def upload_csv(df: pd.DataFrame, convex: ConvexClient) -> str:
     postUrl = convex.mutation("utils:generateUploadUrl")
     result = requests.post(
         postUrl,
-        headers={"Content-Type": file_type},
+        headers={"Content-Type": "text/csv"},
         data=df.to_csv(index=False),
     )
 
     if result.status_code != 200:
         raise Exception(f"Failed to upload file: {result.text}")
     return result.json()["storageId"]
+
+
+def upload_parquet(df: pd.DataFrame, convex: ConvexClient) -> str:
+    postUrl = convex.mutation("utils:generateUploadUrl")
+    # Use a BytesIO buffer as an in-memory binary stream for the DataFrame
+    buffer = io.BytesIO()
+    df.to_parquet(buffer, index=False)
+    buffer.seek(0)  # Reset buffer's pointer to the beginning
+
+    result = requests.post(
+        postUrl,
+        headers={"Content-Type": "application/octet-stream"},
+        data=buffer.read(),  # Read the binary content of the buffer
+    )
+
+    if result.status_code != 200:
+        raise Exception(f"Failed to upload file: {result.text}")
+    return result.json().get("storageId")
 
 
 @alru_cache(maxsize=128, typed=False)
@@ -71,15 +87,10 @@ async def load_mgf(
 
 
 @alru_cache(maxsize=128, typed=False)
-async def load_csv(
-    storage_id: str,
-    header: Sequence[int],
-    encoding: str = ENCODING,
-) -> pd.DataFrame:
+async def load_parquet(storage_id: str) -> pd.DataFrame:
     blob = download_file(storage_id)
     try:
-        content = blob.decode(encoding)
-        with io.StringIO(content) as string_io:
-            return pd.read_csv(string_io, header=list(header))
-    except UnicodeDecodeError:
-        raise Exception("Failed to decode the blob with encoding {}".format(encoding))
+        with io.BytesIO(blob) as bytes_io:
+            return pd.read_parquet(bytes_io)
+    except UnicodeDecodeError as e:
+        raise Exception(f"Failed to load the parquet file: {e}")
