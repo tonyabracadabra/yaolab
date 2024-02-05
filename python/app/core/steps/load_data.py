@@ -8,6 +8,8 @@ from app.utils.convex import load_mgf, load_parquet
 from app.utils.logger import log
 from matchms.Spectrum import Spectrum
 
+from convex import ConvexClient
+
 
 async def _load_reaction_db(
     reaction_db: ReactionDatabase | Literal["default"],
@@ -54,10 +56,11 @@ def _filter_metabolites(
 @log("Loading data")
 async def load_data(
     analysis: Analysis,
+    convex: ConvexClient,
 ) -> tuple[list[Spectrum], pd.DataFrame, pd.DataFrame]:
     tasks = [
-        load_mgf(analysis.rawFile.mgf),
-        load_parquet(analysis.rawFile.targetedIons),
+        load_mgf(analysis.rawFile.mgf, convex=convex),
+        load_parquet(analysis.rawFile.targetedIons, convex=convex),
         _load_reaction_db(analysis.reactionDb),
     ]
     spectra, targeted_ions_df, reaction_df = await asyncio.gather(*tasks)

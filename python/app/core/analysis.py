@@ -39,7 +39,9 @@ class AnalysisWorker(BaseModel):
         )
 
         config = self.analysis.config
-        spectra, targeted_ions_df, reaction_df = await load_data(self.analysis)
+        spectra, targeted_ions_df, reaction_df = await load_data(
+            self.analysis, convex=self.convex
+        )
 
         ion_interaction_matrix: coo_matrix = await create_ion_interaction_matrix(
             targeted_ions_df,
