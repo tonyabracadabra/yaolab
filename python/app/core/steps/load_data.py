@@ -2,10 +2,11 @@ import asyncio
 from typing import Literal
 
 import pandas as pd
-from app.models.analysis import Analysis, Experiment, MSTool, ReactionDatabase
-from app.utils.constants import DEFAULT_REACTION_DF, ID_COL, MZ_COL, RT_COL
+from app.models.analysis import Analysis, Experiment, ReactionDatabase
+from app.utils.constants import DEFAULT_REACTION_DF, ID_COL, SAMPLE_COL
 from app.utils.convex import load_csv, load_mgf
 from app.utils.logger import log
+from frozenlist import FrozenList
 from matchms.Spectrum import Spectrum
 
 
@@ -36,15 +37,17 @@ def _filter_metabolites(
         sample_group = experiment.sampleGroups
         blank_group = experiment.blankGroups
 
-        blank_mean = data[blank_group].mean(axis=1)
-        sample_max = data[sample_group].max(axis=1)
+        blank_mean = data[SAMPLE_COL][blank_group].mean(axis=1)
+        sample_max = data[SAMPLE_COL][sample_group].max(axis=1)
         filter_condition = (sample_max > minSignalThreshold) & (
             sample_max > signalEnrichmentFactor * blank_mean
         )
 
         cond &= filter_condition
         group_columns = sample_group + blank_group
-        data[("sample", experiment.name)] = data["sample"][group_columns].mean(axis=1)
+        data[(SAMPLE_COL, experiment.name)] = data[SAMPLE_COL][group_columns].mean(
+            axis=1
+        )
 
     return data[cond]
 
@@ -53,9 +56,11 @@ def _filter_metabolites(
 async def load_data(
     analysis: Analysis,
 ) -> tuple[list[Spectrum], pd.DataFrame, pd.DataFrame]:
+    header = FrozenList([0, 1])
+    header.freeze()
     tasks = [
         load_mgf(analysis.rawFile.mgf),
-        load_csv(analysis.rawFile.targetedIons, header=[0, 1]),
+        load_csv(analysis.rawFile.targetedIons, header=header),
         _load_reaction_db(analysis.reactionDb),
     ]
     spectra, targeted_ions_df, reaction_df = await asyncio.gather(*tasks)

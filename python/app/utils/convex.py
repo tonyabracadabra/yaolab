@@ -73,13 +73,13 @@ async def load_mgf(
 @alru_cache(maxsize=128, typed=False)
 async def load_csv(
     storage_id: str,
-    header: int | Sequence[int] | None | Literal["infer"],
+    header: Sequence[int],
     encoding: str = ENCODING,
 ) -> pd.DataFrame:
     blob = download_file(storage_id)
     try:
         content = blob.decode(encoding)
         with io.StringIO(content) as string_io:
-            return pd.read_csv(string_io, header=header)
+            return pd.read_csv(string_io, header=list(header))
     except UnicodeDecodeError:
         raise Exception("Failed to decode the blob with encoding {}".format(encoding))

@@ -6,6 +6,7 @@ import pandas as pd
 ID_COL = "id"
 MZ_COL = "m/z"
 RT_COL = "Rt(min)"
+SAMPLE_COL = "sample"
 
 # MDial delimiter
 MSMS_COL = "MS/MS spectrum"
