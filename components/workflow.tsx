@@ -140,6 +140,8 @@ function Flow({ progress, log }: WorkflowInterface) {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         fitView
+        proOptions={{ hideAttribution: true }}
+        nodesDraggable={false}
       />
     </div>
   );

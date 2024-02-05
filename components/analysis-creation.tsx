@@ -165,6 +165,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
       const token = await getToken({ template: "convex", skipCache: true });
       if (!token) {
         toast.error("You need to be logged in to perform this action");
+        setIsSubmitting(false);
         return;
       }
       const { id } = await triggerAnalysis({
@@ -178,7 +179,6 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
       toast.error(
         "Error occured while analyzing your data, please try again later"
       );
-    } finally {
       setIsSubmitting(false);
     }
   };
