@@ -205,7 +205,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                       value={value}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Raw File to be analyzed" />
+                        <SelectValue placeholder="Select a raw file ..." />
                       </SelectTrigger>
                       <SelectContent>
                         {allRawFiles?.map((rawFile) => {
