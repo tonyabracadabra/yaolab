@@ -5,6 +5,7 @@ import { MobileNav } from "@/components/mobile-nav";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useAuth, useUser } from "@clerk/nextjs";
 import Avatar from "boring-avatars";
+import { LogOut, Settings2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import {
@@ -36,9 +37,21 @@ export function SiteHeader() {
                   <div>{user?.username}</div>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent className="-ml-20">
+                <DropdownMenuItem>
+                  <Link
+                    href="/settings"
+                    className="flex items-center gap-2 justify-center"
+                  >
+                    <Settings2 size={12} />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => signOut()}>
-                  Log Out
+                  <div className="text-red-500 flex items-center gap-2 justify-center">
+                    <LogOut size={12} />
+                    Log Out
+                  </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

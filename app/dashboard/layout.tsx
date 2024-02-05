@@ -2,7 +2,7 @@
 
 import { DashboardNav } from "@/components/nav";
 import { useConvexAuth } from "convex/react";
-import { BarChart2, Loader2, Plus } from "lucide-react";
+import { ListPlus, Loader2, Waypoints } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -13,20 +13,23 @@ export default function DashboardLayout({
 
   return (
     <div className="w-full flex h-full">
-      <DashboardNav
-        items={[
-          {
-            title: "New Analysis",
-            icon: Plus,
-            href: "/dashboard/new",
-          },
-          {
-            title: "All analysis",
-            icon: BarChart2,
-            href: "/dashboard/analysis",
-          },
-        ]}
-      />
+      <div className="pl-16 pt-8 flex items-center justify-center gap-6 h-full">
+        <DashboardNav
+          items={[
+            {
+              title: "New Analysis",
+              icon: ListPlus,
+              hrefs: ["/dashboard/new", "/dashboard"],
+            },
+            {
+              title: "All analysis",
+              icon: Waypoints,
+              hrefs: ["/dashboard/analysis"],
+            },
+          ]}
+        />
+      </div>
+
       {isAuthenticated ? (
         <div className="w-full">{children}</div>
       ) : (

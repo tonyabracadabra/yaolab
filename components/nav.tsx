@@ -12,7 +12,7 @@ export type SidebarNavItem = {
   external?: boolean;
   icon: LucideIcon;
 } & {
-  href: string;
+  hrefs: string[];
   items?: never;
 };
 
@@ -28,20 +28,34 @@ export function DashboardNav({ items }: DashboardNavProps) {
   }
 
   return (
-    <nav className="grid items-start gap-2 px-2 h-full">
+    <nav className="flex flex-col items-start gap-2 h-full border-r-[1px] border-r-secondary pr-12">
       {items.map((item, index) => {
         return (
-          item.href && (
-            <Link key={index} href={item.disabled ? "/" : item.href}>
+          item.hrefs && (
+            <Link key={index} href={item.disabled ? "/" : item.hrefs[0]}>
               <span
                 className={cn(
-                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                  path === item.href ? "bg-accent" : "transparent",
+                  "group w-[140px] flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                  item.hrefs.includes(path) ? "bg-accent" : "transparent",
                   item.disabled && "cursor-not-allowed opacity-80"
                 )}
               >
-                <item.icon className="mr-2 h-4 w-4" />
-                <span className="whitespace-nowrap">{item.title}</span>
+                <item.icon
+                  className={cn(
+                    "mr-3 h-5 w-5",
+                    item.hrefs.includes(path) ? "opacity-100" : "opacity-60"
+                  )}
+                />
+                <span
+                  className={cn(
+                    "whitespace-nowrap",
+                    item.hrefs.includes(path)
+                      ? "text-primary"
+                      : "text-primary/60"
+                  )}
+                >
+                  {item.title}
+                </span>
               </span>
             </Link>
           )

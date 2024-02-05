@@ -90,3 +90,23 @@
 .hide-links a {
   @apply hidden;
 }
+
+.cl-card > div[class^="cl-internal"] {
+  display: none;
+}
+
+.cl-card h1,
+.cl-card p,
+.cl-card [class^="cl-internal"] {
+  @apply text-primary;
+}
+
+.cl-card {
+  box-shadow: none;
+  @apply text-primary;
+  @apply bg-card;
+}
+
+.cl-navbarButton {
+  @apply text-primary;
+}

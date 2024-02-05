@@ -1,11 +1,19 @@
 "use client";
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Workflow } from "@/components/workflow";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useAction, useQuery } from "convex/react";
-import { ArrowBigLeft, Download, LoaderIcon } from "lucide-react";
+import { Atom, Download, File, List, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
@@ -68,8 +76,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         .then((response) => response.blob())
         .then((blob: Blob | null) => {
           if (blob) {
-            // // Convert Blob to File
-            const file = new File([blob], "data.csv", { type: blob.type });
+            const file = new (File as any)([blob], "result.csv");
 
             Papa.parse<RowData>(file, {
               header: true,
@@ -116,7 +123,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   }, [analysis?.result, getFileUrl]);
 
   if (!analysis) {
-    return <LoaderIcon className="animate-spin" />;
+    return <Loader2 className="animate-spin" />;
   }
 
   const correlationToColor = (correlation: number) => {
@@ -125,16 +132,68 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-8">
+    <div className="flex flex-col gap-4 px-4 py-2">
       <Link href="/dashboard/analysis">
         <Button
           size="sm"
           variant="secondary"
           className="flex w-fit items-center justify-center gap-2"
         >
-          <ArrowBigLeft size={16} /> Return to all analyses
+          <List size={16} /> All analyses
         </Button>
       </Link>
+
+      <Card className="p-4 flex items-center gap-4 w-[80vw]">
+        <div className="flex flex-col items-start gap-2">
+          <div className="flex items-center justify-center gap-2">
+            <File size={16} />
+            <span className="ml-2">{analysis.rawFile?.name}</span>
+          </div>
+          <div className="flex items-center justify-center gap-2">
+            <Atom size={16} />
+            <span className="ml-2">
+              {typeof analysis.reactionDb === "string"
+                ? "default"
+                : analysis.reactionDb?.name}
+            </span>
+          </div>
+        </div>
+        <Accordion type="multiple">
+          <AccordionItem value="experiment-groups" className="cursor-pointer">
+            <AccordionTrigger>Experiment Groups</AccordionTrigger>
+            <AccordionContent>
+              <div className="text-neutral-400">
+                {analysis.config.experiments.map((e, i) => (
+                  <div
+                    key={i}
+                    className="w-full flex-col flex items-center max-w-[400px]"
+                  >
+                    <div>{e.name}</div>
+                    <div className="flex items-center justify-center gap-4">
+                      <div className="flex flex-col gap-2">
+                        <div>Blank Groups</div>
+                        <div className="text-neutral-500 gap-2 flex items-center justify-center">
+                          {e.blankGroups.map((g, j) => (
+                            <Badge key={j}>{g}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <div>Sample Groups</div>
+                        <div className="text-neutral-500 gap-2 flex items-center justify-center">
+                          {e.sampleGroups.map((g, j) => (
+                            <Badge key={j}>{g}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </Card>
 
       <Workflow progress={analysis.progress} log={analysis.log} />
 

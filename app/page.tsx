@@ -93,6 +93,7 @@ const features = [
     description:
       "Search for analysis and research on traditional Chinese medicine",
     href: "/",
+    hrefText: "Stay Tuned",
     className: "col-span-3 lg:col-span-2",
     background: (
       <Command className="absolute right-10 top-10 w-[70%] origin-top translate-x-0 border transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_40%,#000_100%)] group-hover:-translate-x-10">
@@ -116,6 +117,7 @@ const features = [
     description:
       "Building a global research community on traditional Chinese medicine",
     href: "/analysis",
+    hrefText: "Stay Tuned",
     className: "col-span-3 lg:col-span-2",
     background: (
       <div className="relative">
