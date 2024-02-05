@@ -47,7 +47,7 @@ def upload_parquet(df: pd.DataFrame, convex: ConvexClient) -> str:
     signedUrl, storageId = resp["signedUrl"], resp["storageId"]
     # Use a BytesIO buffer as an in-memory binary stream for the DataFrame
     buffer = io.BytesIO()
-    df.to_parquet(buffer, index=False)
+    df.to_parquet(buffer, index=True)
     buffer.seek(0)  # Reset buffer's pointer to the beginning
 
     result = requests.put(
