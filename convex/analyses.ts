@@ -49,7 +49,7 @@ export const update = zMutation({
   args: {
     id: zid("analyses"),
     status: z.optional(AnalysisStatus),
-    result: z.optional(zid("_storage")),
+    result: z.optional(z.string()),
     log: z.optional(z.string()),
   },
   handler: async ({ db }, { id, status, log, result }) => {
@@ -98,8 +98,8 @@ export const AnalysisOutputSchema = z.object({
   rawFile: z.object({
     name: z.string(),
     tool: z.string(),
-    mgf: zid("_storage"),
-    ions: zid("_storage"),
+    mgf: z.string(),
+    ions: z.string(),
     sampleCols: z.array(z.string()),
   }),
   reactionDb: z.union([

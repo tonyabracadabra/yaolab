@@ -58,7 +58,7 @@ export const AnalysisSchema = z.object({
   status: AnalysisStatus,
   progress: Progress,
   log: z.optional(z.string()),
-  result: z.optional(zid("_storage")),
+  result: z.optional(z.string()),
 });
 
 export const MSTool = z.enum(["MZmine3", "MDial"]);
@@ -72,8 +72,8 @@ export const ReactionDatabaseSchema = z.object({
 export const RawFileCreationInputSchema = z.object({
   name: z.string(),
   tool: MSTool,
-  mgf: zid("_storage"),
-  targetedIons: zid("_storage"),
+  mgf: z.string(),
+  targetedIons: z.string(),
   sampleCols: z.array(z.string()),
 });
 

@@ -63,15 +63,15 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
   const onSubmit = async (values: RawFileCreationInput) => {
     setStatus("processing");
     try {
-      const [{ storageId: mgfId }, { storageId: targetedIonsId }] =
-        await Promise.all([
-          handleUpload(values.mgf),
-          handleUpload(values.targetedIons),
-        ]);
+      const [{ key: mgfId }, { key: targetedIonsId }] = await Promise.all([
+        handleUpload(values.mgf),
+        handleUpload(values.targetedIons),
+      ]);
 
       const token = await getToken({ template: "convex", skipCache: true });
       if (!token) {
-        throw new Error("No token found");
+        toast.error("You need to be logged in to upload files");
+        return;
       }
 
       const { storageId: processedId, sampleCols } = await preprocessIons({
@@ -93,6 +93,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
       onCreate(id);
       onClose();
     } catch (error) {
+      console.log("error", error);
       toast.error("Something went wrong while uploading your file, try again");
     } finally {
       setStatus("idle");

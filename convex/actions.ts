@@ -1,8 +1,12 @@
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
 import { zid } from "convex-helpers/server/zod";
+import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { api, internal } from "./_generated/api";
 import { AnalysisCreationInputSchema } from "./schema";
-import { zAction } from "./utils";
+import { s3Client, zAction, zMutation } from "./utils";
 
 export const triggerAnalysis = zAction({
   args: { ...AnalysisCreationInputSchema.shape, token: z.string() },
@@ -77,7 +81,7 @@ export const calculateMass = zAction({
 
 export const getFileUrl = zAction({
   args: {
-    storageId: zid("_storage"),
+    storageId: z.string(),
   },
   handler: async (ctx, { storageId }) => {
     const url = await ctx.storage.getUrl(storageId);
@@ -103,11 +107,11 @@ export const downloadDefaultReactions = zAction({
 
 export const preprocessIons = zAction({
   args: {
-    targetedIons: zid("_storage"),
+    targetedIons: z.string(),
     tool: z.enum(["MZmine3", "MDial"]),
     token: z.string(),
   },
-  handler: async (_, { tool, targetedIons, token }) => {
+  handler: async ({ storage }, { tool, targetedIons, token }) => {
     const response = await fetch(
       `${process.env.FASTAPI_URL}/analysis/preprocessIons`,
       {
@@ -121,6 +125,7 @@ export const preprocessIons = zAction({
     );
 
     if (!response.ok) {
+      await storage.delete(targetedIons);
       throw new Error(`Error: ${response.status}`);
     }
     const data = await response.json();
@@ -128,16 +133,47 @@ export const preprocessIons = zAction({
     return data;
   },
   output: z.object({
-    storageId: zid("_storage"),
+    storageId: z.string(),
     sampleCols: z.array(z.string()),
   }),
 });
 
 export const removeFile = zAction({
   args: {
-    storageId: zid("_storage"),
+    storageId: z.string(),
   },
-  handler: async (ctx, { storageId }) => {
-    await ctx.storage.delete(storageId);
+  handler: async (_, { storageId }) => {
+    const command = new DeleteObjectCommand({
+      Bucket: process.env.BUCKET_NAME || "",
+      Key: storageId,
+    });
+
+    try {
+      await s3Client.send(command);
+    } catch (error) {
+      console.error("Error removing file", error);
+      throw error;
+    }
+  },
+});
+
+export const generateUploadUrl = zMutation({
+  args: { key: z.optional(z.string()) },
+  handler: async (_, { key }) => {
+    const updatedKey = key || uuidv4();
+    const command = new PutObjectCommand({
+      Bucket: process.env.BUCKET_NAME || "",
+      Key: updatedKey,
+    });
+
+    try {
+      const signedUrl = await getSignedUrl(s3Client, command, {
+        expiresIn: 3600,
+      }); // URL expires in 1 hour
+      return { signedUrl, key: updatedKey };
+    } catch (error) {
+      console.error("Error generating signed URL", error);
+      throw error;
+    }
   },
 });

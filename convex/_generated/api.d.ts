@@ -16,7 +16,6 @@ import type {
 } from "convex/server";
 import type * as actions from "../actions.js";
 import type * as analyses from "../analyses.js";
-import type * as http from "../http.js";
 import type * as rawFiles from "../rawFiles.js";
 import type * as reactions from "../reactions.js";
 import type * as utils from "../utils.js";
@@ -32,7 +31,6 @@ import type * as utils from "../utils.js";
 declare const fullApi: ApiFromModules<{
   actions: typeof actions;
   analyses: typeof analyses;
-  http: typeof http;
   rawFiles: typeof rawFiles;
   reactions: typeof reactions;
   utils: typeof utils;

@@ -1,3 +1,4 @@
+import { S3Client } from "@aws-sdk/client-s3";
 import {
   zCustomAction,
   zCustomMutation,
@@ -5,10 +6,6 @@ import {
 } from "convex-helpers/server/zod";
 import { Auth } from "convex/server";
 import { action, internalMutation, mutation, query } from "./_generated/server";
-
-export const generateUploadUrl = mutation(async (ctx) => {
-  return await ctx.storage.generateUploadUrl();
-});
 
 const getUser = async ({ auth }: { auth: Auth }) => {
   const identity = await auth.getUserIdentity();
@@ -57,5 +54,14 @@ export const zAction = zCustomAction(action, {
     const user = await getUser({ auth });
 
     return { ctx: { user }, args };
+  },
+});
+
+export const s3Client = new S3Client({
+  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT || "", // Your Cloudflare R2 endpoint
+  region: "auto", // Specify the appropriate region, if necessary
+  credentials: {
+    accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID || "", // Your access key
+    secretAccessKey: process.env.CLOUDFLARE_SECRET_ACCESS_KEY || "", // Your secret access key
   },
 });
