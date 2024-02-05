@@ -6,7 +6,6 @@ from app.models.analysis import Analysis, Experiment, ReactionDatabase
 from app.utils.constants import DEFAULT_REACTION_DF, ID_COL, SAMPLE_COL
 from app.utils.convex import load_mgf, load_parquet
 from app.utils.logger import log
-from frozenlist import FrozenList
 from matchms.Spectrum import Spectrum
 
 
@@ -56,11 +55,9 @@ def _filter_metabolites(
 async def load_data(
     analysis: Analysis,
 ) -> tuple[list[Spectrum], pd.DataFrame, pd.DataFrame]:
-    header = FrozenList([0, 1])
-    header.freeze()
     tasks = [
         load_mgf(analysis.rawFile.mgf),
-        load_parquet(analysis.rawFile.targetedIons, header=header),
+        load_parquet(analysis.rawFile.targetedIons),
         _load_reaction_db(analysis.reactionDb),
     ]
     spectra, targeted_ions_df, reaction_df = await asyncio.gather(*tasks)
