@@ -48,7 +48,7 @@ export default function AnalysisList() {
             router.push(`/dashboard/analysis/${row.original.id}`);
           }}
         >
-          <EnterIcon strokeWidth={5} />
+          <EnterIcon className="stroke-[0.8px] w-4 h-4 stroke-muted-foreground opacity-75" />
         </Button>
       ),
     },
