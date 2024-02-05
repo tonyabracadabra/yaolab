@@ -15,11 +15,10 @@ from app.utils.logger import log
 
 @log("Calculating edge metrics")
 async def calculate_edge_metrics(
-    targeted_ions_df: pd.DataFrame, edge_data_df: pd.DataFrame
+    samples_df: pd.DataFrame, targeted_ions_df: pd.DataFrame, edge_data_df: pd.DataFrame
 ) -> pd.DataFrame:
     # Pre-calculate and map ID to mz and rt values for efficient lookup
     id_to_mz_rt = targeted_ions_df.set_index(ID_COL)[[MZ_COL, RT_COL]].to_dict("index")
-    corr_cols = targeted_ions_df["sample"]
 
     def calculate_metrics(row):
         id1, id2 = row[ID_COL_1], row[ID_COL_2]
@@ -34,11 +33,11 @@ async def calculate_edge_metrics(
 
         id1_data = targeted_ions_df.loc[
             targeted_ions_df[ID_COL] == id1,
-            targeted_ions_df.columns[corr_cols],
+            samples_df,
         ].values[0]
         id2_data = targeted_ions_df.loc[
             targeted_ions_df[ID_COL] == id2,
-            targeted_ions_df.columns[corr_cols],
+            samples_df,
         ].values[0]
         # Calculate the cosine similarity between the two IDs
         correlation = np.dot(id1_data, id2_data) / (

@@ -1,6 +1,7 @@
 import app.core.steps as steps
 import pandas as pd
 from app.models.analysis import Analysis, AnalysisStatus
+from app.utils.constants import SAMPLE_COL
 from app.utils.convex import upload_csv
 from app.utils.logger import logger, with_logging_and_context
 from pydantic import BaseModel
@@ -42,6 +43,8 @@ class AnalysisWorker(BaseModel):
         spectra, targeted_ions_df, reaction_df = await load_data(
             self.analysis, convex=self.convex
         )
+        samples_df = targeted_ions_df[SAMPLE_COL]
+        targeted_ions_df = targeted_ions_df[""]
 
         ion_interaction_matrix: coo_matrix = await create_ion_interaction_matrix(
             targeted_ions_df,
@@ -59,7 +62,9 @@ class AnalysisWorker(BaseModel):
             ms2_similarity_threshold=config.ms2SimilarityThreshold,
         )
 
-        edge_metrics = await calculate_edge_metrics(targeted_ions_df, edge_data_df)
+        edge_metrics = await calculate_edge_metrics(
+            samples_df, targeted_ions_df, edge_data_df
+        )
 
         matched_df = await edge_value_matching(
             edge_metrics,

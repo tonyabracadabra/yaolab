@@ -16,10 +16,10 @@ TOLERANCE = 0.005
 
 @log("Creating similarity matrix")
 async def create_similarity_matrix(
-    spectra: List[Spectrum], target_ions_df: pd.DataFrame
+    spectra: List[Spectrum], targeted_ions_df: pd.DataFrame
 ) -> coo_matrix:
     # Filter spectra based on scan IDs
-    ids = set(target_ions_df[ID_COL])
+    ids = set(targeted_ions_df[ID_COL])
     filtered_spectra = [
         spectrum for spectrum in spectra if int(spectrum.metadata[SCANS_KEY]) in ids
     ]
