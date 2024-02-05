@@ -59,7 +59,7 @@ def upload_parquet(df: pd.DataFrame, convex: ConvexClient) -> str:
     return result.json().get("storageId")
 
 
-async def _generate_download_url(storage_id: str, convex: ConvexClient) -> bytes:
+async def _generate_download_url(storage_id: str, convex: ConvexClient) -> str:
     response = convex.action(
         "actions:generateDownloadUrl",
         {"storageId": storage_id},
