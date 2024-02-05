@@ -75,18 +75,18 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     links: [],
   });
   const [url, setUrl] = useState<string>("");
-  const getFileUrl = useAction(api.actions.getFileUrl);
+  const generateDownloadUrl = useAction(api.actions.generateDownloadUrl);
   const retryAnalysis = useAction(api.actions.retryAnalysis);
   const { getToken } = useAuth();
 
   useEffect(() => {
-    const fetchAndProcessData = async (storageId: Id<"_storage">) => {
-      const { url } = await getFileUrl({ storageId });
-      if (!url) {
+    const fetchAndProcessData = async (storageId: string) => {
+      const { signedUrl } = await generateDownloadUrl({ storageId });
+      if (!signedUrl) {
         return;
       }
-      setUrl(url);
-      fetch(url)
+      setUrl(signedUrl);
+      fetch(signedUrl)
         .then((response) => response.blob())
         .then((blob: Blob | null) => {
           if (blob) {
@@ -134,7 +134,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     if (analysis?.result) {
       fetchAndProcessData(analysis.result);
     }
-  }, [analysis?.result, getFileUrl]);
+  }, [analysis?.result, generateDownloadUrl]);
 
   if (!analysis) {
     return <Loader2 className="animate-spin" />;

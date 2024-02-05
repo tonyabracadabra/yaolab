@@ -63,10 +63,11 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
   const onSubmit = async (values: RawFileCreationInput) => {
     setStatus("processing");
     try {
-      const [{ key: mgfId }, { key: targetedIonsId }] = await Promise.all([
-        handleUpload(values.mgf),
-        handleUpload(values.targetedIons),
-      ]);
+      const [{ storageId: mgfId }, { storageId: targetedIonsId }] =
+        await Promise.all([
+          handleUpload(values.mgf),
+          handleUpload(values.targetedIons),
+        ]);
 
       const token = await getToken({ template: "convex", skipCache: true });
       if (!token) {

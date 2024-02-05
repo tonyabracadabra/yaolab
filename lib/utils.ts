@@ -1,6 +1,6 @@
 import { api } from "@/convex/_generated/api";
 import { clsx, type ClassValue } from "clsx";
-import { useMutation } from "convex/react";
+import { useAction } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
@@ -10,10 +10,12 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function useFileUpload() {
-  const generateUploadUrl = useMutation(api.actions.generateUploadUrl);
+  const generateUploadUrl = useAction(api.actions.generateUploadUrl);
 
   const handleUpload = async (file: File) => {
-    const { signedUrl, key } = await generateUploadUrl({});
+    const { signedUrl, storageId } = await generateUploadUrl({
+      fileName: file.name,
+    });
     const res = await fetch(signedUrl, {
       method: "PUT",
       headers: { "Content-Type": file.type || "text/plain" },
@@ -22,7 +24,7 @@ export function useFileUpload() {
 
     if (res.ok) {
       toast.info("Successfully uploaded file");
-      return { key };
+      return { storageId };
     } else {
       toast.error("Failed to upload file");
       throw new Error("Failed to upload file");
