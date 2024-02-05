@@ -93,7 +93,6 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
       onCreate(id);
       onClose();
     } catch (error) {
-      console.log(error);
       toast.error("Something went wrong while uploading your file, try again");
     } finally {
       setStatus("idle");

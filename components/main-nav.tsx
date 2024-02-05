@@ -10,8 +10,6 @@ import { cn } from "@/lib/utils";
 export function MainNav() {
   const pathname = usePathname();
 
-  console.log("pathname", pathname);
-
   return (
     <div className="mr-4 hidden md:flex gap-8">
       <Link href="/" className="font-urban mr-6 flex items-center space-x-2">

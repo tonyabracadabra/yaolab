@@ -11,8 +11,18 @@ import {
 import { Workflow } from "@/components/workflow";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
 import { useAction, useQuery } from "convex/react";
-import { Atom, Download, File, List, Loader2, TimerIcon } from "lucide-react";
+import {
+  Atom,
+  Download,
+  File,
+  FileWarning,
+  List,
+  Loader2,
+  LucideWorkflow,
+  TimerIcon,
+} from "lucide-react";
 import Link from "next/link";
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
@@ -199,41 +209,106 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
           </TooltipProvider>
         </div>
       </div>
-      <div className="w-full flex justify-end">
-        <div className="flex items-center justify-center gap-4 text-xs max-w-[200px]">
-          <TimerIcon size={16} />
-          {new Date(analysis._creationTime).toString().split("GMT")[0]}
-        </div>
+      <div className="w-full flex justify-end gap-4">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <div className="flex flex-col items-start justify-center gap-1">
+                <div className="flex items-center justify-center gap-24">
+                  <Badge
+                    className={cn(
+                      "flex items-center justify-center gap-2",
+                      analysis.status === "running"
+                        ? "bg-primary"
+                        : analysis.status === "failed"
+                        ? "bg-destructive text-destructive-foreground hover:bg-destructive/80"
+                        : "bg-success"
+                    )}
+                  >
+                    <LucideWorkflow size={16} />
+                    {analysis.status === "running" ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="animate-spin" size={14} />
+                        {
+                          analysis.progress.find((p) => p.status === "running")
+                            ?.step
+                        }
+                      </div>
+                    ) : analysis.status === "failed" ? (
+                      "Failed"
+                    ) : (
+                      "Completed"
+                    )}
+                  </Badge>
+                  <div className="flex items-center justify-center gap-4 text-xs max-w-[200px]">
+                    <TimerIcon size={16} />
+                    {
+                      new Date(analysis._creationTime)
+                        .toString()
+                        .split("GMT")[0]
+                    }
+                  </div>
+                </div>
+                <div className="text-muted-foreground text-xs">
+                  * Hover to view the workflow
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <Workflow progress={analysis.progress} log={analysis.log} />
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
-      <div className="flex items-start justify-start gap-4">
-        <Workflow progress={analysis.progress} log={analysis.log} />
-        <div className="flex flex-col gap-2 items-center justify-center w-[30vw]">
-          <div className="w-full gap-4 items-center flex">
-            {url && (
-              <Button
-                size="xs"
-                onClick={() => {
-                  window.open(url, "_blank");
-                }}
-                className="flex items-center justify-center gap-2"
-              >
-                <span>Download</span>
-                <Download size={12} />
+      <div className="flex flex-col gap-2 items-center justify-center w-full h-[50vh]">
+        <div className="w-full gap-4 items-center flex">
+          {url && (
+            <Button
+              size="xs"
+              onClick={() => {
+                window.open(url, "_blank");
+              }}
+              className="flex items-center justify-center gap-2"
+            >
+              <span>Download</span>
+              <Download size={12} />
+            </Button>
+          )}
+        </div>
+        {analysis.status === "pending" && <div>{analysis.log}</div>}
+        <div className="w-full h-full">
+          {analysis.status === "failed" ? (
+            <div className="flex items-center h-full justify-center gap-2 flex-col">
+              <FileWarning size={48} className="stroke-destructive" />
+              <span className="text-muted-foreground">
+                Some Unknown error happens
+              </span>
+              <Button variant="outline" className="mt-8">
+                Try again
               </Button>
-            )}
-          </div>
-          {analysis.status === "pending" && <div>{analysis.log}</div>}
-          <div className="w-1/2 h-full">
-            <ForceGraph2D
-              graphData={graphData}
-              nodeLabel="id"
-              linkDirectionalParticles="value"
-              linkDirectionalParticleWidth={(link: Link) =>
-                Math.sqrt(link.value)
-              }
-              linkColor={(link: Link) => correlationToColor(link.correlation)}
-            />
-          </div>
+            </div>
+          ) : (
+            <>
+              {graphData.links.length === 0 ? (
+                <div className="flex items-center h-full justify-center gap-2">
+                  <span>No data to display</span>
+                  <span className="text-neutral-400">😞</span>
+                </div>
+              ) : (
+                <ForceGraph2D
+                  graphData={graphData}
+                  nodeLabel="id"
+                  linkDirectionalParticles="value"
+                  linkDirectionalParticleWidth={(link: Link) =>
+                    Math.sqrt(link.value)
+                  }
+                  linkColor={(link: Link) =>
+                    correlationToColor(link.correlation)
+                  }
+                />
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>
