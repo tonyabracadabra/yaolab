@@ -10,6 +10,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -25,6 +26,7 @@ import { useUser } from "@clerk/nextjs";
 import { EnterIcon } from "@radix-ui/react-icons";
 import Avatar from "boring-avatars";
 import { useQuery } from "convex/react";
+import { CheckIcon, Loader2, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 
@@ -63,7 +65,30 @@ export default function AnalysisList() {
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => row.original.status,
+      cell: ({ row }) => {
+        if (row.original.status === "running") {
+          return (
+            <Badge className="flex items-center justify-center gap-2 w-fit">
+              <Loader2 className="animate-spin" size={12} />
+              <div>{row.original.status}</div>
+            </Badge>
+          );
+        } else if (row.original.status === "complete") {
+          return (
+            <Badge className="flex items-center justify-center gap-2 w-fit bg-green-500 text-green-50 hover:bg-green-600">
+              <CheckIcon size={12} />
+              <div>{row.original.status}</div>
+            </Badge>
+          );
+        } else {
+          return (
+            <Badge className="flex items-center justify-center gap-2 w-fit bg-destructive text-red-50 hover:bg-red-700">
+              <XIcon size={12} />
+              <div>{row.original.status}</div>
+            </Badge>
+          );
+        }
+      },
     },
     {
       accessorKey: "reactionDb",
