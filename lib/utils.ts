@@ -13,10 +13,9 @@ export function useFileUpload() {
   const generateUploadUrl = useMutation(api.actions.generateUploadUrl);
 
   const handleUpload = async (file: File) => {
-    const { signedUrl, key } = await generateUploadUrl();
-    // Step 2: POST the file to the URL
+    const { signedUrl, key } = await generateUploadUrl({});
     const res = await fetch(signedUrl, {
-      method: "POST",
+      method: "PUT",
       headers: { "Content-Type": file.type || "text/plain" },
       body: file,
     });

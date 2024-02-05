@@ -64,4 +64,5 @@ export const s3Client = new S3Client({
     accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID || "", // Your access key
     secretAccessKey: process.env.CLOUDFLARE_SECRET_ACCESS_KEY || "", // Your secret access key
   },
+  logger: undefined,
 });

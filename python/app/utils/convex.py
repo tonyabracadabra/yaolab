@@ -1,8 +1,9 @@
 import io
 import os
 from tempfile import NamedTemporaryFile
-from typing import Generator, Literal, Sequence
+from typing import Generator
 
+import aiohttp
 import pandas as pd
 import requests
 from async_lru import alru_cache
@@ -17,7 +18,6 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "../../.env.loca
 
 
 ENCODING: str = "utf-8"
-CONVEX_STORAGE_URL = os.environ["CONVEX_STORAGE_URL"]
 CONVEX_URL = os.environ["CONVEX_URL"]
 
 
@@ -28,16 +28,8 @@ def get_convex(request: Request) -> ConvexClient:
     return convex
 
 
-def download_file(storage_id: str) -> bytes:
-    response = requests.get(f"{CONVEX_STORAGE_URL}/downloadFile?storageId={storage_id}")
-    if response.status_code != 200:
-        raise Exception(f"Failed to get file from storage: {response.text}")
-
-    return response.content
-
-
 def upload_csv(df: pd.DataFrame, convex: ConvexClient) -> str:
-    postUrl = convex.mutation("utils:generateUploadUrl")
+    postUrl = convex.mutation("actions:generateUploadUrl")
     result = requests.post(
         postUrl,
         headers={"Content-Type": "text/csv"},
@@ -50,7 +42,7 @@ def upload_csv(df: pd.DataFrame, convex: ConvexClient) -> str:
 
 
 def upload_parquet(df: pd.DataFrame, convex: ConvexClient) -> str:
-    postUrl = convex.mutation("utils:generateUploadUrl")
+    postUrl = convex.mutation("actions:generateUploadUrl")
     # Use a BytesIO buffer as an in-memory binary stream for the DataFrame
     buffer = io.BytesIO()
     df.to_parquet(buffer, index=False)
@@ -67,13 +59,37 @@ def upload_parquet(df: pd.DataFrame, convex: ConvexClient) -> str:
     return result.json().get("storageId")
 
 
+async def _generate_download_url(
+    storage_id: str, fileType: str, convex: ConvexClient
+) -> bytes:
+    response = convex.action(
+        "actions:generateDownloadUrl",
+        {"storageId": storage_id, "fileType": fileType},
+    )
+    url = response["signedUrl"]
+
+    return url
+
+
+@alru_cache(maxsize=128, typed=False)
+async def _download_from_url(url: str) -> bytes:
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status == 200:
+                return await resp.read()
+            else:
+                raise Exception(f"Failed to download file, status code: {resp.status}")
+
+
 @alru_cache(maxsize=128, typed=False)
 async def load_mgf(
-    storage_id: str, encoding: str = ENCODING
+    storage_id: str,
+    convex: ConvexClient,
 ) -> Generator[Spectrum, None, None]:
-    blob = download_file(storage_id)
+    url = await _generate_download_url(storage_id, "application/octet-stream", convex)
+    blob = await _download_from_url(url)
     try:
-        content = blob.decode(encoding)
+        content = blob.decode(ENCODING)
         with NamedTemporaryFile(
             "w+", suffix=".mgf", delete=False
         ) as temp_file:  # Open for reading and writing
@@ -81,16 +97,12 @@ async def load_mgf(
             temp_file.flush()  # Ensure all data is written
             temp_file.seek(0)  # Go back to the beginning of the file before reading
             return load_from_mgf(temp_file.name)
-
     except UnicodeDecodeError:
-        raise Exception("Failed to decode the blob with encoding {}".format(encoding))
+        raise Exception("Failed to decode the blob with encoding {}".format(ENCODING))
 
 
-@alru_cache(maxsize=128, typed=False)
-async def load_parquet(storage_id: str) -> pd.DataFrame:
-    blob = download_file(storage_id)
-    try:
-        with io.BytesIO(blob) as bytes_io:
-            return pd.read_parquet(bytes_io)
-    except UnicodeDecodeError as e:
-        raise Exception(f"Failed to load the parquet file: {e}")
+async def load_parquet(storage_id: str, convex: ConvexClient) -> pd.DataFrame:
+    url = await _generate_download_url(storage_id, "application/octet-stream", convex)
+    blob = await _download_from_url(url)
+    buffer = io.BytesIO(blob)
+    return pd.read_parquet(buffer)

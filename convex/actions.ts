@@ -1,4 +1,8 @@
-import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { zid } from "convex-helpers/server/zod";
@@ -168,11 +172,29 @@ export const generateUploadUrl = zMutation({
 
     try {
       const signedUrl = await getSignedUrl(s3Client, command, {
-        expiresIn: 3600,
-      }); // URL expires in 1 hour
+        expiresIn: 60,
+      });
       return { signedUrl, key: updatedKey };
     } catch (error) {
-      console.error("Error generating signed URL", error);
+      throw error;
+    }
+  },
+});
+
+export const generateDownloadUrl = zMutation({
+  args: { key: z.string() },
+  handler: async (_, { key }) => {
+    const command = new GetObjectCommand({
+      Bucket: process.env.BUCKET_NAME || "",
+      Key: key,
+    });
+
+    try {
+      const signedUrl = await getSignedUrl(s3Client, command, {
+        expiresIn: 60,
+      });
+      return { signedUrl };
+    } catch (error) {
       throw error;
     }
   },
