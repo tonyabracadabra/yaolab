@@ -19,6 +19,7 @@ matchms = "0.24.0"
 async-lru = "^2.0.4"
 pyarrow = "^15.0.0"
 fastparquet = "^2023.10.1"
+aiohttp = "^3.9.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.11.0"
