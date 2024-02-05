@@ -88,12 +88,14 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
         mgf: mgfId,
         targetedIons: processedId,
       });
+
       toast.success(
         `Raw files created successfully, with sample columns: ${sampleCols}!`
       );
       onCreate(id);
       onClose();
     } catch (error) {
+      console.log("error", error);
       toast.error("Something went wrong while uploading your file, try again");
     } finally {
       setStatus("idle");
