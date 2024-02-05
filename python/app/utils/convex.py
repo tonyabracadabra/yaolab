@@ -81,13 +81,16 @@ async def _download_from_url(url: str) -> bytes:
                 raise Exception(f"Failed to download file, status code: {resp.status}")
 
 
-@alru_cache(maxsize=128, typed=False)
+async def load_binary(storage_id: str, convex: ConvexClient) -> bytes:
+    url = await _generate_download_url(storage_id, "application/octet-stream", convex)
+    return await _download_from_url(url)
+
+
 async def load_mgf(
     storage_id: str,
     convex: ConvexClient,
 ) -> Generator[Spectrum, None, None]:
-    url = await _generate_download_url(storage_id, "application/octet-stream", convex)
-    blob = await _download_from_url(url)
+    blob = await load_binary(storage_id, convex)
     try:
         content = blob.decode(ENCODING)
         with NamedTemporaryFile(
@@ -102,7 +105,6 @@ async def load_mgf(
 
 
 async def load_parquet(storage_id: str, convex: ConvexClient) -> pd.DataFrame:
-    url = await _generate_download_url(storage_id, "application/octet-stream", convex)
-    blob = await _download_from_url(url)
+    blob = await load_binary(storage_id, convex)
     buffer = io.BytesIO(blob)
     return pd.read_parquet(buffer)

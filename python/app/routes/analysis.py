@@ -5,7 +5,7 @@ from app.core.analysis import AnalysisWorker
 from app.core.preprocess import preprocess_targeted_ions_file
 from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput, MSTool
 from app.utils.constants import DEFAULT_REACTION_DF
-from app.utils.convex import download_file, get_convex, upload_parquet
+from app.utils.convex import get_convex, load_binary, upload_parquet
 from app.utils.logger import logger
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
@@ -86,7 +86,7 @@ async def proprocess_ions(
     convex: ConvexClient = Depends(get_convex),
 ) -> dict[str, str]:
     try:
-        ions_blob: bytes = download_file(input.targetedIons)
+        ions_blob: bytes = load_binary(input.targetedIons)
         df, sample_cols = preprocess_targeted_ions_file(
             ions_blob=ions_blob, tool=input.tool
         )
