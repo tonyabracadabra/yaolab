@@ -28,14 +28,14 @@ export function DashboardNav({ items }: DashboardNavProps) {
   }
 
   return (
-    <nav className="flex flex-col items-start gap-2 h-full border-r-[1px] border-r-secondary pr-12">
+    <nav className="flex flex-col items-start gap-2 h-full border-r-secondary pr-6">
       {items.map((item, index) => {
         return (
           item.hrefs && (
             <Link key={index} href={item.disabled ? "/" : item.hrefs[0]}>
               <span
                 className={cn(
-                  "group w-[140px] flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                  "group w-[180px] flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
                   item.hrefs.includes(path) ? "bg-accent" : "transparent",
                   item.disabled && "cursor-not-allowed opacity-80"
                 )}
