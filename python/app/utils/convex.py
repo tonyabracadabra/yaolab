@@ -28,8 +28,8 @@ def get_convex(request: Request) -> ConvexClient:
     return convex
 
 
-def download_file(storageId: str) -> bytes:
-    response = requests.get(f"{CONVEX_STORAGE_URL}/downloadFile?storageId={storageId}")
+def download_file(storage_id: str) -> bytes:
+    response = requests.get(f"{CONVEX_STORAGE_URL}/downloadFile?storageId={storage_id}")
     if response.status_code != 200:
         raise Exception(f"Failed to get file from storage: {response.text}")
 
