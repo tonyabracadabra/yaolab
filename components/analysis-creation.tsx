@@ -100,6 +100,13 @@ const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
             `config.experiments.${experiment}.${groupName}`
           ) as string[]
         }
+        otherGroupSelectedValues={
+          form.watch(
+            `config.experiments.${experiment}.${
+              groupName === "sampleGroups" ? "blankGroups" : "sampleGroups"
+            }`
+          ) as string[]
+        }
       />
     </div>
   );
