@@ -7,7 +7,6 @@ from pydantic import BaseModel, Extra
 
 
 class AnalysisStatus(str, Enum):
-    PENDING = "pending"
     RUNNING = "running"
     FAILED = "failed"
     COMPLETE = "complete"

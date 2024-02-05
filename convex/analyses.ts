@@ -19,7 +19,7 @@ export const create = zInternalMutation({
       rawFile,
       reactionDb,
       config,
-      status: "pending",
+      status: "running",
     });
 
     return { id };

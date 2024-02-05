@@ -12,9 +12,11 @@ import { Workflow } from "@/components/workflow";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@clerk/nextjs";
 import { useAction, useQuery } from "convex/react";
 import {
   Atom,
+  BadgeCheck,
   Download,
   File,
   FileWarning,
@@ -73,6 +75,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   });
   const [url, setUrl] = useState<string>("");
   const getFileUrl = useAction(api.actions.getFileUrl);
+  const retryAnalysis = useAction(api.actions.retryAnalysis);
+  const { getToken } = useAuth();
 
   useEffect(() => {
     const fetchAndProcessData = async (storageId: Id<"_storage">) => {
@@ -215,16 +219,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             <TooltipTrigger>
               <div className="flex flex-col items-start justify-center gap-1">
                 <div className="flex items-center justify-center gap-24">
-                  <Badge
-                    className={cn(
-                      "flex items-center justify-center gap-2",
-                      analysis.status === "running"
-                        ? "bg-primary"
-                        : analysis.status === "failed"
-                        ? "bg-destructive text-destructive-foreground hover:bg-destructive/80"
-                        : "bg-success"
-                    )}
-                  >
+                  <div className={cn("flex items-center justify-center gap-2")}>
                     <LucideWorkflow size={16} />
                     {analysis.status === "running" ? (
                       <div className="flex items-center justify-center gap-2">
@@ -235,11 +230,17 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         }
                       </div>
                     ) : analysis.status === "failed" ? (
-                      "Failed"
+                      <Badge className="flex items-center justify-center gap-2 bg-destructive text-red-50 hover:bg-destructive/80">
+                        <BadgeCheck size={12} />
+                        Failed
+                      </Badge>
                     ) : (
-                      "Completed"
+                      <Badge className="flex items-center justify-center gap-2 text-green-50 bg-green-400 hover:opacity-80 hover:bg-green-400">
+                        <BadgeCheck size={12} />
+                        Completed
+                      </Badge>
                     )}
-                  </Badge>
+                  </div>
                   <div className="flex items-center justify-center gap-4 text-xs max-w-[200px]">
                     <TimerIcon size={16} />
                     {
@@ -262,32 +263,52 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
       </div>
       <div className="flex flex-col gap-2 items-center justify-center w-full h-[50vh]">
         <div className="w-full gap-4 items-center flex">
-          {url && (
-            <Button
-              size="xs"
-              onClick={() => {
-                window.open(url, "_blank");
-              }}
-              className="flex items-center justify-center gap-2"
-            >
-              <span>Download</span>
-              <Download size={12} />
-            </Button>
-          )}
+          <Button
+            disabled={!url}
+            size="xs"
+            onClick={() => {
+              window.open(url, "_blank");
+            }}
+            className="flex items-center justify-center gap-2"
+          >
+            <span>Download</span>
+            <Download size={12} />
+          </Button>
         </div>
-        {analysis.status === "pending" && <div>{analysis.log}</div>}
+        {analysis.status === "running" && <div>{analysis.log}</div>}
         <div className="w-full h-full">
-          {analysis.status === "failed" ? (
+          {analysis.status === "failed" && (
             <div className="flex items-center h-full justify-center gap-2 flex-col">
               <FileWarning size={48} className="stroke-destructive" />
               <span className="text-muted-foreground">
                 Some Unknown error happens
               </span>
-              <Button variant="outline" className="mt-8">
+              <Button
+                variant="outline"
+                className="mt-8"
+                onClick={async () => {
+                  const token = await getToken({
+                    template: "convex",
+                    skipCache: true,
+                  });
+                  if (!token) {
+                    throw new Error("No token found");
+                  }
+
+                  retryAnalysis({ id: analysis._id, token });
+                }}
+              >
                 Try again
               </Button>
             </div>
-          ) : (
+          )}
+          {analysis.status === "running" && (
+            <div className="flex items-center h-full justify-center gap-2">
+              <Loader2 className="animate-spin" />
+              <span>Analysis Running</span>
+            </div>
+          )}
+          {analysis.status === "complete" && (
             <>
               {graphData.links.length === 0 ? (
                 <div className="flex items-center h-full justify-center gap-2">

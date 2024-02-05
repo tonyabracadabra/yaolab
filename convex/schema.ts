@@ -34,12 +34,7 @@ export const AnalysisCreationInputSchema = z.object({
   config: AnalysisConfigSchema,
 });
 
-export const AnalysisStatus = z.enum([
-  "pending",
-  "running",
-  "complete",
-  "failed",
-]);
+export const AnalysisStatus = z.enum(["running", "complete", "failed"]);
 
 export const AnalysisStep = z.enum([
   "load_data",

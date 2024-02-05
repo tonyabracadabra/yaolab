@@ -1,6 +1,6 @@
 import { zid } from "convex-helpers/server/zod";
 import { z } from "zod";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { AnalysisCreationInputSchema } from "./schema";
 import { zAction } from "./utils";
 
@@ -28,6 +28,29 @@ export const triggerAnalysis = zAction({
     id: zid("analyses"),
     status: z.enum(["success", "error"]),
   }),
+});
+
+export const retryAnalysis = zAction({
+  args: { id: zid("analyses"), token: z.string() },
+  handler: async ({ runMutation }, { id, token }) => {
+    await runMutation(api.analyses.update, {
+      id,
+      status: "running",
+    });
+
+    const response = await fetch(
+      `${process.env.FASTAPI_URL}/analysis/restart/${id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return { status: response.ok ? "success" : "error" };
+  },
 });
 
 export const calculateMass = zAction({
