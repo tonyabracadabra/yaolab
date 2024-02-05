@@ -5,7 +5,6 @@ import ReactFlow, {
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
-  useReactFlow,
 } from "reactflow";
 
 import "reactflow/dist/style.css";
@@ -27,28 +26,28 @@ const baseNodes: Node[] = [
   },
   {
     id: AnalysisStep.Enum.create_ion_interaction_matrix,
-    position: { x: 0, y: 200 },
+    position: { x: 100, y: 75 },
     data: { label: "Create Ion Interaction Matrix" },
   },
   {
     id: AnalysisStep.Enum.create_similarity_matrix,
-    position: { x: -200, y: 300 },
+    position: { x: -100, y: 175 },
     data: { label: "Create Similarity Matrix" },
   },
   {
     id: AnalysisStep.Enum.combine_matrices_and_extract_edges,
-    position: { x: -100, y: 500 },
+    position: { x: 100, y: 250 },
     data: { label: "Combine Matrices & Extract Edges" },
   },
   {
     id: AnalysisStep.Enum.calculate_edge_metrics,
-    position: { x: -100, y: 600 },
+    position: { x: -100, y: 325 },
     data: { label: "Calculate Edge Metrics" },
   },
   {
     id: AnalysisStep.Enum.edge_value_matching,
     type: "output",
-    position: { x: 0, y: 800 },
+    position: { x: 0, y: 400 },
     data: { label: "Edge Value Matching" },
   },
 ];
@@ -105,7 +104,6 @@ const baseEdges = [
 ];
 
 function Flow({ progress, log }: WorkflowInterface) {
-  const { fitView } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState(baseNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(baseEdges);
 
@@ -136,6 +134,7 @@ function Flow({ progress, log }: WorkflowInterface) {
   return (
     <div style={{ width: "30vh", height: "80vh" }}>
       <ReactFlow
+        panOnDrag={false}
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
