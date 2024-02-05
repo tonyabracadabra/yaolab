@@ -201,6 +201,12 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                       onValueChange={(v) => {
                         if (!v) return;
                         onChange(v);
+
+                        toast.success(
+                          `Raw file selected as ${
+                            allRawFiles?.find((f) => f._id === v)?.name
+                          }, please configure the experiment groups`
+                        );
                       }}
                       value={value}
                     >
