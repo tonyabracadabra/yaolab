@@ -338,6 +338,9 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                               blankGroups: [],
                             });
                             setCurrExperiment(fields.length);
+                            toast.success(
+                              "New experiment group added, please configure sample groups and blank groups"
+                            );
                           }}
                           variant="outline"
                           size="xs"
