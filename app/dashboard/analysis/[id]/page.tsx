@@ -132,32 +132,32 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   };
 
   return (
-    <div className="flex flex-col gap-4 px-4 py-2">
-      <Link href="/dashboard/analysis">
-        <Button
-          size="sm"
-          variant="secondary"
-          className="flex w-fit items-center justify-center gap-2"
-        >
-          <List size={16} /> All analyses
-        </Button>
-      </Link>
+    <div className="flex flex-col gap-4 px-4 py-2 w-full">
+      <div className="flex items-center justify- gap-2 w-full">
+        <Link href="/dashboard/analysis">
+          <Button
+            size="sm"
+            variant="secondary"
+            className="flex w-fit items-center justify-center gap-2"
+          >
+            <List size={16} /> All analyses
+          </Button>
+        </Link>
+        <Badge className="flex items-center justify-center gap-1">
+          <File size={14} />
+          <span className="ml-2">{analysis.rawFile?.name}</span>
+        </Badge>
+        <Badge className="flex items-center justify-center gap-1">
+          <Atom size={14} />
+          <span className="ml-2">
+            {typeof analysis.reactionDb === "string"
+              ? "default"
+              : analysis.reactionDb?.name}
+          </span>
+        </Badge>
+      </div>
 
-      <Card className="p-4 flex items-center gap-4 w-[80vw]">
-        <div className="flex flex-col items-start gap-2">
-          <div className="flex items-center justify-center gap-2">
-            <File size={16} />
-            <span className="ml-2">{analysis.rawFile?.name}</span>
-          </div>
-          <div className="flex items-center justify-center gap-2">
-            <Atom size={16} />
-            <span className="ml-2">
-              {typeof analysis.reactionDb === "string"
-                ? "default"
-                : analysis.reactionDb?.name}
-            </span>
-          </div>
-        </div>
+      <Card className="p-3 flex items-center gap-4 w-[80vw] text-xs">
         <Accordion type="multiple">
           <AccordionItem value="experiment-groups" className="cursor-pointer">
             <AccordionTrigger>Experiment Groups</AccordionTrigger>
