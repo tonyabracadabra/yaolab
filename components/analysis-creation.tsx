@@ -22,8 +22,9 @@ import {
 import { api } from "@/convex/_generated/api";
 import { AnalysisCreationInputSchema } from "@/convex/schema";
 import { useAuth } from "@clerk/nextjs";
+import { TooltipContent } from "@radix-ui/react-tooltip";
 import { useAction, useQuery } from "convex/react";
-import { Loader2, Trash } from "lucide-react";
+import { DownloadCloud, Loader2, Trash } from "lucide-react";
 import { useState } from "react";
 import { UseFormReturn, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -42,6 +43,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 type AnalysisCreationInputType = z.infer<typeof AnalysisCreationInputSchema>;
 
@@ -142,6 +144,9 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
     name: "config.experiments",
   });
   const [currExperiment, setCurrExperiment] = useState(0);
+  const downloadDefaultReactions = useAction(
+    api.reactions.downloadDefaultReactions
+  );
 
   const allRawFiles = useQuery(api.rawFiles.getAllRawFiles, {});
   const allReactionDatabases = useQuery(
@@ -184,10 +189,10 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
   };
 
   return (
-    <div className="w-full max-w-3xl px-8 py-4 space-y-6 h-full flex flex-col justify-center rounded-lg">
+    <div className="w-full px-8 py-4 space-y-6 h-full flex flex-col justify-center rounded-lg">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 px-6">
-          <div className="flex items-center justify-between gap-8">
+          <div className="flex items-center gap-24">
             <FormField
               control={form.control}
               name="rawFile"
@@ -245,56 +250,92 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="reactionDb"
-              render={({ field: { onChange, value } }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2 text-md">
-                    <Badge variant="secondary">2</Badge>Choose reaction database
-                  </FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={(v) => {
-                        if (!v) return;
-                        onChange(v);
+            <div className="flex items-center justify-center gap-2">
+              <FormField
+                control={form.control}
+                name="reactionDb"
+                render={({ field: { onChange, value } }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2 text-md">
+                      <Badge variant="secondary">2</Badge>Choose reaction
+                      database
+                    </FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={(v) => {
+                          if (!v) return;
+                          onChange(v);
+                        }}
+                        value={value}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Raw File to be analyzed" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {allReactionDatabases?.map((db) => (
+                            <SelectItem key={db._id} value={db._id}>
+                              {db.name}
+                            </SelectItem>
+                          ))}
+                          <SelectItem key="default" value="default">
+                            Default Reactions (119 reactions)
+                          </SelectItem>
+                          {allReactionDatabases?.length === 0 && (
+                            <SelectItem key={"none"} disabled value="none">
+                              {allReactionDatabases === undefined ? (
+                                <Loader2 className="animate-spin" />
+                              ) : (
+                                "No custom reaction db created"
+                              )}
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormDescription>
+                      Select or{" "}
+                      <ReactionDbCreation
+                        onCreate={(id: Id<"reactionDatabases">) => onChange(id)}
+                      />{" "}
+                      a new reaction database
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+              {form.watch("reactionDb") === "default" && (
+                <TooltipProvider>
+                  <TooltipTrigger>
+                    <Button
+                      size="xs"
+                      type="button"
+                      variant="secondary"
+                      className="flex items-center gap-2"
+                      onClick={async () => {
+                        const { csv } = await downloadDefaultReactions();
+                        const blob = new Blob([csv], { type: "text/csv" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = "default-reactions.csv"; // Sets the filename for the download
+                        document.body.appendChild(a); // Append the link to the document
+                        a.click(); // Trigger the download
+                        document.body.removeChild(a); // Clean up and remove the link
+                        URL.revokeObjectURL(url);
                       }}
-                      value={value}
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Raw File to be analyzed" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {allReactionDatabases?.map((db) => (
-                          <SelectItem key={db._id} value={db._id}>
-                            {db.name}
-                          </SelectItem>
-                        ))}
-                        <SelectItem key="default" value="default">
-                          Default Reactions (119 reactions)
-                        </SelectItem>
-                        {allReactionDatabases?.length === 0 && (
-                          <SelectItem key={"none"} disabled value="none">
-                            {allReactionDatabases === undefined ? (
-                              <Loader2 className="animate-spin" />
-                            ) : (
-                              "No custom reaction db created"
-                            )}
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormDescription>
-                    Select or{" "}
-                    <ReactionDbCreation
-                      onCreate={(id: Id<"reactionDatabases">) => onChange(id)}
-                    />{" "}
-                    a new reaction database
-                  </FormDescription>
-                </FormItem>
+                      <DownloadCloud size={12} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="p-4 bg-white dark:bg-slate-900 rounded-lg shadow-lg">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        Download default reactions
+                      </p>
+                    </div>
+                  </TooltipContent>
+                </TooltipProvider>
               )}
-            />
+            </div>
           </div>
           {form.watch("rawFile") && (
             <Accordion type="multiple" className="w-full">
