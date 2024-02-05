@@ -81,7 +81,7 @@ class PreprocessIonsInput(BaseModel):
 
 
 @router.post("/preprocessIons")
-async def proprocess_ions(
+async def preprocess_ions(
     input: PreprocessIonsInput,
     convex: ConvexClient = Depends(get_convex),
 ) -> dict[str, str]:
