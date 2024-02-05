@@ -205,29 +205,37 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
           {new Date(analysis._creationTime).toString().split("GMT")[0]}
         </div>
       </div>
-      <Workflow progress={analysis.progress} log={analysis.log} />
-      <div className="w-full gap-4 items-center flex">
-        {url && (
-          <Button
-            size="xs"
-            onClick={() => {
-              window.open(url, "_blank");
-            }}
-            className="flex items-center justify-center gap-2"
-          >
-            <span>Download</span>
-            <Download size={12} />
-          </Button>
-        )}
+      <div className="flex items-start justify-start gap-4">
+        <Workflow progress={analysis.progress} log={analysis.log} />
+        <div className="flex flex-col gap-2 items-center justify-center w-[30vw]">
+          <div className="w-full gap-4 items-center flex">
+            {url && (
+              <Button
+                size="xs"
+                onClick={() => {
+                  window.open(url, "_blank");
+                }}
+                className="flex items-center justify-center gap-2"
+              >
+                <span>Download</span>
+                <Download size={12} />
+              </Button>
+            )}
+          </div>
+          {analysis.status === "pending" && <div>{analysis.log}</div>}
+          <div className="w-1/2 h-full">
+            <ForceGraph2D
+              graphData={graphData}
+              nodeLabel="id"
+              linkDirectionalParticles="value"
+              linkDirectionalParticleWidth={(link: Link) =>
+                Math.sqrt(link.value)
+              }
+              linkColor={(link: Link) => correlationToColor(link.correlation)}
+            />
+          </div>
+        </div>
       </div>
-      {analysis.status === "pending" && <div>{analysis.log}</div>}
-      <ForceGraph2D
-        graphData={graphData}
-        nodeLabel="id"
-        linkDirectionalParticles="value"
-        linkDirectionalParticleWidth={(link: Link) => Math.sqrt(link.value)}
-        linkColor={(link: Link) => correlationToColor(link.correlation)}
-      />
     </div>
   );
 }

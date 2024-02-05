@@ -1,6 +1,7 @@
 import { AnalysisStep, Progress } from "@/convex/schema";
 import { useEffect } from "react";
 import ReactFlow, {
+  MarkerType,
   Node,
   ReactFlowProvider,
   useEdgesState,
@@ -56,48 +57,72 @@ const baseEdges = [
     source: AnalysisStep.Enum.load_data,
     target: AnalysisStep.Enum.create_ion_interaction_matrix,
     animated: true,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+    },
   },
   {
     id: "e1-3",
     source: AnalysisStep.Enum.load_data,
     target: AnalysisStep.Enum.create_similarity_matrix,
     animated: true,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+    },
   },
   {
     id: "e1-6",
     source: AnalysisStep.Enum.load_data,
     target: AnalysisStep.Enum.edge_value_matching,
     animated: true,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+    },
   },
   {
     id: "e2-3",
     source: AnalysisStep.Enum.create_ion_interaction_matrix,
     target: AnalysisStep.Enum.create_similarity_matrix,
     animated: true,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+    },
   },
   {
     id: "e2-4",
     source: AnalysisStep.Enum.create_ion_interaction_matrix,
     target: AnalysisStep.Enum.combine_matrices_and_extract_edges,
     animated: true,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+    },
   },
   {
     id: "e3-4",
     source: AnalysisStep.Enum.create_similarity_matrix,
     target: AnalysisStep.Enum.combine_matrices_and_extract_edges,
     animated: true,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+    },
   },
   {
     id: "e4-5",
     source: AnalysisStep.Enum.combine_matrices_and_extract_edges,
     target: AnalysisStep.Enum.calculate_edge_metrics,
     animated: true,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+    },
   },
   {
     id: "e5-6",
     source: AnalysisStep.Enum.calculate_edge_metrics,
     target: AnalysisStep.Enum.edge_value_matching,
     animated: true,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+    },
   },
 ];
 
@@ -130,7 +155,7 @@ function Flow({ progress, log }: WorkflowInterface) {
   }, [nodes, progress, setNodes]);
 
   return (
-    <div className="h-[60vh] w-[50vh] pl-8 pt-4">
+    <div className="h-[60vh] w-[50vh] pl-8 pt-4 border-r-2 border-r-secondary pr-4">
       <ReactFlow
         panOnDrag={false}
         nodes={nodes}
