@@ -19,12 +19,14 @@ export default function DashboardLayout({
             {
               title: "New Analysis",
               icon: ListPlus,
-              hrefs: ["/dashboard/new", "/dashboard"],
+              href: "/dashboard/new",
+              regex: /^\/dashboard(\/new)?$/,
             },
             {
               title: "All analysis",
               icon: Waypoints,
-              hrefs: ["/dashboard/analysis"],
+              href: "/dashboard/analysis",
+              regex: /^\/dashboard\/analysis(\/.*)?$/,
             },
           ]}
         />

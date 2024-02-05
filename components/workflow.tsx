@@ -130,7 +130,7 @@ function Flow({ progress, log }: WorkflowInterface) {
   }, [nodes, progress, setNodes]);
 
   return (
-    <div style={{ width: "30vh", height: "50vh" }}>
+    <div className="h-[50vh] w-[50vh] pl-8">
       <ReactFlow
         panOnDrag={false}
         nodes={nodes}
