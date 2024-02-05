@@ -29,34 +29,36 @@ def get_convex(request: Request) -> ConvexClient:
 
 
 def upload_csv(df: pd.DataFrame, convex: ConvexClient) -> str:
-    postUrl = convex.action("actions:generateUploadUrl")["signedUrl"]
-    result = requests.post(
-        postUrl,
+    resp = convex.action("actions:generateUploadUrl")
+    signedUrl, storageId = resp["signedUrl"], resp["storageId"]
+    result = requests.put(
+        signedUrl,
         headers={"Content-Type": "text/csv"},
         data=df.to_csv(index=False),
     )
 
     if result.status_code != 200:
         raise Exception(f"Failed to upload file: {result.text}")
-    return result.json()["storageId"]
+    return storageId
 
 
 def upload_parquet(df: pd.DataFrame, convex: ConvexClient) -> str:
-    postUrl = convex.action("actions:generateUploadUrl")["signedUrl"]
+    resp = convex.action("actions:generateUploadUrl")
+    signedUrl, storageId = resp["signedUrl"], resp["storageId"]
     # Use a BytesIO buffer as an in-memory binary stream for the DataFrame
     buffer = io.BytesIO()
     df.to_parquet(buffer, index=False)
     buffer.seek(0)  # Reset buffer's pointer to the beginning
 
-    result = requests.post(
-        postUrl,
+    result = requests.put(
+        signedUrl,
         headers={"Content-Type": "application/octet-stream"},
         data=buffer.read(),  # Read the binary content of the buffer
     )
 
     if result.status_code != 200:
         raise Exception(f"Failed to upload file: {result.text}")
-    return result.json().get("storageId")
+    return storageId
 
 
 async def _generate_download_url(storage_id: str, convex: ConvexClient) -> str:
