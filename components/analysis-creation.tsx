@@ -43,7 +43,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { Tooltip, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 type AnalysisCreationInputType = z.infer<typeof AnalysisCreationInputSchema>;
 
@@ -145,7 +145,7 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
   });
   const [currExperiment, setCurrExperiment] = useState(0);
   const downloadDefaultReactions = useAction(
-    api.reactions.downloadDefaultReactions
+    api.actions.downloadDefaultReactions
   );
 
   const allRawFiles = useQuery(api.rawFiles.getAllRawFiles, {});
@@ -303,37 +303,41 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                 )}
               />
               {form.watch("reactionDb") === "default" && (
-                <TooltipProvider>
-                  <TooltipTrigger>
-                    <Button
-                      size="xs"
-                      type="button"
-                      variant="secondary"
-                      className="flex items-center gap-2"
-                      onClick={async () => {
-                        const { csv } = await downloadDefaultReactions();
-                        const blob = new Blob([csv], { type: "text/csv" });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = "default-reactions.csv"; // Sets the filename for the download
-                        document.body.appendChild(a); // Append the link to the document
-                        a.click(); // Trigger the download
-                        document.body.removeChild(a); // Clean up and remove the link
-                        URL.revokeObjectURL(url);
-                      }}
-                    >
-                      <DownloadCloud size={12} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="p-4 bg-white dark:bg-slate-900 rounded-lg shadow-lg">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        Download default reactions
-                      </p>
-                    </div>
-                  </TooltipContent>
-                </TooltipProvider>
+                <Button
+                  size="xs"
+                  type="button"
+                  variant="secondary"
+                  className="flex items-center gap-2"
+                  onClick={async () => {
+                    const { csv } = await downloadDefaultReactions();
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "default-reactions.csv"; // Sets the filename for the download
+                    document.body.appendChild(a); // Append the link to the document
+                    a.click(); // Trigger the download
+                    document.body.removeChild(a); // Clean up and remove the link
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <div className="w-full h-full">
+                          <DownloadCloud size={12} />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="p-4 bg-white dark:bg-slate-900 rounded-lg shadow-lg">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            Download default reactions
+                          </p>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </Button>
               )}
             </div>
           </div>
