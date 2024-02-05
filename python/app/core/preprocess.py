@@ -72,8 +72,8 @@ def preprocess_targeted_ions_file(
     blob: bytes, tool: MSTool
 ) -> tuple[pd.DataFrame, list[str]]:
     df, sample_cols = preprocessors[tool](io.BytesIO(blob))
-    print(f'df: {df.columns}')
-    print(f'sample_cols: {sample_cols}')
+    print(f"df: {df.columns}")
+    print(f"sample_cols: {sample_cols}")
     # create multi-index columns for sample columns, tag them with 'sample'
     df.columns = pd.MultiIndex.from_tuples(
         [("sample" if col in sample_cols else "", col) for col in df.columns]
