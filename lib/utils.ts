@@ -23,7 +23,7 @@ export function useFileUpload() {
     });
 
     if (res.ok) {
-      toast.info("Successfully uploaded file");
+      toast.success("Successfully uploaded file");
       return { storageId };
     } else {
       toast.error("Failed to upload file");

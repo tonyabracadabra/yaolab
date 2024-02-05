@@ -29,7 +29,7 @@ def get_convex(request: Request) -> ConvexClient:
 
 
 def upload_csv(df: pd.DataFrame, convex: ConvexClient) -> str:
-    postUrl = convex.mutation("actions:generateUploadUrl")
+    postUrl = convex.action("actions:generateUploadUrl")["signedUrl"]
     result = requests.post(
         postUrl,
         headers={"Content-Type": "text/csv"},
@@ -42,7 +42,7 @@ def upload_csv(df: pd.DataFrame, convex: ConvexClient) -> str:
 
 
 def upload_parquet(df: pd.DataFrame, convex: ConvexClient) -> str:
-    postUrl = convex.mutation("actions:generateUploadUrl")
+    postUrl = convex.action("actions:generateUploadUrl")["signedUrl"]
     # Use a BytesIO buffer as an in-memory binary stream for the DataFrame
     buffer = io.BytesIO()
     df.to_parquet(buffer, index=False)
