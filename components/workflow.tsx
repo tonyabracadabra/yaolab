@@ -214,7 +214,7 @@ function Flow({ progress, log }: WorkflowInterface) {
   }, [edges, nodes, progress, setEdges, setNodes]);
 
   return (
-    <div className="h-[60vh] w-[50vh] -left-2 pt-4 border-r-2 border-r-secondary pr-4">
+    <div className="h-[60vh] w-[50vh] -left-2 pt-4">
       <ReactFlow
         nodeTypes={nodeTypes}
         panOnDrag={false}
