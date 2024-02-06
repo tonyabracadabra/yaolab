@@ -31,6 +31,7 @@ import Link from "next/link";
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
 import { ForceGraph2D } from "react-force-graph";
+import { toast } from "sonner";
 
 interface RowData {
   ID1: string;
@@ -75,7 +76,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     nodes: [],
     links: [],
   });
-  const [url, setUrl] = useState<string>("");
   const generateDownloadUrl = useAction(api.actions.generateDownloadUrl);
   const retryAnalysis = useAction(api.actions.retryAnalysis);
   const { getToken } = useAuth();
@@ -86,7 +86,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
       if (!signedUrl) {
         return;
       }
-      setUrl(signedUrl);
       fetch(signedUrl)
         .then((response) => response.blob())
         .then((blob: Blob | null) => {
@@ -304,10 +303,22 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   <Tooltip>
                     <TooltipTrigger>
                       <Button
-                        disabled={!url}
+                        disabled={!analysis.result}
                         size="xs"
-                        onClick={() => {
-                          window.open(url, "_blank");
+                        onClick={async () => {
+                          if (!analysis.result) {
+                            toast.error("Result data is not available");
+                            return;
+                          }
+
+                          const { signedUrl } = await generateDownloadUrl({
+                            storageId: analysis.result,
+                          });
+
+                          if (!signedUrl) {
+                            return;
+                          }
+                          window.open(signedUrl, "_blank");
                         }}
                         className="flex items-center justify-center gap-2"
                       >
@@ -317,7 +328,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
                       <div className="text-neutral-400">
-                        {url ? (
+                        {analysis.result ? (
                           <span>Download the result data</span>
                         ) : (
                           <span>Result data is not available</span>
