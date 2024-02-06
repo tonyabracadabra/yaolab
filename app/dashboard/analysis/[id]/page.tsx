@@ -25,6 +25,7 @@ import {
   Loader2,
   LucideWorkflow,
   TimerIcon,
+  XIcon,
 } from "lucide-react";
 import Link from "next/link";
 import Papa from "papaparse";
@@ -232,7 +233,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       </div>
                     ) : analysis.status === "failed" ? (
                       <Badge className="flex items-center justify-center gap-2 bg-destructive text-red-50 hover:bg-destructive/80">
-                        <BadgeCheck size={12} />
+                        <XIcon size={12} />
                         Failed
                       </Badge>
                     ) : (
