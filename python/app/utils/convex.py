@@ -32,7 +32,7 @@ def upload_csv(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> str:
     resp = convex.action(
         "actions:generateUploadUrl",
         {
-            "mimeTypes": "text/csv",
+            "mimeType": "text/csv",
             "fileName": f"{datetime.timestamp(datetime.now())}-{file_name}.csv",
         },
     )
@@ -52,7 +52,7 @@ def upload_parquet(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> st
     resp = convex.action(
         "actions:generateUploadUrl",
         {
-            "mimeTypes": "application/octet-stream",
+            "mimeType": "application/octet-stream",
             "fileName": f"{datetime.timestamp(datetime.now())}-{file_name}.parquet",
         },
     )
