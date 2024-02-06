@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "askstring"
+name = "yaolab"
 version = "0.1.0"
 description = ""
 authors = ["tonyabracadabra <tongxupeng.cpu@gmail.com>"]

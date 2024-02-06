@@ -27,15 +27,14 @@ async def create_similarity_matrix(
     similarity_matrix_data = np.zeros((ion_count, ion_count))
 
     # Filter spectra and map to indices based on IDs
-    filtered_spectra_indices = []
+    filtered_spectra = []
     for spectrum in spectra:
         spectrum_id = int(spectrum.metadata[SCANS_KEY])
         if spectrum_id in id_to_index:
-            filtered_spectra_indices.append(id_to_index[spectrum_id])
+            filtered_spectra.append(spectrum)
 
     # Calculate the cosine scores only for filtered spectra
-    if filtered_spectra_indices:
-        filtered_spectra = [spectra[index] for index in filtered_spectra_indices]
+    if filtered_spectra:
         similarity_measure = ModifiedCosine(tolerance=TOLERANCE)
         cosine_scores: Scores = calculate_scores(
             filtered_spectra,
@@ -56,9 +55,7 @@ async def create_similarity_matrix(
             if ref_id in id_to_index and query_id in id_to_index:
                 row_index = id_to_index[ref_id]
                 col_index = id_to_index[query_id]
-                similarity_matrix_data[row_index, col_index] = score[
-                    0
-                ]  # Assuming score is the first element in the tuple
+                similarity_matrix_data[row_index, col_index] = score[0]
 
     # Convert the populated data to a COO sparse matrix
     row_indices, col_indices = np.nonzero(similarity_matrix_data)

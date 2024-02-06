@@ -10,7 +10,6 @@ async def combine_matrices_and_extract_edges(
     similarity_matrix: coo_matrix,
     ms2_similarity_threshold: float = 0.7,
 ) -> pd.DataFrame:
-    # Perform addition operation on sparse matrices
     result_matrix: coo_matrix = (ion_interaction_matrix + similarity_matrix).tocoo()
 
     # Extract row, column, and data from the result matrix

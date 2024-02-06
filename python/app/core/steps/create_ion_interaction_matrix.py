@@ -2,7 +2,41 @@ import numpy as np
 import pandas as pd
 from app.utils.constants import MASS_DIFF_COL, MZ_COL
 from app.utils.logger import log
+from numba import jit
 from scipy.sparse import coo_matrix
+
+
+@jit(nopython=True)
+def _calculate_ppm_diff(ion_mass_values, sorted_mass_diffs, mz_error_threshold):
+    ion_count = len(ion_mass_values)
+    ppm_diff_matrix = np.zeros((ion_count, ion_count), dtype=np.float32)
+
+    for i in range(ion_count):
+        for j in range(i, ion_count):  # Optimize by considering only unique pairs
+            mz_difference = np.abs(ion_mass_values[i] - ion_mass_values[j])
+            # Find the nearest mass difference from sorted_mass_diffs
+            idx = np.searchsorted(sorted_mass_diffs, mz_difference, side="left")
+            if idx == len(sorted_mass_diffs):
+                nearest_diff = sorted_mass_diffs[-1]
+            elif idx == 0:
+                nearest_diff = sorted_mass_diffs[0]
+            else:
+                left = sorted_mass_diffs[idx - 1]
+                right = sorted_mass_diffs[idx]
+                nearest_diff = (
+                    right
+                    if np.abs(right - mz_difference) < np.abs(mz_difference - left)
+                    else left
+                )
+
+            # Calculate ppm difference
+            ppm_diff = np.abs(mz_difference - nearest_diff) / nearest_diff * 1e6
+
+            # Apply threshold and populate symmetric matrix
+            if ppm_diff < mz_error_threshold:
+                ppm_diff_matrix[i, j] = ppm_diff_matrix[j, i] = 1
+
+    return ppm_diff_matrix
 
 
 @log("Creating ion interaction matrix")
@@ -12,36 +46,14 @@ async def create_ion_interaction_matrix(
     mz_error_threshold: float = 0.01,
 ) -> coo_matrix:
     ion_mass_values = targeted_ions_df[MZ_COL].values
-    ion_count = len(ion_mass_values)
-
-    # Generate row and column indices for the interaction matrix
-    row_indices, col_indices = np.ogrid[:ion_count, :ion_count]
-
-    # Calculate mz differences for the interaction matrix
-    mz_differences = np.abs(ion_mass_values[row_indices] - ion_mass_values[col_indices])
-
-    # Prepare sorted mass differences for reaction potential check
     sorted_mass_diffs = np.sort(reaction_df[MASS_DIFF_COL].values)
 
-    # Broadcasting sorted_mass_diffs to match the shape of mz_differences
-    # sorted_mass_diffs is reshaped to (1, m) and then broadcasted to (n, m)
-    sorted_mass_diffs_broadcasted = sorted_mass_diffs.reshape(1, -1)
-
-    # Calculate the indices of the nearest differences
-    # Broadcasting here aligns mz_differences (n, n) with sorted_mass_diffs (1, m)
-    nearest_diff_indices = np.abs(
-        mz_differences[:, :, np.newaxis] - sorted_mass_diffs_broadcasted
-    ).argmin(axis=2)
-
-    # Fetch the nearest differences based on the calculated indices
-    nearest_diffs = np.take_along_axis(
-        sorted_mass_diffs_broadcasted, nearest_diff_indices, axis=1
+    # Calculate the ppm difference matrix using the optimized Numba function
+    ppm_diff_matrix = _calculate_ppm_diff(
+        ion_mass_values, sorted_mass_diffs, mz_error_threshold
     )
 
-    # Calculate the ppm difference
-    ppm_diff = np.abs(mz_differences - nearest_diffs) / nearest_diffs * 1e6
-
-    # Construct the interaction matrix with the same shape as mz_differences
-    ion_interaction_matrix = coo_matrix((ppm_diff < mz_error_threshold).astype(int))
+    # Construct the interaction matrix
+    ion_interaction_matrix = coo_matrix(ppm_diff_matrix, dtype=np.int8)
 
     return ion_interaction_matrix
