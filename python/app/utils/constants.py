@@ -32,3 +32,8 @@ VALUE_COL = "Value"
 DEFAULT_REACTION_DF = pd.read_csv(
     Path(__file__).parents[2] / "asset" / "default-reactions.csv"
 )[[MASS_DIFF_COL, FORMULA_CHANGE_COL, REACTION_DESCRIPTION_COL]]
+
+# edge csv
+MATCHED_MZ_DIFF_COL = "Matched MZ Difference"
+MATCHED_FORMULA_CHANGE_COL = "Matched FormulaChange"
+MATCHED_REACTION_DESCRIPTION_COL = "Matched Reaction Description"

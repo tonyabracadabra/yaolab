@@ -13,12 +13,14 @@ export function useFileUpload() {
   const generateUploadUrl = useAction(api.actions.generateUploadUrl);
 
   const handleUpload = async (file: File) => {
+    const mimeType = file.type || "text/plain";
     const { signedUrl, storageId } = await generateUploadUrl({
       fileName: file.name,
+      mimeType,
     });
     const res = await fetch(signedUrl, {
       method: "PUT",
-      headers: { "Content-Type": file.type || "text/plain" },
+      headers: { "Content-Type": mimeType },
       body: file,
     });
 

@@ -4,6 +4,9 @@ from app.utils.constants import (
     CORRELATION_COL,
     FORMULA_CHANGE_COL,
     MASS_DIFF_COL,
+    MATCHED_FORMULA_CHANGE_COL,
+    MATCHED_MZ_DIFF_COL,
+    MATCHED_REACTION_DESCRIPTION_COL,
     MODCOS_COL,
     MZ_DIFF_COL,
     REACTION_DESCRIPTION_COL,
@@ -12,10 +15,6 @@ from app.utils.constants import (
     VALUE_COL,
 )
 from app.utils.logger import log
-
-MATCHED_MZ_DIFF_COL = "Matched MZ Difference"
-MATCHED_FORMULA_CHANGE_COL = "Matched FormulaChange"
-MATCHED_REACTION_DESCRIPTION_COL = "Matched Reaction Description"
 
 
 @log("Edge value matching")
@@ -26,11 +25,14 @@ async def edge_value_matching(
     mz_error_threshold: float = 0.01,
     correlation_threshold: float = 0.95,
 ) -> tuple[pd.DataFrame, pd.Series]:
-    matched = edge_metrics.copy()
+    # rename it!
+    matched = edge_metrics
 
     # Ensure no NaN values
+    reaction_df = reaction_df.infer_objects()
     reaction_df[MASS_DIFF_COL] = reaction_df[MASS_DIFF_COL].fillna(np.inf)
-    matched[MZ_DIFF_COL] = edge_metrics[MZ_DIFF_COL].fillna(np.inf)
+    matched = matched.infer_objects()
+    matched[MZ_DIFF_COL] = matched[MZ_DIFF_COL].fillna(np.inf)
 
     # Calculate the closest match within the threshold
     closest_matches = reaction_df.iloc[

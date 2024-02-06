@@ -1,7 +1,7 @@
 import io
 import os
+from datetime import datetime
 from tempfile import NamedTemporaryFile
-from typing import Generator
 
 import aiohttp
 import pandas as pd
@@ -28,8 +28,14 @@ def get_convex(request: Request) -> ConvexClient:
     return convex
 
 
-def upload_csv(df: pd.DataFrame, convex: ConvexClient) -> str:
-    resp = convex.action("actions:generateUploadUrl")
+def upload_csv(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> str:
+    resp = convex.action(
+        "actions:generateUploadUrl",
+        {
+            "mimeTypes": "text/csv",
+            "fileName": f"{datetime()}-{file_name}.csv",
+        },
+    )
     signedUrl, storageId = resp["signedUrl"], resp["storageId"]
     result = requests.put(
         signedUrl,
@@ -42,8 +48,14 @@ def upload_csv(df: pd.DataFrame, convex: ConvexClient) -> str:
     return storageId
 
 
-def upload_parquet(df: pd.DataFrame, convex: ConvexClient) -> str:
-    resp = convex.action("actions:generateUploadUrl")
+def upload_parquet(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> str:
+    resp = convex.action(
+        "actions:generateUploadUrl",
+        {
+            "mimeTypes": "application/octet-stream",
+            "fileName": f"{datetime()}-{file_name}.parquet",
+        },
+    )
     signedUrl, storageId = resp["signedUrl"], resp["storageId"]
     # Use a BytesIO buffer as an in-memory binary stream for the DataFrame
     buffer = io.BytesIO()
@@ -89,7 +101,7 @@ async def load_binary(storage_id: str, convex: ConvexClient) -> bytes:
 async def load_mgf(
     storage_id: str,
     convex: ConvexClient,
-) -> Generator[Spectrum, None, None]:
+) -> list[Spectrum]:
     blob = await load_binary(storage_id, convex)
     try:
         content = blob.decode(ENCODING)
@@ -99,7 +111,7 @@ async def load_mgf(
             temp_file.write(content)
             temp_file.flush()  # Ensure all data is written
             temp_file.seek(0)  # Go back to the beginning of the file before reading
-            return load_from_mgf(temp_file.name)
+            return list(load_from_mgf(temp_file.name))
     except UnicodeDecodeError:
         raise Exception("Failed to decode the blob with encoding {}".format(ENCODING))
 

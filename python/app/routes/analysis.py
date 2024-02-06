@@ -88,7 +88,7 @@ async def preprocess_ions(
     try:
         blob: bytes = await load_binary(input.targetedIons, convex=convex)
         df, sample_cols = preprocess_targeted_ions_file(blob=blob, tool=input.tool)
-        storage_id = upload_parquet(df, convex)
+        storage_id = upload_parquet(df, file_name="target-ions", convex=convex)
 
         return {"storageId": storage_id, "sampleCols": sample_cols}
     except Exception as e:
