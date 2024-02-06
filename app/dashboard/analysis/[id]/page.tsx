@@ -255,7 +255,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                 </div>
               </div>
             </TooltipTrigger>
-            <TooltipContent side="bottom">
+            <TooltipContent side="bottom" className="-left-12">
               <Workflow progress={analysis.progress} log={analysis.log} />
             </TooltipContent>
           </Tooltip>

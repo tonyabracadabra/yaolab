@@ -1,15 +1,20 @@
 import { AnalysisStep, Progress } from "@/convex/schema";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import ReactFlow, {
+  Handle,
   MarkerType,
   Node,
+  Position,
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
 } from "reactflow";
 
+import { Loader2 } from "lucide-react";
 import "reactflow/dist/style.css";
 import { z } from "zod";
+import { MagicCard } from "./magicui/magic-card";
+import { Card } from "./ui/card";
 
 interface WorkflowInterface {
   progress: z.infer<typeof Progress>;
@@ -126,37 +131,92 @@ const baseEdges = [
   },
 ];
 
+function RunningNode({ data }: { data: { label: string } }) {
+  return (
+    <>
+      <Handle type="target" position={Position.Top} id="c" />
+      <Handle type="target" position={Position.Top} id="d" />
+      <Card className="bg-yellow-400 dark:bg-yellow-200 text-xs px-[4px] py-3 text-white dark:text-black relative">
+        <Loader2
+          className="animate-spin absolute right-[2px] top-[2px]"
+          size={12}
+        />
+        {data.label}
+      </Card>
+      <Handle type="source" position={Position.Bottom} id="a" />
+      <Handle type="source" position={Position.Bottom} id="b" />
+    </>
+  );
+}
+
+function NotStartedNode({ data }: { data: { label: string } }) {
+  return (
+    <>
+      <Handle type="target" position={Position.Top} />
+      <MagicCard className="text-xs px-[6px] py-3">{data.label}</MagicCard>
+      <Handle type="source" position={Position.Bottom} id="a" />
+      <Handle type="source" position={Position.Bottom} id="b" />
+    </>
+  );
+}
+
+function DoneNode({ data }: { data: { label: string } }) {
+  return (
+    <>
+      <Handle type="target" position={Position.Top} />
+      <Card className="bg-green-500/80 px-[4px] text-xs py-3 text-white">
+        {data.label}
+      </Card>
+      <Handle type="source" position={Position.Bottom} id="a" />
+      <Handle type="source" position={Position.Bottom} id="b" />
+    </>
+  );
+}
+
 function Flow({ progress, log }: WorkflowInterface) {
   const [nodes, setNodes, onNodesChange] = useNodesState(baseNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(baseEdges);
+
+  const nodeTypes = useMemo(
+    () => ({
+      running: RunningNode,
+      done: DoneNode,
+      notStarted: NotStartedNode,
+    }),
+    []
+  );
 
   useEffect(() => {
     setNodes(
       nodes.map((node) => {
         const status = progress?.find((step) => step.step === node.id)?.status;
-        if (status === "done") {
-          return {
-            ...node,
-            style: { background: "green" },
-          };
-        } else if (status === "running") {
-          return {
-            ...node,
-            style: { background: "yellow" },
-          };
-        } else {
-          return {
-            ...node,
-            style: { background: "white" },
-          };
-        }
+        return {
+          ...node,
+          type: status || "notStarted",
+        };
       })
     );
-  }, [nodes, progress, setNodes]);
+    // set the animation for the edges
+    setEdges(
+      edges.map((edge) => {
+        const sourceStatus = progress?.find(
+          (step) => step.step === edge.source
+        )?.status;
+        const targetStatus = progress?.find(
+          (step) => step.step === edge.target
+        )?.status;
+        return {
+          ...edge,
+          animated: sourceStatus === "done" && targetStatus === undefined,
+        };
+      })
+    );
+  }, [edges, nodes, progress, setEdges, setNodes]);
 
   return (
-    <div className="h-[60vh] w-[50vh] pl-8 pt-4 border-r-2 border-r-secondary pr-4">
+    <div className="h-[60vh] w-[50vh] -left-2 pt-4 border-r-2 border-r-secondary pr-4">
       <ReactFlow
+        nodeTypes={nodeTypes}
         panOnDrag={false}
         nodes={nodes}
         edges={edges}
