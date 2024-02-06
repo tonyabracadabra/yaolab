@@ -572,10 +572,10 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
                       <FormItem>
                         <FormLabelWithTooltip
                           tooltip="Set the maximum allowable ∆m/z error for matching
-                          metabolite responses. A value within 0.01 ppm is
+                          metabolite responses. A value within 0.01 Da is
                           recommended for accurate matching."
                         >
-                          ∆m/z Error Threshold (ppm)
+                          ∆m/z Error Threshold (Da)
                         </FormLabelWithTooltip>
                         <FormControl>
                           <Input

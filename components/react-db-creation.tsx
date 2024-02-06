@@ -244,7 +244,12 @@ interface ReactionDbCreationInterface {
 }
 
 export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
-  const form = useForm<ReactionDatabaseInput>();
+  const form = useForm<ReactionDatabaseInput>({
+    defaultValues: {
+      // random name with date
+      name: `My Reaction Database ${new Date().toLocaleDateString()}`,
+    },
+  });
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const calculateMass = useAction(api.actions.calculateMass);
