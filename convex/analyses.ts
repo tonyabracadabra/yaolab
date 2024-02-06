@@ -165,3 +165,10 @@ export const getAll = zQuery({
   },
   output: z.array(AnalysisOutputSchema),
 });
+
+export const remove = zMutation({
+  args: { id: zid("analyses") },
+  handler: async ({ db }, { id }) => {
+    await db.delete(id);
+  },
+});

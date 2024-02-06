@@ -19,7 +19,7 @@ import {
   Atom,
   BadgeCheck,
   Download,
-  File,
+  File as FileIcon,
   FileWarning,
   List,
   Loader2,
@@ -90,8 +90,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         .then((response) => response.blob())
         .then((blob: Blob | null) => {
           if (blob) {
-            const file = new (File as any)([blob], "result.csv");
-
+            const file = new File([blob], "result.csv");
             Papa.parse<RowData>(file, {
               header: true,
               dynamicTyping: true,
@@ -159,7 +158,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         </Link>
         <div className="flex items-center justify-center gap-2">
           <Badge className="flex items-center justify-center gap-1">
-            <File size={14} />
+            <FileIcon size={14} />
             <span className="ml-2">{analysis.rawFile?.name}</span>
           </Badge>
           <Badge className="flex items-center justify-center gap-1">

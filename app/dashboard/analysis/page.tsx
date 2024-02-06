@@ -4,12 +4,21 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,8 +34,8 @@ import { AnalysisOutputSchema } from "@/convex/analyses";
 import { useUser } from "@clerk/nextjs";
 import { EnterIcon } from "@radix-ui/react-icons";
 import Avatar from "boring-avatars";
-import { useQuery } from "convex/react";
-import { CheckIcon, Loader2, XIcon } from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
+import { CheckIcon, Loader2, Trash2, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 
@@ -34,6 +43,7 @@ type AnalysisOutput = z.infer<typeof AnalysisOutputSchema>;
 
 export default function AnalysisList() {
   const analyses = useQuery(api.analyses.getAll, {});
+  const remove = useMutation(api.analyses.remove);
   const { user } = useUser();
   const router = useRouter();
 
@@ -101,6 +111,43 @@ export default function AnalysisList() {
         <div>{new Date(row.original.creationTime).toLocaleDateString()}</div>
       ),
     },
+    {
+      accessorKey: "_id",
+      header: "",
+      cell: ({ row }) => (
+        <div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost">
+                <Trash2 className="stroke-[1.2px] w-4 h-4 stroke-red-400 hover:opacity-80" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Are you absolutely sure you want to delete the analysis?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your account and remove your data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive"
+                  onClick={() => {
+                    remove({ id: row.original.id });
+                  }}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      ),
+    },
   ];
 
   const table = useReactTable({
@@ -108,8 +155,6 @@ export default function AnalysisList() {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
   });
 
   return (
@@ -134,25 +179,40 @@ export default function AnalysisList() {
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
+          {analyses === undefined ? (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                <Loader2 className="animate-spin" />
               </TableCell>
             </TableRow>
+          ) : (
+            <>
+              {table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+              {analyses.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </>
           )}
         </TableBody>
       </Table>
