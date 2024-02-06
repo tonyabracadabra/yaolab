@@ -18,18 +18,23 @@ export function useFileUpload() {
       fileName: file.name,
       mimeType,
     });
-    const res = await fetch(signedUrl, {
-      method: "PUT",
-      headers: { "Content-Type": mimeType },
-      body: file,
-    });
 
-    if (res.ok) {
-      toast.success("Successfully uploaded file");
-      return { storageId };
-    } else {
-      toast.error("Failed to upload file");
-      throw new Error("Failed to upload file");
+    try {
+      const res = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": mimeType },
+        body: file,
+      });
+
+      if (res.ok) {
+        toast.success("Successfully uploaded file");
+        return { storageId };
+      } else {
+        toast.error("Failed to upload file");
+        throw new Error("Failed to upload file");
+      }
+    } catch (error) {
+      throw error;
     }
   };
 

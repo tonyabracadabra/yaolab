@@ -167,7 +167,7 @@ export const generateUploadUrl = zAction({
 
     try {
       const signedUrl = await getSignedUrl(s3Client, command, {
-        expiresIn: 60,
+        expiresIn: 60 * 60,
       });
       return { signedUrl, storageId };
     } catch (error) {
