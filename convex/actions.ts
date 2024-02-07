@@ -6,7 +6,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { zid } from "convex-helpers/server/zod";
-import { v4 as uuid4 } from "uuid";
+import { nanoid } from "nanoid";
 import { z } from "zod";
 import { api, internal } from "./_generated/api";
 import { AnalysisCreationInputSchema } from "./schema";
@@ -153,7 +153,7 @@ export const removeFile = zAction({
 export const generateUploadUrl = zAction({
   args: { fileName: z.optional(z.string()), mimeType: z.string() },
   handler: async (_, { fileName, mimeType }) => {
-    const storageId = `${uuid4()}${fileName && `.${fileName}`}`;
+    const storageId = `${nanoid(10)}${fileName && `.${fileName}`}`;
     const command = new PutObjectCommand({
       Bucket: process.env.BUCKET_NAME || "",
       Key: storageId,
