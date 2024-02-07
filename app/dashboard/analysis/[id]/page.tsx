@@ -21,9 +21,11 @@ import {
   Download,
   File as FileIcon,
   FileWarning,
+  FlaskConical,
   List,
   Loader2,
   LucideWorkflow,
+  Settings2,
   TimerIcon,
   XIcon,
 } from "lucide-react";
@@ -180,6 +182,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             <Tooltip>
               <TooltipTrigger>
                 <Badge className="flex items-center justify-center gap-2">
+                  <FlaskConical className="h-4 w-4" />
                   <span className="bg-secondary/50 rounded-full w-4 h-4">
                     {analysis.config.experiments.length}
                   </span>
@@ -214,6 +217,50 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       </div>
                     </div>
                   ))}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <Badge>
+                  <Settings2 className="h-4 w-4 mr-2" />
+                  Configs
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <div className="flex items-center justify-center gap-2 flex-wrap max-w-[400px] h-fit p-2 text-xs">
+                  <div className="flex items-center justify-center gap-4">
+                    <div className="flex flex-col gap-2">
+                      <div>Correlation Threshold</div>
+                      <div className="text-neutral-500">
+                        {analysis.config.correlationThreshold}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div>MS2 Similarity Threshold</div>
+                      <div className="text-neutral-500">
+                        {analysis.config.ms2SimilarityThreshold}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div>Retention Time Window</div>
+                      <div className="text-neutral-500">
+                        {analysis.config.rtTimeWindow}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div>Signal Enrichment Factor</div>
+                      <div className="text-neutral-500">
+                        {analysis.config.signalEnrichmentFactor}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div>Minimum Signal Threshold</div>
+                      <div className="text-neutral-500">
+                        {analysis.config.minSignalThreshold}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </TooltipContent>
             </Tooltip>

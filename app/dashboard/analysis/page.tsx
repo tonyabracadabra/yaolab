@@ -125,7 +125,7 @@ export default function AnalysisList() {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>
-                  Are you absolutely sure you want to delete the analysis?
+                  Are you sure you want to delete the analysis?
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   This action cannot be undone. This will permanently delete
@@ -135,7 +135,7 @@ export default function AnalysisList() {
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
-                  className="bg-destructive"
+                  className="bg-destructive hover:bg-destructive/80 text-white"
                   onClick={() => {
                     remove({ id: row.original.id });
                   }}

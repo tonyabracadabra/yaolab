@@ -19,6 +19,10 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "../../.env.loca
 
 ENCODING: str = "utf-8"
 CONVEX_URL = os.environ["CONVEX_URL"]
+# all magic strings
+CONTENT_TYPE = "Content-Type"
+MIME_TYPE_CSV = "text/csv"
+MIME_TYPE_PARQUET = "application/octet-stream"
 
 
 def get_convex(request: Request) -> ConvexClient:
@@ -32,14 +36,14 @@ def upload_csv(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> str:
     resp = convex.action(
         "actions:generateUploadUrl",
         {
-            "mimeType": "text/csv",
+            "mimeType": MIME_TYPE_CSV,
             "fileName": f"{datetime.timestamp(datetime.now())}-{file_name}.csv",
         },
     )
     signedUrl, storageId = resp["signedUrl"], resp["storageId"]
     result = requests.put(
         signedUrl,
-        headers={"Content-Type": "text/csv"},
+        headers={CONTENT_TYPE: MIME_TYPE_CSV},
         data=df.to_csv(index=False),
     )
 
@@ -52,7 +56,7 @@ def upload_parquet(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> st
     resp = convex.action(
         "actions:generateUploadUrl",
         {
-            "mimeType": "application/octet-stream",
+            "mimeType": MIME_TYPE_PARQUET,
             "fileName": f"{datetime.timestamp(datetime.now())}-{file_name}.parquet",
         },
     )
@@ -64,7 +68,7 @@ def upload_parquet(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> st
 
     result = requests.put(
         signedUrl,
-        headers={"Content-Type": "application/octet-stream"},
+        headers={CONTENT_TYPE: MIME_TYPE_PARQUET},
         data=buffer.read(),  # Read the binary content of the buffer
     )
 
