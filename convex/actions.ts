@@ -153,7 +153,7 @@ export const removeFile = zAction({
 export const generateUploadUrl = zAction({
   args: { fileName: z.optional(z.string()), mimeType: z.string() },
   handler: async (_, { fileName, mimeType }) => {
-    const storageId = uuid4();
+    const storageId = `${uuid4()}${fileName && `.${fileName}`}`;
     const command = new PutObjectCommand({
       Bucket: process.env.BUCKET_NAME || "",
       Key: storageId,

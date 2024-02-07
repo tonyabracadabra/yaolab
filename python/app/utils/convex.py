@@ -37,7 +37,7 @@ def upload_csv(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> str:
         "actions:generateUploadUrl",
         {
             "mimeType": MIME_TYPE_CSV,
-            "fileName": f"{datetime.timestamp(datetime.now())}-{file_name}.csv",
+            "fileName": f"{file_name}.csv",
         },
     )
     signedUrl, storageId = resp["signedUrl"], resp["storageId"]
@@ -57,7 +57,7 @@ def upload_parquet(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> st
         "actions:generateUploadUrl",
         {
             "mimeType": MIME_TYPE_PARQUET,
-            "fileName": f"{datetime.timestamp(datetime.now())}-{file_name}.parquet",
+            "fileName": f"{file_name}.parquet",
         },
     )
     signedUrl, storageId = resp["signedUrl"], resp["storageId"]

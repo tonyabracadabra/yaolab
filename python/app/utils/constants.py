@@ -9,7 +9,8 @@ RT_COL = "Rt(min)"
 SAMPLE_COL = "sample"
 
 # MDial delimiter
-MSMS_COL = "MS/MS spectrum"
+MSMS_SPECTRUM_COL = "MS/MS spectrum"
+MSMS_ASSIGNED_COL = "MS/MS assigned"
 
 CORRELATION_COL = "Correlation"
 RT_DIFF_COL = "Retention Time Difference"
