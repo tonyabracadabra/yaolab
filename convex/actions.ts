@@ -46,16 +46,14 @@ export const retryAnalysis = zAction({
       status: "running",
     });
 
-    const response = await fetch(
-      `${process.env.FASTAPI_URL}/analysis/start/${id}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${process.env.FASTAPI_URL}/analysis/start`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ id }),
+    });
 
     return { status: response.ok ? "success" : "error" };
   },
