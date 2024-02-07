@@ -136,7 +136,14 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   }, [analysis?.result, generateDownloadUrl]);
 
   if (!analysis) {
-    return <Loader2 className="animate-spin" />;
+    return (
+      <div className="w-full h-full">
+        <div className="flex items-center justify-center gap-2">
+          Loading analytics ...
+          <Loader2 className="animate-spin" />
+        </div>
+      </div>
+    );
   }
 
   const correlationToColor = (correlation: number) => {
@@ -296,7 +303,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             </div>
           )}
           {analysis.status === "complete" && (
-            <MagicCard className="h-[70vh] mt-8">
+            <MagicCard className="h-[70vh] mt-1">
               <div className="w-full gap-4 items-center justify-end flex p-4">
                 <TooltipProvider>
                   <Tooltip>
@@ -338,7 +345,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                 </TooltipProvider>
               </div>
               {graphData.links.length === 0 ? (
-                <div className="flex items-center h-full justify-center gap-2">
+                <div className="flex items-center h-[60%] justify-center gap-2">
                   <span>No data to display</span>
                   <span className="text-neutral-400">😞</span>
                 </div>

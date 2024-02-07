@@ -180,10 +180,8 @@ export default function AnalysisList() {
         </TableHeader>
         <TableBody>
           {analyses === undefined ? (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                <Loader2 className="animate-spin" />
-              </TableCell>
+            <TableRow className="flex items-center justify-center">
+              <Loader2 className="animate-spin" />
             </TableRow>
           ) : (
             <>
