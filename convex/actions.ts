@@ -47,7 +47,7 @@ export const retryAnalysis = zAction({
     });
 
     const response = await fetch(
-      `${process.env.FASTAPI_URL}/analysis/restart/${id}`,
+      `${process.env.FASTAPI_URL}/analysis/start/${id}`,
       {
         method: "POST",
         headers: {
