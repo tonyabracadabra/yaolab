@@ -50,7 +50,7 @@ def _filter_metabolites(
             axis=1
         )
 
-    return data[cond]
+    return data[cond].drop_duplicates()
 
 
 @log("Loading data")
