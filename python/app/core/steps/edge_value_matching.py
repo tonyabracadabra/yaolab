@@ -29,10 +29,10 @@ async def edge_value_matching(
     matched = edge_metrics
 
     # Ensure no NaN values
-    reaction_df = reaction_df.infer_objects()
-    reaction_df[MASS_DIFF_COL] = reaction_df[MASS_DIFF_COL].fillna(np.inf)
-    matched = matched.infer_objects()
-    matched[MZ_DIFF_COL] = matched[MZ_DIFF_COL].fillna(np.inf)
+    reaction_df[MASS_DIFF_COL] = reaction_df.infer_objects(copy=False)[
+        MASS_DIFF_COL
+    ].fillna(np.inf)
+    matched[MZ_DIFF_COL] = matched.infer_objects(copy=False)[MZ_DIFF_COL].fillna(np.inf)
 
     # Calculate the closest match within the threshold
     closest_matches = reaction_df.iloc[
