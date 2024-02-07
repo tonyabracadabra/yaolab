@@ -615,7 +615,11 @@ export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
               </AccordionItem>
             </Accordion>
           )}
-          <ShimmerButton type="submit" className="hover:opacity-90 py-2 px-3">
+          <ShimmerButton
+            disabled={isSubmitting}
+            type="submit"
+            className="hover:opacity-90 py-2 px-3 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-lg">
               {isSubmitting ? (
                 <div className="flex items-center gap-2">
