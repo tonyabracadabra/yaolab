@@ -1,6 +1,7 @@
 "use client";
 
 import { MagicCard } from "@/components/magicui/magic-card";
+import AnalysisResult from "@/components/task-result";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +41,7 @@ import Link from "next/link";
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
 import { ForceGraph2D } from "react-force-graph";
+import { z } from "zod";
 
 interface RowData {
   ID1: string;
@@ -78,6 +80,8 @@ interface GraphData {
   links: Link[];
 }
 
+type AnalysisResult = z.infer<typeof AnalysisResult>
+
 export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const analysis = useQuery(api.analyses.get, { id: params.id });
   const [graphData, setGraphData] = useState<GraphData>({
@@ -89,7 +93,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const { getToken } = useAuth();
 
   useEffect(() => {
-    const fetchAndProcessData = async (storageId: string) => {
+    const fetchAndProcessData = async (result: ) => {
       const { signedUrl } = await generateDownloadUrl({ storageId });
       if (!signedUrl) {
         return;

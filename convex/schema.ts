@@ -52,7 +52,7 @@ export const Progress = z.array(
   })
 );
 
-export const AnalysisResult = z.object({
+export const AnalysisResultSchema = z.object({
   nodes: z.string(),
   edges: z.string(),
 });
@@ -63,7 +63,7 @@ export const AnalysisSchema = z.object({
   status: AnalysisStatus,
   progress: Progress,
   log: z.optional(z.string()),
-  result: z.optional(AnalysisResult),
+  result: z.optional(AnalysisResultSchema),
 });
 
 export const MSTool = z.enum(["MZmine3", "MDial"]);

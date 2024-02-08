@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   AnalysisConfigSchema,
   AnalysisCreationInputSchema,
+  AnalysisResultSchema,
   AnalysisStatus,
   AnalysisStep,
   Progress,
@@ -49,7 +50,7 @@ export const update = zMutation({
   args: {
     id: zid("analyses"),
     status: z.optional(AnalysisStatus),
-    result: z.optional(z.string()),
+    result: z.optional(AnalysisResultSchema),
     log: z.optional(z.string()),
   },
   handler: async ({ db }, { id, status, log, result }) => {
