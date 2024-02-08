@@ -16,7 +16,9 @@ from scipy.spatial.distance import cosine
 
 @log("Calculating edge metrics")
 async def calculate_edge_metrics(
-    samples_df: pd.DataFrame, targeted_ions_df: pd.DataFrame, edge_data_df: pd.DataFrame
+    samples_df: pd.DataFrame,
+    targeted_ions_df: pd.DataFrame,
+    edge_data_df: pd.DataFrame,
 ) -> pd.DataFrame:
     # Pre-calculate and map ID to mz and rt values for efficient lookup
     id_to_mz_rt = targeted_ions_df.set_index(ID_COL)[[MZ_COL, RT_COL]].to_dict("index")

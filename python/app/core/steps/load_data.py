@@ -36,7 +36,10 @@ def _filter_metabolites(
     samples_df = data[SAMPLE_COL]
     cond = pd.Series(False, index=data.index)
     for experiment in experiments:
-        sample_group, blank_group = experiment.sampleGroups, experiment.blankGroups
+        sample_group, blank_group = (
+            experiment.sampleGroups,
+            experiment.blankGroups,
+        )
 
         blank_mean = samples_df[blank_group].mean(axis=1)
         sample_max = samples_df[sample_group].max(axis=1)
