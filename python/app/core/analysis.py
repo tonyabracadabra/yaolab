@@ -87,8 +87,8 @@ class AnalysisWorker(BaseModel):
             {
                 "id": self.id,
                 "result": {
-                    nodes: edges_storage_id,
-                    edges: nodes_storage_id,
+                    "nodes": edges_storage_id,
+                    "edges": nodes_storage_id,
                 },
                 "status": AnalysisStatus.COMPLETE,
             },
