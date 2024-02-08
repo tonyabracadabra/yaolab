@@ -41,7 +41,7 @@ async def create_similarity_matrix(
     cols = filtered_indices_array[cosine_scores.scores.col]
 
     similarity_matrix = coo_matrix(
-        (cosine_scores.scores.data, (rows, cols)), shape=(len(ids), len(ids))
+        (cosine_scores.scores.data[SCORE_KEY], (rows, cols)), shape=(len(ids), len(ids))
     )
 
     return similarity_matrix
