@@ -348,12 +348,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   graphData={graphData}
                   nodeLabel="id"
                   linkDirectionalParticles="value"
-                  linkDirectionalParticleWidth={(link: Link) =>
-                    Math.sqrt(link.value)
-                  }
-                  linkColor={(link: Link) =>
-                    correlationToColor(link.correlation)
-                  }
+                  linkDirectionalParticleWidth={(link) => Math.sqrt(link.value)}
+                  linkColor={(link) => correlationToColor(link.correlation)}
                 />
               )}
             </MagicCard>
