@@ -39,7 +39,7 @@ def upload_csv(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> str:
             "fileName": f"{file_name}.csv",
         },
     )
-    signedUrl, storageId = resp["signedUrl"], resp["storageId"]
+    signedUrl, storage_id = resp["signedUrl"], resp["storageId"]
     result = requests.put(
         signedUrl,
         headers={CONTENT_TYPE: MIME_TYPE_CSV},
@@ -48,7 +48,7 @@ def upload_csv(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> str:
 
     if result.status_code != 200:
         raise Exception(f"Failed to upload file: {result.text}")
-    return storageId
+    return storage_id
 
 
 def upload_parquet(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> str:
@@ -59,21 +59,21 @@ def upload_parquet(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> st
             "fileName": f"{file_name}.parquet",
         },
     )
-    signedUrl, storageId = resp["signedUrl"], resp["storageId"]
+    signed_url, storage_id = resp["signedUrl"], resp["storageId"]
     # Use a BytesIO buffer as an in-memory binary stream for the DataFrame
     buffer = io.BytesIO()
     df.to_parquet(buffer, index=True)
     buffer.seek(0)  # Reset buffer's pointer to the beginning
 
     result = requests.put(
-        signedUrl,
+        signed_url,
         headers={CONTENT_TYPE: MIME_TYPE_PARQUET},
         data=buffer.read(),  # Read the binary content of the buffer
     )
 
     if result.status_code != 200:
         raise Exception(f"Failed to upload file: {result.text}")
-    return storageId
+    return storage_id
 
 
 async def _generate_download_url(storage_id: str, convex: ConvexClient) -> str:
