@@ -1,9 +1,8 @@
 import app.core.steps as steps
 import numpy as np
 import pandas as pd
-from app.models.analysis import Analysis, AnalysisStatus
+from app.models.analysis import Analysis
 from app.utils.constants import ID_COL, SAMPLE_COL
-from app.utils.convex import upload_csv
 from app.utils.logger import logger, with_logging_and_context
 from pydantic import BaseModel
 from scipy.sparse import coo_matrix
@@ -38,6 +37,7 @@ class AnalysisWorker(BaseModel):
             create_similarity_matrix,
             edge_value_matching,
             load_data,
+            upload_result,
         )
 
         config = self.analysis.config
@@ -79,17 +79,4 @@ class AnalysisWorker(BaseModel):
         )
         nodes: pd.DataFrame = pd.concat([targeted_ions_df, samples_df], axis=1)
 
-        edges_storage_id = upload_csv(edges, file_name="nodes", convex=self.convex)
-        nodes_storage_id = upload_csv(nodes, file_name="nodes", convex=self.convex)
-
-        self.convex.mutation(
-            "analyses:update",
-            {
-                "id": self.id,
-                "result": {
-                    "nodes": edges_storage_id,
-                    "edges": nodes_storage_id,
-                },
-                "status": AnalysisStatus.COMPLETE,
-            },
-        )
+        await upload_result(id=self.id, nodes=nodes, edges=edges, convex=self.convex)
