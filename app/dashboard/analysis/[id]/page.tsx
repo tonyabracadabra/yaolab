@@ -343,7 +343,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   </SelectContent>
                 </Select>
               </div>
-              {graphData.links.length === 0 ? (
+              {graphData.links.length === 0 && graphData.nodes.length === 0 ? (
                 <div className="flex items-center h-[60%] justify-center gap-2">
                   <span>No data to display</span>
                   <span className="text-neutral-400">😞</span>
@@ -351,10 +351,12 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
               ) : (
                 <ForceGraph2D
                   graphData={graphData}
-                  nodeLabel="id"
-                  linkDirectionalParticles="value"
-                  linkDirectionalParticleWidth={(link) => Math.sqrt(link.value)}
-                  linkColor={(link) => correlationToColor(link.correlation)}
+                  nodeId="id"
+                  nodeLabel="mz"
+                  linkLabel="mzDiff"
+                  linkSource="source"
+                  linkWidth={4}
+                  linkTarget="target"
                 />
               )}
             </MagicCard>

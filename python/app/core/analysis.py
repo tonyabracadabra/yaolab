@@ -2,7 +2,7 @@ import app.core.steps as steps
 import numpy as np
 import pandas as pd
 from app.models.analysis import Analysis
-from app.utils.constants import ID_COL, SAMPLE_COL
+from app.utils.constants import ID_COL, SAMPLE_COL, TARGET_COL, SOURCE_COL
 from app.utils.logger import logger, with_logging_and_context
 from pydantic import BaseModel
 from scipy.sparse import coo_matrix
@@ -76,5 +76,7 @@ class AnalysisWorker(BaseModel):
             correlation_threshold=config.correlationThreshold,
         )
         nodes: pd.DataFrame = pd.concat([targeted_ions_df, samples_df], axis=1)
+        # filter out nodes that are not in the edges
+        nodes = nodes[nodes[ID_COL].isin(edges[[TARGET_COL, SOURCE_COL]].values.flatten())]
 
         await upload_result(id=self.id, nodes=nodes, edges=edges, convex=self.convex)
