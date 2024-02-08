@@ -67,34 +67,39 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   useEffect(() => {
     const fetchAndProcessData = async (result: AnalysisResult) => {
       try {
-        const urls = await Promise.all([
-          generateDownloadUrl({ storageId: result.edges }),
-          generateDownloadUrl({ storageId: result.nodes }),
+        const [edgesUrl, nodesUrl] = await Promise.all([
+          generateDownloadUrl({ storageId: result.edges }).then(
+            (data) => data.signedUrl
+          ),
+          generateDownloadUrl({ storageId: result.nodes }).then(
+            (data) => data.signedUrl
+          ),
         ]);
 
-        const [edgesResponse, nodesResponse] = await Promise.all([
-          fetch(urls[0].signedUrl),
-          fetch(urls[1].signedUrl),
+        // Fetch edges and nodes data as text
+        const edgesTextPromise = fetch(edgesUrl).then((response) =>
+          response.text()
+        );
+        const nodesTextPromise = fetch(nodesUrl).then((response) =>
+          response.text()
+        );
+
+        const [edgesText, nodesText] = await Promise.all([
+          edgesTextPromise,
+          nodesTextPromise,
         ]);
 
-        const edgesBlob = await edgesResponse.blob();
-        const nodesBlob = await nodesResponse.blob();
+        // Parse CSV text directly
+        const edges = Papa.parse<Edge>(edgesText, {
+          header: true,
+          dynamicTyping: true,
+        }).data;
+        const nodes = Papa.parse<Node>(nodesText, {
+          header: true,
+          dynamicTyping: true,
+        }).data;
 
-        const parseCsv = (blob: Blob) =>
-          new Promise<any[]>((resolve, reject) => {
-            Papa.parse(blob, {
-              header: true,
-              dynamicTyping: true,
-              complete: (results) => resolve(results.data),
-              error: (error) => reject(error),
-            });
-          });
-
-        const [edges, nodes] = await Promise.all([
-          parseCsv(new File([edgesBlob], "edges.csv")),
-          parseCsv(new File([nodesBlob], "nodes.csv")),
-        ]);
-
+        // Update state with parsed data
         setGraphData({ nodes, links: edges });
       } catch (error) {
         console.error("Failed to fetch and process data", error);
