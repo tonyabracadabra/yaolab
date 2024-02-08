@@ -55,6 +55,7 @@ interface SampleGroupFieldArrayProps {
 }
 
 interface AnalysisCreationProps {
+  defaultAnalysis?: AnalysisCreationInputType;
   onCreate: (id: Id<"analyses">) => void;
 }
 
@@ -114,25 +115,32 @@ const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
   );
 };
 
-export default function AnalysisCreation({ onCreate }: AnalysisCreationProps) {
+export default function AnalysisCreation({
+  defaultAnalysis,
+  onCreate,
+}: AnalysisCreationProps) {
   const form = useForm<AnalysisCreationInputType>({
     resolver: zodResolver(AnalysisCreationInputSchema),
     defaultValues: {
-      reactionDb: "default",
+      rawFile: defaultAnalysis?.rawFile || "",
+      reactionDb: defaultAnalysis?.reactionDb || "default",
       config: {
-        experiments: [
+        experiments: defaultAnalysis?.config.experiments || [
           {
             name: "new sample 1",
             sampleGroups: [],
             blankGroups: [],
           },
         ],
-        signalEnrichmentFactor: 30,
-        minSignalThreshold: 5e5,
-        ms2SimilarityThreshold: 0.7,
-        mzErrorThreshold: 0.01,
-        rtTimeWindow: 0.02,
-        correlationThreshold: 0.95,
+        signalEnrichmentFactor:
+          defaultAnalysis?.config.signalEnrichmentFactor || 30,
+        minSignalThreshold: defaultAnalysis?.config.minSignalThreshold || 5e5,
+        ms2SimilarityThreshold:
+          defaultAnalysis?.config.ms2SimilarityThreshold || 0.7,
+        mzErrorThreshold: defaultAnalysis?.config.mzErrorThreshold || 0.01,
+        rtTimeWindow: defaultAnalysis?.config.rtTimeWindow || 0.02,
+        correlationThreshold:
+          defaultAnalysis?.config.correlationThreshold || 0.95,
       },
     },
   });

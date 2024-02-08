@@ -29,19 +29,21 @@ export const create = zInternalMutation({
 
 export const get = zQuery({
   args: { id: zid("analyses") },
-  handler: async ({ db }, args) => {
-    const analysis = await db.get(args.id);
+  handler: async ({ db }, { id }) => {
+    const analysis = await db.get(id);
     if (!analysis) {
       throw new Error("Analysis not found");
     }
 
+    const rawFile = await db.get(analysis.rawFile);
+    if (!rawFile) {
+      throw new Error("Raw file not found");
+    }
+
     return {
       ...analysis,
-      rawFile: await db.get(analysis.rawFile),
-      reactionDb:
-        analysis.reactionDb === "default"
-          ? "default"
-          : await db.get(analysis.reactionDb),
+      rawFile,
+      reactionDb: analysis.reactionDb,
     };
   },
 });

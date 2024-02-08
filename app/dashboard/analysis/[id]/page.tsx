@@ -149,7 +149,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             <span className="ml-2">
               {typeof analysis.reactionDb === "string"
                 ? "default"
-                : analysis.reactionDb?.name}
+                : analysis.reactionDb}
             </span>
           </Badge>
           <TooltipProvider>

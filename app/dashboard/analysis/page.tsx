@@ -22,6 +22,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Table,
   TableBody,
   TableCell,
@@ -35,7 +40,14 @@ import { useUser } from "@clerk/nextjs";
 import { EnterIcon } from "@radix-ui/react-icons";
 import Avatar from "boring-avatars";
 import { useMutation, useQuery } from "convex/react";
-import { CheckIcon, Loader2, Trash2, XIcon } from "lucide-react";
+import {
+  CheckIcon,
+  Copy,
+  Loader2,
+  MoreHorizontal,
+  Trash2,
+  XIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 
@@ -116,35 +128,58 @@ export default function AnalysisList() {
       header: "",
       cell: ({ row }) => (
         <div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost">
-                <Trash2 className="stroke-[1.2px] w-4 h-4 stroke-red-400 hover:opacity-80" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="xs">
+                <MoreHorizontal className="h-4 w-4" />
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Are you sure you want to delete the analysis?
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete
-                  your account and remove your data from our servers.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive hover:bg-destructive/80 text-white"
-                  onClick={() => {
-                    remove({ id: row.original.id });
-                  }}
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="flex flex-col items-center justify-center">
+              <Button
+                variant="ghost"
+                className="w-full flex items-center justify-between gap-2"
+                onClick={() => {
+                  router.push(`/dashboard/new?from=${row.original.id}`);
+                }}
+              >
+                <Copy className="stroke-[1.2px] w-4 h-4" />
+                Copy
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="w-full flex items-center justify-between gap-2"
+                  >
+                    <Trash2 className="stroke-[1.2px] w-4 h-4 stroke-red-500" />
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you sure you want to delete the analysis?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete
+                      your account and remove your data from our servers.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive hover:bg-destructive text-white"
+                      onClick={() => {
+                        remove({ id: row.original.id });
+                      }}
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ),
     },
