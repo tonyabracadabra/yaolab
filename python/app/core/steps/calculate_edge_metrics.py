@@ -11,6 +11,7 @@ from app.utils.constants import (
     RT_DIFF_COL,
 )
 from app.utils.logger import log
+from scipy.spatial.distance import cosine
 
 
 @log("Calculating edge metrics")
@@ -33,10 +34,9 @@ async def calculate_edge_metrics(
 
         id1_data = samples_df.loc[targeted_ions_df[ID_COL] == id1, :].values[0]
         id2_data = samples_df.loc[targeted_ions_df[ID_COL] == id2, :].values[0]
+
         # Calculate the cosine similarity between the two IDs
-        correlation = np.dot(id1_data, id2_data) / (
-            np.linalg.norm(id1_data) * np.linalg.norm(id2_data)
-        )
+        correlation = 1 - cosine(id1_data, id2_data)
 
         return correlation, rt_difference, mz_difference
 

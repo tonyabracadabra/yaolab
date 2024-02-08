@@ -1,7 +1,7 @@
 import app.core.steps as steps
 import pandas as pd
 from app.models.analysis import Analysis, AnalysisStatus
-from app.utils.constants import SAMPLE_COL, ID_COL
+from app.utils.constants import ID_COL, SAMPLE_COL
 from app.utils.convex import upload_csv
 from app.utils.logger import logger, with_logging_and_context
 from pydantic import BaseModel
