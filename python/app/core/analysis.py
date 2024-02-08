@@ -1,7 +1,7 @@
 import app.core.steps as steps
 import pandas as pd
 from app.models.analysis import Analysis, AnalysisStatus
-from app.utils.constants import SAMPLE_COL
+from app.utils.constants import SAMPLE_COL, ID_COL
 from app.utils.convex import upload_csv
 from app.utils.logger import logger, with_logging_and_context
 from pydantic import BaseModel
@@ -59,6 +59,7 @@ class AnalysisWorker(BaseModel):
         edge_data_df: pd.DataFrame = await combine_matrices_and_extract_edges(
             ion_interaction_matrix,
             similarity_matrix,
+            ids=targeted_ions_df[ID_COL].values,
             ms2_similarity_threshold=config.ms2SimilarityThreshold,
         )
 
