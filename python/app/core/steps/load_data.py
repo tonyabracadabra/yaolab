@@ -41,9 +41,10 @@ def _filter_metabolites(
         blank_mean = samples_df[blank_group].mean(axis=1)
         sample_max = samples_df[sample_group].max(axis=1)
 
-        cond |= (sample_max > minSignalThreshold) & (
+        filter_cond = (sample_max > minSignalThreshold) & (
             sample_max > signalEnrichmentFactor * blank_mean
         )
+        cond |= filter_cond
 
         group_columns = sample_group + blank_group
         data[(SAMPLE_COL, experiment.name)] = samples_df[group_columns].mean(axis=1)
