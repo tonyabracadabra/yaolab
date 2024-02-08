@@ -66,9 +66,7 @@ class AnalysisWorker(BaseModel):
             ms2_similarity_threshold=config.ms2SimilarityThreshold,
         )
 
-        await calculate_edge_metrics(
-            samples_df, targeted_ions_df, edges
-        )
+        await calculate_edge_metrics(samples_df, targeted_ions_df, edges)
 
         await edge_value_matching(
             edges,

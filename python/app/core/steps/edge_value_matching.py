@@ -48,14 +48,11 @@ async def edge_value_matching(
     ].values
 
     edges = edges[
-        edges[MATCHED_MZ_DIFF_COL]
-        .sub(edges[MZ_DIFF_COL])
-        .abs()
-        .lt(mz_error_threshold)
+        edges[MATCHED_MZ_DIFF_COL].sub(edges[MZ_DIFF_COL]).abs().lt(mz_error_threshold)
     ]
 
     # Add Redundant Data and ModCos columns
-    edges[REDUNDANT_DATA_COL] = (
-        edges[CORRELATION_COL] >= correlation_threshold
-    ) & (edges[RT_DIFF_COL] <= rt_time_window)
+    edges[REDUNDANT_DATA_COL] = (edges[CORRELATION_COL] >= correlation_threshold) & (
+        edges[RT_DIFF_COL] <= rt_time_window
+    )
     edges[MODCOS_COL] = edges[VALUE_COL] - 1

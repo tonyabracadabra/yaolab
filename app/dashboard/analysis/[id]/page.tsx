@@ -94,10 +94,15 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
           header: true,
           dynamicTyping: true,
         }).data;
+
+        console.log("edges", edges);
+
         const nodes = Papa.parse<Node>(nodesText, {
           header: true,
           dynamicTyping: true,
         }).data;
+
+        console.log("nodes", nodes);
 
         // Update state with parsed data
         setGraphData({ nodes, links: edges });

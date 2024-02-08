@@ -18,8 +18,8 @@ FORMULA_CHANGE_COL = "formulaChange"
 REACTION_DESCRIPTION_COL = "description"
 
 # edge csv
-ID_COL_1 = "id1"
-ID_COL_2 = "id2"
+SOURCE_COL = "source"
+TARGET_COL = "target"
 VALUE_COL = "value"
 CORRELATION_COL = "correlation"
 RT_DIFF_COL = "retentionTimeDiff"
