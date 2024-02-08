@@ -19,12 +19,8 @@ TOLERANCE = 0.005
 async def create_similarity_matrix(
     spectra: List[Spectrum], targeted_ions_df: pd.DataFrame
 ) -> coo_matrix:
-    ion_count = len(targeted_ions_df)
     ids = targeted_ions_df[ID_COL].to_numpy()
     id_to_index = {id_: index for index, id_ in enumerate(ids)}
-
-    # Initialize a matrix of zeros with the shape (ion_count, ion_count)
-    similarity_matrix_data = np.zeros((ion_count, ion_count))
 
     # Filter spectra and map to indices based on IDs
     filtered_spectra = []
@@ -33,35 +29,30 @@ async def create_similarity_matrix(
         if spectrum_id in id_to_index:
             filtered_spectra.append(spectrum)
 
-    # Calculate the cosine scores only for filtered spectra
-    if filtered_spectra:
-        similarity_measure = ModifiedCosine(tolerance=TOLERANCE)
-        cosine_scores: Scores = calculate_scores(
-            filtered_spectra,
-            filtered_spectra,
-            similarity_measure,
-            is_symmetric=True,
-        )
+    similarity_measure = ModifiedCosine(tolerance=TOLERANCE)
+    cosine_scores: Scores = calculate_scores(
+        filtered_spectra,
+        filtered_spectra,
+        similarity_measure,
+        is_symmetric=True,
+    )
 
-        # Populate the similarity_matrix_data with actual scores from cosine_scores
-        for reference, query, score in cosine_scores:
-            ref_id = int(
-                reference.metadata[SCANS_KEY]
-            )  # Assuming the reference ID is stored under 'id' in metadata
-            query_id = int(
-                query.metadata[SCANS_KEY]
-            )  # Same assumption for the query ID
+    rows, cols, data = [], [], []
+    # Populate the similarity_matrix_data with actual scores from cosine_scores
+    for reference, query, score in cosine_scores:
+        ref_id = int(
+            reference.metadata[SCANS_KEY]
+        )  # Assuming the reference ID is stored under 'id' in metadata
+        query_id = int(query.metadata[SCANS_KEY])  # Same assumption for the query ID
 
-            if ref_id in id_to_index and query_id in id_to_index:
-                row_index = id_to_index[ref_id]
-                col_index = id_to_index[query_id]
-                similarity_matrix_data[row_index, col_index] = score[0]
+        if ref_id in id_to_index and query_id in id_to_index:
+            rows.append(id_to_index[ref_id])
+            cols.append(id_to_index[query_id])
+            data.append(score[0])
 
-    # Convert the populated data to a COO sparse matrix
-    row_indices, col_indices = np.nonzero(similarity_matrix_data)
-    data_values = similarity_matrix_data[row_indices, col_indices]
+    # Create the COO sparse matrix directly
     similarity_matrix = coo_matrix(
-        (data_values, (row_indices, col_indices)), shape=(ion_count, ion_count)
+        (data, (rows, cols)), shape=(len(targeted_ions_df), len(targeted_ions_df))
     )
 
     return similarity_matrix

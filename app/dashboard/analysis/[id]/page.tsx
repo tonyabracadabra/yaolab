@@ -4,6 +4,12 @@ import { MagicCard } from "@/components/magicui/magic-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -15,6 +21,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@clerk/nextjs";
 import { useAction, useQuery } from "convex/react";
+
 import {
   Atom,
   BadgeCheck,
@@ -33,7 +40,6 @@ import Link from "next/link";
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
 import { ForceGraph2D } from "react-force-graph";
-import { toast } from "sonner";
 
 interface RowData {
   ID1: string;
@@ -352,44 +358,17 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
           {analysis.status === "complete" && (
             <MagicCard className="h-[70vh] mt-1">
               <div className="w-full gap-4 items-center justify-end flex p-4">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Button
-                        disabled={!analysis.result}
-                        size="xs"
-                        onClick={async () => {
-                          if (!analysis.result) {
-                            toast.error("Result data is not available");
-                            return;
-                          }
-
-                          const { signedUrl } = await generateDownloadUrl({
-                            storageId: analysis.result,
-                          });
-
-                          if (!signedUrl) {
-                            return;
-                          }
-                          window.open(signedUrl, "_blank");
-                        }}
-                        className="flex items-center justify-center gap-2"
-                      >
-                        <span>Download Data</span>
-                        <Download size={12} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      <div className="text-neutral-400">
-                        {analysis.result ? (
-                          <span>Download the result data</span>
-                        ) : (
-                          <span>Result data is not available</span>
-                        )}
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {/* drop down for download options */}
+                <Select>
+                  <SelectTrigger className="flex items-center justify-center gap-2 w-fit">
+                    <Download size={16} />
+                    Download Data
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="graphml">GraphML</SelectItem>
+                    <SelectItem value="raw">Raw (Nodes & Edges)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               {graphData.links.length === 0 ? (
                 <div className="flex items-center h-[60%] justify-center gap-2">
