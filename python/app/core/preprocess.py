@@ -4,7 +4,13 @@ from typing import Callable
 
 import pandas as pd
 from app.models.analysis import MSTool
-from app.utils.constants import ID_COL, MSMS_SPECTRUM_COL, MSMS_ASSIGNED_COL, MZ_COL, RT_COL
+from app.utils.constants import (
+    ID_COL,
+    MSMS_ASSIGNED_COL,
+    MSMS_SPECTRUM_COL,
+    MZ_COL,
+    RT_COL,
+)
 
 
 def _preprocess_mzmine3(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
@@ -37,7 +43,7 @@ def _preprocess_mdial(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
     )
     bytesIO.seek(0)
     df = pd.read_csv(bytesIO, sep="\t", skiprows=4)
-     # retain rows with only MS/MS assigned
+    # retain rows with only MS/MS assigned
     df = df[df[MSMS_ASSIGNED_COL]]
     # Drop the selected columns
     df = df.drop(

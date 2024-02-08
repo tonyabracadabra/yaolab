@@ -26,6 +26,7 @@ modal = "^0.57.5"
 black = "^23.11.0"
 mypy = "^0.991"
 isort = "^5.12.0"
+jupyterlab = "^4.1.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,6 +1,5 @@
 import io
 import os
-from datetime import datetime
 from tempfile import NamedTemporaryFile
 
 import aiohttp

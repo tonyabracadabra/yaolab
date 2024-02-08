@@ -32,23 +32,21 @@ def _filter_metabolites(
     experiments: list[Experiment],
     minSignalThreshold: float,
     signalEnrichmentFactor: float,
-):
-    cond = pd.Series(True, index=data.index)
+) -> pd.DataFrame:
+    samples_df = data[SAMPLE_COL]
+    cond = pd.Series(False, index=data.index)
     for experiment in experiments:
-        sample_group = experiment.sampleGroups
-        blank_group = experiment.blankGroups
+        sample_group, blank_group = experiment.sampleGroups, experiment.blankGroups
 
-        blank_mean = data[SAMPLE_COL][blank_group].mean(axis=1)
-        sample_max = data[SAMPLE_COL][sample_group].max(axis=1)
-        filter_condition = (sample_max > minSignalThreshold) & (
+        blank_mean = samples_df[blank_group].mean(axis=1)
+        sample_max = samples_df[sample_group].max(axis=1)
+
+        cond |= (sample_max > minSignalThreshold) & (
             sample_max > signalEnrichmentFactor * blank_mean
         )
 
-        cond &= filter_condition
         group_columns = sample_group + blank_group
-        data[(SAMPLE_COL, experiment.name)] = data[SAMPLE_COL][group_columns].mean(
-            axis=1
-        )
+        data[(SAMPLE_COL, experiment.name)] = samples_df[group_columns].mean(axis=1)
 
     return data[cond].drop_duplicates()
 
