@@ -40,6 +40,8 @@ next-env.d.ts
 *.pyo
 *.pyd
 __pycache__/
+*.ipynb_checkpoints/
+notebooks
 
 # dagster
 # folders starts with tmp 
