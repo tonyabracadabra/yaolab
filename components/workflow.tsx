@@ -54,6 +54,12 @@ const baseNodes: Node[] = [
     position: { x: 0, y: 400 },
     data: { label: "Edge Value Matching" },
   },
+  {
+    id: AnalysisStep.Enum.upload_result,
+    type: "output",
+    position: { x: 0, y: 500 },
+    data: { label: "Upload Result" },
+  },
 ];
 
 const baseEdges = [
@@ -124,6 +130,15 @@ const baseEdges = [
     id: "e5-6",
     source: AnalysisStep.Enum.calculate_edge_metrics,
     target: AnalysisStep.Enum.edge_value_matching,
+    animated: true,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+    },
+  },
+  {
+    id: "e6-7",
+    source: AnalysisStep.Enum.edge_value_matching,
+    target: AnalysisStep.Enum.upload_result,
     animated: true,
     markerEnd: {
       type: MarkerType.ArrowClosed,

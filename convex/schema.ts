@@ -43,6 +43,7 @@ export const AnalysisStep = z.enum([
   "combine_matrices_and_extract_edges",
   "calculate_edge_metrics",
   "edge_value_matching",
+  "upload_result",
 ]);
 
 export const Progress = z.array(
