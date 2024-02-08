@@ -10,7 +10,7 @@ from convex import ConvexClient
 async def upload_result(
     id: str, nodes: pd.DataFrame, edges: pd.DataFrame, convex: ConvexClient
 ):
-    edges_storage_id = upload_csv(edges, file_name="nodes", convex=convex)
+    edges_storage_id = upload_csv(edges, file_name="edges", convex=convex)
     nodes_storage_id = upload_csv(nodes, file_name="nodes", convex=convex)
 
     convex.mutation(
@@ -18,8 +18,8 @@ async def upload_result(
         {
             "id": id,
             "result": {
-                "nodes": edges_storage_id,
-                "edges": nodes_storage_id,
+                "nodes": nodes_storage_id,
+                "edges": edges_storage_id,
             },
             "status": AnalysisStatus.COMPLETE,
         },

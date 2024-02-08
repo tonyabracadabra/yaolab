@@ -19,28 +19,25 @@ from app.utils.logger import log
 
 @log("Edge value matching")
 async def edge_value_matching(
-    edge_metrics: pd.DataFrame,
+    edges: pd.DataFrame,
     reaction_df: pd.DataFrame,
     rt_time_window: float = 0.015,
     mz_error_threshold: float = 0.01,
     correlation_threshold: float = 0.95,
-) -> pd.DataFrame:
-    # rename it!
-    matched = edge_metrics
-
+) -> None:
     # Ensure no NaN values
     reaction_df[MASS_DIFF_COL] = reaction_df.infer_objects(copy=False)[
         MASS_DIFF_COL
     ].fillna(np.inf)
-    matched[MZ_DIFF_COL] = matched.infer_objects(copy=False)[MZ_DIFF_COL].fillna(np.inf)
+    edges[MZ_DIFF_COL] = edges.infer_objects(copy=False)[MZ_DIFF_COL].fillna(np.inf)
 
     # Calculate the closest match within the threshold
     closest_matches = reaction_df.iloc[
         np.abs(
-            reaction_df[MASS_DIFF_COL].values[:, None] - matched[MZ_DIFF_COL].values
+            reaction_df[MASS_DIFF_COL].values[:, None] - edges[MZ_DIFF_COL].values
         ).argmin(axis=0)
     ]
-    matched[
+    edges[
         [
             MATCHED_MZ_DIFF_COL,
             MATCHED_FORMULA_CHANGE_COL,
@@ -50,17 +47,15 @@ async def edge_value_matching(
         [MASS_DIFF_COL, FORMULA_CHANGE_COL, REACTION_DESCRIPTION_COL]
     ].values
 
-    matched = matched[
-        matched[MATCHED_MZ_DIFF_COL]
-        .sub(matched[MZ_DIFF_COL])
+    edges = edges[
+        edges[MATCHED_MZ_DIFF_COL]
+        .sub(edges[MZ_DIFF_COL])
         .abs()
         .lt(mz_error_threshold)
     ]
 
     # Add Redundant Data and ModCos columns
-    matched[REDUNDANT_DATA_COL] = (
-        matched[CORRELATION_COL] >= correlation_threshold
-    ) & (matched[RT_DIFF_COL] <= rt_time_window)
-    matched[MODCOS_COL] = matched[VALUE_COL] - 1
-
-    return matched
+    edges[REDUNDANT_DATA_COL] = (
+        edges[CORRELATION_COL] >= correlation_threshold
+    ) & (edges[RT_DIFF_COL] <= rt_time_window)
+    edges[MODCOS_COL] = edges[VALUE_COL] - 1

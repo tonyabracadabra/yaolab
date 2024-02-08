@@ -59,19 +59,19 @@ class AnalysisWorker(BaseModel):
             ids,
         )
 
-        edge_data_df: pd.DataFrame = await combine_matrices_and_extract_edges(
+        edges: pd.DataFrame = await combine_matrices_and_extract_edges(
             ion_interaction_matrix,
             similarity_matrix,
             ids,
             ms2_similarity_threshold=config.ms2SimilarityThreshold,
         )
 
-        edge_metrics: pd.DataFrame = await calculate_edge_metrics(
-            samples_df, targeted_ions_df, edge_data_df
+        await calculate_edge_metrics(
+            samples_df, targeted_ions_df, edges
         )
 
-        edges: pd.DataFrame = await edge_value_matching(
-            edge_metrics,
+        await edge_value_matching(
+            edges,
             reaction_df,
             rt_time_window=config.rtTimeWindow,
             mz_error_threshold=config.mzErrorThreshold,
