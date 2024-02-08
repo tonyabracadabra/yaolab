@@ -52,6 +52,26 @@ export const Progress = z.array(
   })
 );
 
+export const EdgeSchema = z.object({
+  id1: z.string(),
+  id2: z.string(),
+  value: z.number(),
+  correlation: z.number(),
+  retentionTimeDiff: z.number(),
+  mzDiff: z.number(),
+  matchedMzDiff: z.number(),
+  matchedFormulaChange: z.string(),
+  matchedReactionDescription: z.string(),
+  redundantData: z.string(),
+  modCos: z.number(),
+});
+
+export const NodeSchema = z.object({
+  id: z.string(),
+  mz: z.number(),
+  rt: z.number(),
+});
+
 export const AnalysisResultSchema = z.object({
   nodes: z.string(),
   edges: z.string(),

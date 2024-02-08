@@ -19,6 +19,7 @@ import {
 import { Workflow } from "@/components/workflow";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { AnalysisResultSchema, EdgeSchema, NodeSchema } from "@/convex/schema";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@clerk/nextjs";
 import { useAction, useQuery } from "convex/react";
@@ -43,44 +44,15 @@ import { useEffect, useState } from "react";
 import { ForceGraph2D } from "react-force-graph";
 import { z } from "zod";
 
-interface RowData {
-  ID1: string;
-  ID2: string;
-  Value: number;
-  Correlation: number;
-  RetentionTimeDifference: number;
-  MZDifference: number;
-  MatchedMZDifference: number;
-  MatchedFormulaChange: string;
-  MatchedReactionDescription: string;
-  RedundantData: string;
-  ModCos: number;
-}
-
-interface Node {
-  id: string;
-}
-
-interface Link {
-  source: string;
-  target: string;
-  value: number;
-  correlation: number;
-  retentionTimeDifference: number;
-  mzDifference: number;
-  matchedMzDifference: number;
-  matchedFormulaChange: string;
-  matchedReactionDescription: string;
-  redundantData: string;
-  modCos: number;
-}
+type Edge = z.infer<typeof EdgeSchema>;
+type Node = z.infer<typeof NodeSchema>;
 
 interface GraphData {
   nodes: Node[];
-  links: Link[];
+  links: Edge[];
 }
 
-type AnalysisResult = z.infer<typeof AnalysisResult>
+type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
 export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const analysis = useQuery(api.analyses.get, { id: params.id });
@@ -93,53 +65,40 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const { getToken } = useAuth();
 
   useEffect(() => {
-    const fetchAndProcessData = async (result: ) => {
-      const { signedUrl } = await generateDownloadUrl({ storageId });
-      if (!signedUrl) {
-        return;
-      }
-      fetch(signedUrl)
-        .then((response) => response.blob())
-        .then((blob: Blob | null) => {
-          if (blob) {
-            const file = new File([blob], "result.csv");
-            Papa.parse<RowData>(file, {
+    const fetchAndProcessData = async (result: AnalysisResult) => {
+      try {
+        const urls = await Promise.all([
+          generateDownloadUrl({ storageId: result.edges }),
+          generateDownloadUrl({ storageId: result.nodes }),
+        ]);
+
+        const [edgesResponse, nodesResponse] = await Promise.all([
+          fetch(urls[0].signedUrl),
+          fetch(urls[1].signedUrl),
+        ]);
+
+        const edgesBlob = await edgesResponse.blob();
+        const nodesBlob = await nodesResponse.blob();
+
+        const parseCsv = (blob: Blob) =>
+          new Promise<any[]>((resolve, reject) => {
+            Papa.parse(blob, {
               header: true,
               dynamicTyping: true,
-              complete: (results) => {
-                const nodesSet = new Set<string>();
-                const links: Link[] = [];
-
-                results.data.forEach((row) => {
-                  if (!row.ID1 || !row.ID2 || !row.Value) {
-                    return;
-                  }
-
-                  nodesSet.add(row.ID1);
-                  nodesSet.add(row.ID2);
-                  links.push({
-                    source: row.ID1,
-                    target: row.ID2,
-                    value: row.Value,
-                    correlation: row.Correlation,
-                    retentionTimeDifference: row.RetentionTimeDifference,
-                    mzDifference: row.MZDifference,
-                    matchedMzDifference: row.MatchedMZDifference,
-                    matchedFormulaChange: row.MatchedFormulaChange,
-                    matchedReactionDescription: row.MatchedReactionDescription,
-                    redundantData: row.RedundantData,
-                    modCos: row.ModCos,
-                  });
-                });
-
-                const nodes: Node[] = Array.from(nodesSet).map((id) => ({
-                  id,
-                }));
-                setGraphData({ nodes, links });
-              },
+              complete: (results) => resolve(results.data),
+              error: (error) => reject(error),
             });
-          }
-        });
+          });
+
+        const [edges, nodes] = await Promise.all([
+          parseCsv(new File([edgesBlob], "edges.csv")),
+          parseCsv(new File([nodesBlob], "nodes.csv")),
+        ]);
+
+        setGraphData({ nodes, links: edges });
+      } catch (error) {
+        console.error("Failed to fetch and process data", error);
+      }
     };
 
     if (analysis?.result) {
