@@ -54,8 +54,8 @@ export const Progress = z.array(
 );
 
 export const EdgeSchema = z.object({
-  id1: z.string(),
-  id2: z.string(),
+  source: z.string(),
+  target: z.string(),
   value: z.number(),
   correlation: z.number(),
   retentionTimeDiff: z.number(),
