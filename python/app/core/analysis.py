@@ -70,21 +70,23 @@ class AnalysisWorker(BaseModel):
             samples_df, targeted_ions_df, edge_data_df
         )
 
-        matched_df = await edge_value_matching(
+        edges: pd.DataFrame = await edge_value_matching(
             edge_metrics,
             reaction_df,
             rt_time_window=config.rtTimeWindow,
             mz_error_threshold=config.mzErrorThreshold,
             correlation_threshold=config.correlationThreshold,
         )
+        nodes: pd.DataFrame = pd.concat([targeted_ions_df, samples_df], axis=1)
 
-        # Upload matched_df to convex as a file, and update analysis result
-        storage_id = upload_csv(matched_df, file_name="result", convex=self.convex)
         self.convex.mutation(
             "analyses:update",
             {
                 "id": self.id,
-                "result": storage_id,
+                "result": {
+                    nodes: upload_csv(nodes, file_name="nodes", convex=self.convex),
+                    edges: upload_csv(edges, file_name="edges", convex=self.convex),
+                },
                 "status": AnalysisStatus.COMPLETE,
             },
         )

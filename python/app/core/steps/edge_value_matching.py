@@ -24,7 +24,7 @@ async def edge_value_matching(
     rt_time_window: float = 0.015,
     mz_error_threshold: float = 0.01,
     correlation_threshold: float = 0.95,
-) -> tuple[pd.DataFrame, pd.Series]:
+) -> pd.DataFrame:
     # rename it!
     matched = edge_metrics
 
