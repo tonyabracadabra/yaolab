@@ -44,6 +44,8 @@ export const retryAnalysis = zAction({
     await runMutation(api.analyses.update, {
       id,
       status: "running",
+      progress: [],
+      log: "",
     });
 
     const response = await fetch(`${process.env.FASTAPI_URL}/analysis/start`, {

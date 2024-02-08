@@ -79,13 +79,16 @@ class AnalysisWorker(BaseModel):
         )
         nodes: pd.DataFrame = pd.concat([targeted_ions_df, samples_df], axis=1)
 
+        edges_storage_id = upload_csv(edges, file_name="nodes", convex=self.convex)
+        nodes_storage_id = upload_csv(nodes, file_name="nodes", convex=self.convex)
+
         self.convex.mutation(
             "analyses:update",
             {
                 "id": self.id,
                 "result": {
-                    nodes: upload_csv(nodes, file_name="nodes", convex=self.convex),
-                    edges: upload_csv(edges, file_name="edges", convex=self.convex),
+                    nodes: edges_storage_id,
+                    edges: nodes_storage_id,
                 },
                 "status": AnalysisStatus.COMPLETE,
             },
