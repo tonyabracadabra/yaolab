@@ -1,4 +1,5 @@
 import app.core.steps as steps
+import numpy as np
 import pandas as pd
 from app.models.analysis import Analysis, AnalysisStatus
 from app.utils.constants import ID_COL, SAMPLE_COL
@@ -45,6 +46,7 @@ class AnalysisWorker(BaseModel):
         )
         samples_df = targeted_ions_df[SAMPLE_COL]
         targeted_ions_df = targeted_ions_df[""]
+        ids: np.ndarray = targeted_ions_df[ID_COL].values
 
         ion_interaction_matrix: coo_matrix = await create_ion_interaction_matrix(
             targeted_ions_df,
@@ -53,13 +55,14 @@ class AnalysisWorker(BaseModel):
         )
 
         similarity_matrix: coo_matrix = await create_similarity_matrix(
-            spectra, targeted_ions_df
+            spectra,
+            ids,
         )
 
         edge_data_df: pd.DataFrame = await combine_matrices_and_extract_edges(
             ion_interaction_matrix,
             similarity_matrix,
-            ids=targeted_ions_df[ID_COL].values,
+            ids,
             ms2_similarity_threshold=config.ms2SimilarityThreshold,
         )
 
