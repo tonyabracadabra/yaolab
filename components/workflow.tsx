@@ -1,6 +1,7 @@
 import { AnalysisStep, Progress } from "@/convex/schema";
 import { useEffect, useMemo } from "react";
 import ReactFlow, {
+  Edge,
   Handle,
   MarkerType,
   Node,
@@ -62,7 +63,7 @@ const baseNodes: Node[] = [
   },
 ];
 
-const baseEdges = [
+const baseEdges: Edge[] = [
   {
     id: "e1-2",
     source: AnalysisStep.Enum.load_data,

@@ -41,6 +41,7 @@
     "date-fns": "^2.30.0",
     "filepond": "^4.30.4",
     "geist": "^1.1.0",
+    "jszip": "^3.10.1",
     "lottie-react": "^2.4.0",
     "lucide-react": "^0.292.0",
     "nanoid": "^5.0.5",

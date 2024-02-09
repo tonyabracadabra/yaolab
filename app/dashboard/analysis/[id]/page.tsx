@@ -5,12 +5,6 @@ import AnalysisResult from "@/components/task-result";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -23,10 +17,18 @@ import { AnalysisResultSchema, EdgeSchema, NodeSchema } from "@/convex/schema";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@clerk/nextjs";
 import { useAction, useQuery } from "convex/react";
+import JSZip from "jszip";
+import { ForceGraph2D } from "react-force-graph";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Atom,
   BadgeCheck,
+  ChevronDown,
   Download,
   File as FileIcon,
   FileWarning,
@@ -41,25 +43,17 @@ import {
 import Link from "next/link";
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
-import { ForceGraph2D } from "react-force-graph";
 import { z } from "zod";
 
 type Edge = z.infer<typeof EdgeSchema>;
 type Node = z.infer<typeof NodeSchema>;
 
-interface GraphData {
-  nodes: Node[];
-  links: Edge[];
-}
-
 type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
 export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const analysis = useQuery(api.analyses.get, { id: params.id });
-  const [graphData, setGraphData] = useState<GraphData>({
-    nodes: [],
-    links: [],
-  });
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
   const generateDownloadUrl = useAction(api.actions.generateDownloadUrl);
   const retryAnalysis = useAction(api.actions.retryAnalysis);
   const { getToken } = useAuth();
@@ -90,22 +84,31 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         ]);
 
         // Parse CSV text directly
-        const edges = Papa.parse<Edge>(edgesText, {
+        const edgesRaw = Papa.parse<Edge>(edgesText, {
           header: true,
           dynamicTyping: true,
         }).data;
 
-        console.log("edges", edges);
-
-        const nodes = Papa.parse<Node>(nodesText, {
+        const nodesRaw = Papa.parse<Node>(nodesText, {
           header: true,
           dynamicTyping: true,
         }).data;
 
-        console.log("nodes", nodes);
+        // remove edges that have missing nodes
+        const nodesIds = new Set(nodesRaw.map((n) => n.id));
+        const edgesRawFiltered = edgesRaw.filter(
+          (e) => nodesIds.has(e.source) && nodesIds.has(e.target)
+        );
 
         // Update state with parsed data
-        setGraphData({ nodes, links: edges });
+        setNodes(nodesRaw.map((n) => ({ ...n, id: `${n.id}` })));
+        setEdges(
+          edgesRawFiltered.map((e) => ({
+            ...e,
+            source: `${e.source}`,
+            target: `${e.target}`,
+          }))
+        );
       } catch (error) {
         console.error("Failed to fetch and process data", error);
       }
@@ -114,7 +117,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     if (analysis?.result) {
       fetchAndProcessData(analysis.result);
     }
-  }, [analysis?.result, generateDownloadUrl]);
+  }, [analysis?.result, generateDownloadUrl, setEdges, setNodes]);
 
   if (!analysis) {
     return (
@@ -126,11 +129,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
       </div>
     );
   }
-
-  const correlationToColor = (correlation: number) => {
-    const intensity = Math.round(255 * (1 - correlation)); // Higher correlation, darker color
-    return `rgb(${intensity},${intensity},${intensity})`; // Generating a shade of gray
-  };
 
   return (
     <div className="flex flex-col gap-4 px-4 py-2 w-full">
@@ -332,32 +330,123 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             <MagicCard className="h-[70vh] mt-1">
               <div className="w-full gap-4 items-center justify-end flex p-4">
                 {/* drop down for download options */}
-                <Select>
-                  <SelectTrigger className="flex items-center justify-center gap-2 w-fit">
-                    <Download size={16} />
-                    Download Data
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="graphml">GraphML</SelectItem>
-                    <SelectItem value="raw">Raw (Nodes & Edges)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="xs">
+                      <Download className="w-4 h-4 mr-2" />
+                      Download Data
+                      <ChevronDown className="w-4 h-4 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="flex flex-col items-center justify-center">
+                    <Button
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => {
+                        // Download graphml file, given the nodes and edges
+                        const graphml = `
+                      <graphml>
+                        <graph id="G" edgedefault="undirected">
+                          ${nodes
+                            .map(
+                              (n) =>
+                                `<node id="${n.id}"><data key="mz">${n.mz}</data></node>`
+                            )
+                            .join("\n")}
+                          ${edges
+                            .map(
+                              (e, i) =>
+                                `<edge id="${i}" source="${e.source}" target="${e.target}"><data key="mzDiff">${e.mzDiff}</data></edge>`
+                            )
+                            .join("\n")}
+                        </graph>
+                      </graphml>
+                      `;
+
+                        const blob = new Blob([graphml], {
+                          type: "application/xml",
+                        });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = "graph.graphml";
+                        a.click();
+                      }}
+                    >
+                      GraphML
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => {
+                        // download edges and nodes as two .csv files in a zip
+                        const zip = new JSZip();
+                        zip.file("nodes.csv", Papa.unparse(nodes));
+                        zip.file("edges.csv", Papa.unparse(edges));
+                        zip
+                          .generateAsync({ type: "blob" })
+                          .then((content: any) => {
+                            const url = URL.createObjectURL(content);
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = "raw-data.zip";
+                            a.click();
+                          });
+                      }}
+                    >
+                      Raw (Nodes & Edges)
+                    </Button>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-              {graphData.links.length === 0 && graphData.nodes.length === 0 ? (
+              {edges.length === 0 && nodes.length === 0 ? (
                 <div className="flex items-center h-[60%] justify-center gap-2">
                   <span>No data to display</span>
                   <span className="text-neutral-400">😞</span>
                 </div>
               ) : (
-                <ForceGraph2D
-                  graphData={graphData}
-                  nodeId="id"
-                  nodeLabel="mz"
-                  linkLabel="mzDiff"
-                  linkSource="source"
-                  linkWidth={4}
-                  linkTarget="target"
-                />
+                <div className="w-[50vw] h-[50vh] overflow-hidden">
+                  <ForceGraph2D
+                    graphData={{ links: edges, nodes }}
+                    nodeId="id"
+                    nodeLabel="mz"
+                    linkLabel="mzDiff"
+                    linkSource="source"
+                    linkWidth={8}
+                    nodeCanvasObject={(node, ctx, globalScale) => {
+                      // Draw circle
+                      ctx.beginPath();
+                      const x = node.x as number;
+                      const y = node.y as number;
+
+                      // Scale circle size based on the 'mz' property
+                      const size = (Math.sqrt(node.mz) * globalScale) / 4; // Example scaling, adjust as necessary
+
+                      ctx.arc(x, y, size, 0, 2 * Math.PI, false); // Adjust the radius as needed
+                      ctx.fillStyle = "blue"; // Circle color
+                      ctx.fill();
+
+                      // Draw label
+                      const label = `${node.mz}`;
+                      const fontSize = 12 / globalScale; // Adjust font size based on zoom level
+                      ctx.font = `${fontSize}px Sans-Serif`;
+                      ctx.textAlign = "center";
+                      ctx.textBaseline = "middle";
+                      ctx.fillStyle = "black"; // Text color
+                      ctx.fillText(label, x, y); // Position the label on the circle
+                    }}
+                    nodePointerAreaPaint={(node, color, ctx) => {
+                      ctx.beginPath();
+                      const x = node.x as number;
+                      const y = node.y as number;
+                      ctx.arc(x, y, 5, 0, 2 * Math.PI, false); // Match the radius used in nodeCanvasObject
+                      ctx.fillStyle = color;
+                      ctx.fill();
+                    }}
+                    linkColor={"#fff"}
+                    linkTarget="target"
+                  />
+                </div>
               )}
             </MagicCard>
           )}
