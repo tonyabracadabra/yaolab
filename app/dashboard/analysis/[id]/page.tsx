@@ -17,7 +17,6 @@ import { AnalysisResultSchema, EdgeSchema, NodeSchema } from "@/convex/schema";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@clerk/nextjs";
 import { useAction, useQuery } from "convex/react";
-import * as d3 from "d3";
 import JSZip from "jszip";
 import { ForceGraph2D } from "react-force-graph";
 
@@ -48,6 +47,7 @@ import {
   TimerIcon,
   XIcon,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import Papa from "papaparse";
 import { useEffect, useRef, useState } from "react";
@@ -100,18 +100,18 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const retryAnalysis = useAction(api.actions.retryAnalysis);
   const [nodeLabel, setNodeLabel] = useState(kAvailableNodes[0].col);
   const [edgeLabel, setEdgeLabel] = useState(kAvailableEdges[0].col);
-  const fg = useRef();
+  const { theme } = useTheme();
+  const fgRef = useRef();
   const { getToken } = useAuth();
 
   useEffect(() => {
-    if (fg.current) {
-      const forceGraph = fg.current;
-      // change force as you zoom in so the nodes don't overlap, be elegant and accurate
+    if (!fgRef.current) return;
 
-      // @ts-ignore
-      forceGraph.d3Force("charge", d3.forceManyBody().strength(-30));
-    }
-  }, [fg, nodes, edges]); // Re-run when graphData changes or the ref is set
+    // @ts-ignore
+    fgRef.current.d3Force("charge").strength(100);
+    // @ts-ignore
+    fgRef.current.d3Force("link").distance(80);
+  }, []);
 
   useEffect(() => {
     const fetchAndProcessData = async (result: AnalysisResult) => {
@@ -499,7 +499,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
               ) : (
                 <div className="w-[75vw] h-[50vh] overflow-hidden">
                   <ForceGraph2D
-                    ref={fg}
+                    ref={fgRef}
                     graphData={{ links: edges, nodes }}
                     nodeId="id"
                     nodeLabel={nodeLabel}
@@ -512,10 +512,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       const x = node.x as number;
                       const y = node.y as number;
 
-                      // Scale circle size based on the 'mz' property
-                      const size = (Math.sqrt(node.mz) * globalScale) / 2; // Example scaling, adjust as necessary
-
-                      ctx.arc(x, y, size, 0, 2 * Math.PI, false); // Adjust the radius as needed
+                      ctx.arc(x, y, 8, 0, 2 * Math.PI, false); // Adjust the radius as needed
                       ctx.fillStyle = "white"; // Circle color
                       ctx.fill();
                       ctx.strokeStyle = "#ADD8E6";
@@ -527,8 +524,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         typeof node[nodeLabel] === "number"
                           ? node[nodeLabel].toFixed(2)
                           : String(node[nodeLabel]);
-                      const fontSize = Math.max(4, 6 * globalScale); // Adjust font size based on zoom level
-                      ctx.font = `${fontSize}px Sans-Serif`;
+                      ctx.font = `4px Sans-Serif`;
                       ctx.textAlign = "center";
                       ctx.textBaseline = "middle";
                       ctx.fillStyle = "black"; // Text color
@@ -541,6 +537,9 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       ctx.arc(x, y, 5, 0, 2 * Math.PI, false); // Match the radius used in nodeCanvasObject
                       ctx.fillStyle = color;
                       ctx.fill();
+                    }}
+                    onZoom={(zoom) => {
+                      console.log("Zoom level", zoom);
                     }}
                     linkCanvasObject={(link, ctx, globalScale) => {
                       // Draw line
@@ -557,7 +556,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         // @ts-ignore
                         link.target.y as number
                       );
-                      ctx.strokeStyle = "rgba(0, 0, 0, 0.2)"; // Line color
+
+                      ctx.strokeStyle = theme === "dark" ? "white" : "#000"; // Line color
                       ctx.stroke();
 
                       // Draw label with precision 2
@@ -565,20 +565,23 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         typeof link[edgeLabel] === "number"
                           ? link[edgeLabel].toFixed(2)
                           : String(link[edgeLabel]);
-                      const fontSize = Math.max(3, 4 * globalScale); // Adjust font size based on zoom level
-                      ctx.font = `${fontSize}px Sans-Serif`;
+                      ctx.font = `${3}px Sans-Serif`;
                       ctx.textAlign = "center";
                       ctx.textBaseline = "middle";
-                      ctx.fillStyle = "black"; // Text color
-                      ctx.fillText(
-                        label,
-                        // @ts-ignore
-                        (link.source.x + link.target.x) / 2,
-                        // @ts-ignore
-                        (link.source.y + link.target.y) / 2
-                      ); // Position the label in the middle of the line
+                      ctx.fillStyle = theme === "dark" ? "white" : "#000"; // Text color
+                      // draw label in the middle of the line, with a small offset, don't overlap the line
+                      // calculate the angle of the line to get the offset
+                      // @ts-ignore
+                      const dx = link.target.x - link.source.x;
+                      // @ts-ignore
+                      const dy = link.target.y - link.source.y;
+                      const angle = Math.atan2(dy, dx);
+                      // @ts-ignore
+                      const x = (link.source.x + link.target.x) / 2;
+                      // @ts-ignore
+                      const y = (link.source.y + link.target.y) / 2;
+                      ctx.fillText(label, x, y); // Position the label on the line
                     }}
-                    linkColor={"#fff"}
                     linkTarget="target"
                   />
                 </div>
