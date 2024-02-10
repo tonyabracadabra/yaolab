@@ -17,6 +17,7 @@ import { AnalysisResultSchema, EdgeSchema, NodeSchema } from "@/convex/schema";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@clerk/nextjs";
 import { useAction, useQuery } from "convex/react";
+import * as d3 from "d3";
 import JSZip from "jszip";
 import { ForceGraph2D } from "react-force-graph";
 
@@ -25,10 +26,17 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Atom,
   BadgeCheck,
-  ChevronDown,
   Download,
   File as FileIcon,
   FileWarning,
@@ -42,7 +50,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Papa from "papaparse";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 type Edge = z.infer<typeof EdgeSchema>;
@@ -50,13 +58,60 @@ type Node = z.infer<typeof NodeSchema>;
 
 type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
+const kAvailableNodes = [
+  {
+    col: "mz",
+    label: "m/z",
+  },
+  {
+    col: "rt",
+    label: "Retention Time",
+  },
+];
+
+const kAvailableEdges = [
+  {
+    col: "mzDiff",
+    label: "m/z Difference",
+  },
+  {
+    col: "rtDiff",
+    label: "Retention Time Difference",
+  },
+  {
+    col: "matchedMzDiff",
+    label: "Matched m/z Difference",
+  },
+  {
+    col: "matchedRtDiff",
+    label: "Matched Retention Time Difference",
+  },
+  {
+    col: "matchedFormulaChange",
+    label: "Matched Formula Change",
+  },
+];
+
 export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const analysis = useQuery(api.analyses.get, { id: params.id });
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const generateDownloadUrl = useAction(api.actions.generateDownloadUrl);
   const retryAnalysis = useAction(api.actions.retryAnalysis);
+  const [nodeLabel, setNodeLabel] = useState(kAvailableNodes[0].col);
+  const [edgeLabel, setEdgeLabel] = useState(kAvailableEdges[0].col);
+  const fg = useRef();
   const { getToken } = useAuth();
+
+  useEffect(() => {
+    if (fg.current) {
+      const forceGraph = fg.current;
+      // change force as you zoom in so the nodes don't overlap, be elegant and accurate
+
+      // @ts-ignore
+      forceGraph.d3Force("charge", d3.forceManyBody().strength(-30));
+    }
+  }, [fg, nodes, edges]); // Re-run when graphData changes or the ref is set
 
   useEffect(() => {
     const fetchAndProcessData = async (result: AnalysisResult) => {
@@ -328,14 +383,51 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
           )}
           {analysis.status === "complete" && (
             <MagicCard className="h-[70vh] mt-1">
-              <div className="w-full gap-4 items-center justify-end flex p-4">
-                {/* drop down for download options */}
+              <div className="flex items-center justify-between gap-2 w-full">
+                <div className="flex items-center justify-center gap-2">
+                  <div>
+                    <Label>Node</Label>
+                    <Select
+                      value={nodeLabel}
+                      onValueChange={(value) => {
+                        setNodeLabel(value);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a node label" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {kAvailableNodes.map((v, i) => (
+                          <SelectItem key={i} value={v.col}>
+                            {v.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Edge</Label>
+                    <Select
+                      value={edgeLabel}
+                      onValueChange={(value) => setEdgeLabel(value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a edge label" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {kAvailableEdges.map((v, i) => (
+                          <SelectItem key={i} value={v.col}>
+                            {v.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="xs">
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Data
-                      <ChevronDown className="w-4 h-4 ml-2" />
+                    <Button variant="outline" size="sm">
+                      <Download className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="flex flex-col items-center justify-center">
@@ -405,12 +497,13 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   <span className="text-neutral-400">😞</span>
                 </div>
               ) : (
-                <div className="w-[50vw] h-[50vh] overflow-hidden">
+                <div className="w-[75vw] h-[50vh] overflow-hidden">
                   <ForceGraph2D
+                    ref={fg}
                     graphData={{ links: edges, nodes }}
                     nodeId="id"
-                    nodeLabel="mz"
-                    linkLabel="mzDiff"
+                    nodeLabel={nodeLabel}
+                    linkLabel={edgeLabel}
                     linkSource="source"
                     linkWidth={8}
                     nodeCanvasObject={(node, ctx, globalScale) => {
@@ -420,15 +513,21 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       const y = node.y as number;
 
                       // Scale circle size based on the 'mz' property
-                      const size = (Math.sqrt(node.mz) * globalScale) / 4; // Example scaling, adjust as necessary
+                      const size = (Math.sqrt(node.mz) * globalScale) / 2; // Example scaling, adjust as necessary
 
                       ctx.arc(x, y, size, 0, 2 * Math.PI, false); // Adjust the radius as needed
-                      ctx.fillStyle = "blue"; // Circle color
+                      ctx.fillStyle = "white"; // Circle color
                       ctx.fill();
+                      ctx.strokeStyle = "#ADD8E6";
+                      ctx.lineWidth = 2; // Adjust border width as needed
+                      ctx.stroke();
 
                       // Draw label
-                      const label = `${node.mz}`;
-                      const fontSize = 12 / globalScale; // Adjust font size based on zoom level
+                      const label =
+                        typeof node[nodeLabel] === "number"
+                          ? node[nodeLabel].toFixed(2)
+                          : String(node[nodeLabel]);
+                      const fontSize = Math.max(4, 6 * globalScale); // Adjust font size based on zoom level
                       ctx.font = `${fontSize}px Sans-Serif`;
                       ctx.textAlign = "center";
                       ctx.textBaseline = "middle";
@@ -442,6 +541,42 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       ctx.arc(x, y, 5, 0, 2 * Math.PI, false); // Match the radius used in nodeCanvasObject
                       ctx.fillStyle = color;
                       ctx.fill();
+                    }}
+                    linkCanvasObject={(link, ctx, globalScale) => {
+                      // Draw line
+                      ctx.beginPath();
+                      ctx.moveTo(
+                        // @ts-ignore
+                        link.source.x as number,
+                        // @ts-ignore
+                        link.source.y as number
+                      );
+                      ctx.lineTo(
+                        // @ts-ignore
+                        link.target.x as number,
+                        // @ts-ignore
+                        link.target.y as number
+                      );
+                      ctx.strokeStyle = "rgba(0, 0, 0, 0.2)"; // Line color
+                      ctx.stroke();
+
+                      // Draw label with precision 2
+                      const label =
+                        typeof link[edgeLabel] === "number"
+                          ? link[edgeLabel].toFixed(2)
+                          : String(link[edgeLabel]);
+                      const fontSize = Math.max(3, 4 * globalScale); // Adjust font size based on zoom level
+                      ctx.font = `${fontSize}px Sans-Serif`;
+                      ctx.textAlign = "center";
+                      ctx.textBaseline = "middle";
+                      ctx.fillStyle = "black"; // Text color
+                      ctx.fillText(
+                        label,
+                        // @ts-ignore
+                        (link.source.x + link.target.x) / 2,
+                        // @ts-ignore
+                        (link.source.y + link.target.y) / 2
+                      ); // Position the label in the middle of the line
                     }}
                     linkColor={"#fff"}
                     linkTarget="target"
