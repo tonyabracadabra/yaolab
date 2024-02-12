@@ -36,15 +36,16 @@ import {
 } from "@/components/ui/table";
 import { api } from "@/convex/_generated/api";
 import { AnalysisOutputSchema } from "@/convex/analyses";
-import { useUser } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { EnterIcon } from "@radix-ui/react-icons";
 import Avatar from "boring-avatars";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import {
   CheckIcon,
   Copy,
   Loader2,
   MoreHorizontal,
+  RefreshCcw,
   Trash2,
   XIcon,
 } from "lucide-react";
@@ -58,6 +59,8 @@ export default function AnalysisList() {
   const remove = useMutation(api.analyses.remove);
   const { user } = useUser();
   const router = useRouter();
+  const { getToken } = useAuth();
+  const restart = useAction(api.actions.retryAnalysis);
 
   const columns: ColumnDef<AnalysisOutput>[] = [
     {
@@ -135,6 +138,19 @@ export default function AnalysisList() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="flex flex-col items-center justify-center">
+              <Button
+                variant="ghost"
+                className="w-full flex items-center justify-between gap-2"
+                onClick={async () => {
+                  const token = await getToken();
+                  if (!token) return;
+
+                  restart({ id: row.original.id, token });
+                }}
+              >
+                <RefreshCcw className="stroke-[1.2px] w-4 h-4" />
+                Restart
+              </Button>
               <Button
                 variant="ghost"
                 className="w-full flex items-center justify-between gap-2"
