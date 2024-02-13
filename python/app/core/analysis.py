@@ -97,10 +97,6 @@ class AnalysisWorker(BaseModel):
             nodes[ID_COL].isin(edges[[TARGET_COL, SOURCE_COL]].values.flatten())
         ]
 
-        self.convex.mutation(
-            "analyses:startStep", {"id": self.id, "step": "upload_result"}
-        )
-        await upload_result(id=self.id, nodes=nodes, edges=edges, convex=self.convex)
-        self.convex.mutation(
-            "analyses:completeStep", {"id": self.id, "step": "upload_result"}
+        await self._run_step(
+            upload_result, self.id, nodes, edges, convex=self.convex
         )
