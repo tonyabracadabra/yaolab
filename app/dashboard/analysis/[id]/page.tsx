@@ -108,10 +108,10 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     if (!fgRef.current) return;
 
     // @ts-ignore
-    fgRef.current.d3Force("charge").strength(100).distanceMax(200);
+    fgRef.current.d3Force("charge").strength(-50).distanceMax(100);
     // @ts-ignore
-    fgRef.current.d3Force("link").distance(80);
-  }, []);
+    fgRef.current.d3Force("link").distance(40);
+  }, [edges, nodes]);
 
   useEffect(() => {
     const fetchAndProcessData = async (result: AnalysisResult) => {
@@ -542,9 +542,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       ctx.arc(x, y, 5, 0, 2 * Math.PI, false); // Match the radius used in nodeCanvasObject
                       ctx.fillStyle = color;
                       ctx.fill();
-                    }}
-                    onZoom={(zoom) => {
-                      console.log("Zoom level", zoom);
                     }}
                     linkCanvasObject={(link, ctx, globalScale) => {
                       // Draw line
