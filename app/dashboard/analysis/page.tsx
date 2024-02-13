@@ -209,7 +209,7 @@ export default function AnalysisList() {
   });
 
   return (
-    <div className="w-full p-8">
+    <div className="w-full py-2 px-4 overflow-hidden">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -229,7 +229,7 @@ export default function AnalysisList() {
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
+        <TableBody className="max-h-[70vh] overflow-hidden">
           {analyses === undefined ? (
             <TableRow className="flex items-center justify-center">
               <Loader2 className="animate-spin" />
