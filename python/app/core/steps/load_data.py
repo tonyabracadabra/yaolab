@@ -49,8 +49,7 @@ def _filter_metabolites(
         )
         cond |= filter_cond
 
-        group_columns = sample_group + blank_group
-        data[(SAMPLE_COL, experiment.name)] = samples_df[group_columns].mean(axis=1)
+        data[(SAMPLE_COL, experiment.name)] = samples_df[sample_group].mean(axis=1)
 
     return data[cond].drop_duplicates()
 
