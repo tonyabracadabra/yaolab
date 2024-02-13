@@ -222,13 +222,13 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                <div className="text-neutral-400">
+                <div className="text-neutral-400 gap-4 flex flex-col items-center justify-center py-2">
                   {analysis.config.experiments.map((e, i) => (
                     <div
                       key={i}
-                      className="w-full flex-col flex items-center max-w-[400px]"
+                      className="w-full flex-col flex items-start max-w-[400px] gap-2"
                     >
-                      <div>{e.name}</div>
+                      <div className="font-bold text-lg">{e.name}</div>
                       <div className="flex items-center justify-center gap-4">
                         <div className="flex flex-col gap-2">
                           <div>Blank Groups</div>
