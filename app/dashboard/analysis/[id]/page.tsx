@@ -108,7 +108,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     if (!fgRef.current) return;
 
     // @ts-ignore
-    fgRef.current.d3Force("charge").strength(100);
+    fgRef.current.d3Force("charge").strength(100).distanceMax(200);
     // @ts-ignore
     fgRef.current.d3Force("link").distance(80);
   }, []);
@@ -499,8 +499,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
               </div>
               {edges.length === 0 && nodes.length === 0 ? (
                 <div className="flex items-center h-[60%] justify-center gap-2">
-                  <span>No data to display</span>
-                  <span className="text-neutral-400">😞</span>
+                  Loading graph now <Loader2 className="animate-spin" />
                 </div>
               ) : (
                 <div className="w-[65vw] h-[50vh] overflow-hidden">

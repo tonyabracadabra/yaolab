@@ -97,4 +97,8 @@ class AnalysisWorker(BaseModel):
             nodes[ID_COL].isin(edges[[TARGET_COL, SOURCE_COL]].values.flatten())
         ]
 
+        exps = [e.name for e in config.experiments]
+        ratios = [exp + "_ratio" for exp in exps]
+        nodes[ratios] = nodes[exps].div(nodes[exps].sum(axis=1), axis=0)
+
         await self._run_step(upload_result, self.id, nodes, edges, convex=self.convex)
