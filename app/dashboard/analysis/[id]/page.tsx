@@ -275,6 +275,12 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       </div>
                     </div>
                     <div className="flex flex-col gap-2">
+                      <div>m/z Error Threshold</div>
+                      <div className="text-neutral-500">
+                        {analysis.config.mzErrorThreshold}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
                       <div>Retention Time Window</div>
                       <div className="text-neutral-500">
                         {analysis.config.rtTimeWindow}
@@ -497,7 +503,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   <span className="text-neutral-400">😞</span>
                 </div>
               ) : (
-                <div className="w-[75vw] h-[50vh] overflow-hidden">
+                <div className="w-[65vw] h-[50vh] overflow-hidden">
                   <ForceGraph2D
                     ref={fgRef}
                     graphData={{ links: edges, nodes }}
