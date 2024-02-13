@@ -60,12 +60,21 @@ type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
 const kAvailableNodes = [
   {
-    col: "mz",
+    key: "mz",
     label: "m/z",
+    type: "label",
+    col: "mz",
   },
   {
-    col: "rt",
+    key: "rt",
     label: "Retention Time",
+    type: "label",
+    col: "rt",
+  },
+  {
+    key: "ratio",
+    label: "Compound Responses Between Sample Groups",
+    type: "custom",
   },
 ];
 
@@ -98,7 +107,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const [edges, setEdges] = useState<Edge[]>([]);
   const generateDownloadUrl = useAction(api.actions.generateDownloadUrl);
   const retryAnalysis = useAction(api.actions.retryAnalysis);
-  const [nodeLabel, setNodeLabel] = useState(kAvailableNodes[0].col);
+  const [nodeType, setNodeType] = useState(kAvailableNodes[0].key);
   const [edgeLabel, setEdgeLabel] = useState(kAvailableEdges[0].col);
   const { theme } = useTheme();
   const fgRef = useRef();
@@ -394,9 +403,9 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   <div>
                     <Label>Node</Label>
                     <Select
-                      value={nodeLabel}
+                      value={nodeType}
                       onValueChange={(value) => {
-                        setNodeLabel(value);
+                        setNodeType(value);
                       }}
                     >
                       <SelectTrigger>
@@ -404,7 +413,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       </SelectTrigger>
                       <SelectContent>
                         {kAvailableNodes.map((v, i) => (
-                          <SelectItem key={i} value={v.col}>
+                          <SelectItem key={i} value={v.key}>
                             {v.label}
                           </SelectItem>
                         ))}
@@ -507,33 +516,66 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     ref={fgRef}
                     graphData={{ links: edges, nodes }}
                     nodeId="id"
-                    nodeLabel={nodeLabel}
-                    linkLabel={edgeLabel}
                     linkSource="source"
                     linkWidth={8}
                     nodeCanvasObject={(node, ctx, globalScale) => {
-                      // Draw circle
-                      ctx.beginPath();
-                      const x = node.x as number;
-                      const y = node.y as number;
+                      const curr = kAvailableNodes.find(
+                        (n) => n.key === nodeType
+                      );
+                      if (curr?.type === "label") {
+                        // Draw circle
+                        ctx.beginPath();
+                        const x = node.x as number;
+                        const y = node.y as number;
 
-                      ctx.arc(x, y, 8, 0, 2 * Math.PI, false); // Adjust the radius as needed
-                      ctx.fillStyle = "white"; // Circle color
-                      ctx.fill();
-                      ctx.strokeStyle = "#ADD8E6";
-                      ctx.lineWidth = 2; // Adjust border width as needed
-                      ctx.stroke();
+                        ctx.arc(x, y, 8, 0, 2 * Math.PI, false); // Adjust the radius as needed
+                        ctx.fillStyle = "white"; // Circle color
+                        ctx.fill();
+                        ctx.strokeStyle = "#ADD8E6";
+                        ctx.lineWidth = 2; // Adjust border width as needed
+                        ctx.stroke();
 
-                      // Draw label
-                      const label =
-                        typeof node[nodeLabel] === "number"
-                          ? node[nodeLabel].toFixed(2)
-                          : String(node[nodeLabel]);
-                      ctx.font = `4px Sans-Serif`;
-                      ctx.textAlign = "center";
-                      ctx.textBaseline = "middle";
-                      ctx.fillStyle = "black"; // Text color
-                      ctx.fillText(label, x, y); // Position the label on the circle
+                        // Draw label
+                        const label =
+                          typeof node[nodeType] === "number"
+                            ? node[nodeType].toFixed(2)
+                            : String(node[nodeType]);
+                        ctx.font = `4px Sans-Serif`;
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.fillStyle = "black"; // Text color
+                        ctx.fillText(label, x, y); // Position the label on the circle
+                      } else if (curr?.key === "ratio") {
+                        const ratioCols = analysis.config.experiments.map(
+                          (e) => `${e.name}_ratio`
+                        );
+                        // based on different ratio, draw a pie chart with different colors
+                        const ratio = ratioCols.map((col) => node[col]);
+                        const total = ratio.reduce((a, b) => a + b, 0);
+                        const startAngle = 0;
+                        const endAngle = Math.PI * 2;
+                        let lastAngle = startAngle;
+                        for (let i = 0; i < ratio.length; i++) {
+                          const ratioValue = ratio[i];
+                          const angle = (ratioValue / total) * endAngle;
+                          ctx.beginPath();
+                          // @ts-ignore
+                          ctx.moveTo(node.x, node.y);
+                          ctx.arc(
+                            // @ts-ignore
+                            node.x,
+                            node.y,
+                            8,
+                            lastAngle,
+                            lastAngle + angle
+                          );
+                          ctx.fillStyle = `hsl(${
+                            (i * 360) / ratio.length
+                          }, 100%, 50%)`;
+                          ctx.fill();
+                          lastAngle += angle;
+                        }
+                      }
                     }}
                     nodePointerAreaPaint={(node, color, ctx) => {
                       ctx.beginPath();
