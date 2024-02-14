@@ -617,18 +617,29 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           ctx.textAlign = "center";
                           ctx.textBaseline = "middle";
                           ctx.fillStyle = theme === "dark" ? "white" : "#000"; // Text color
-                          // draw label in the middle of the line, with a small offset, don't overlap the line
-                          // calculate the angle of the line to get the offset
-                          // @ts-ignore
-                          const dx = link.target.x - link.source.x;
-                          // @ts-ignore
-                          const dy = link.target.y - link.source.y;
-                          const angle = Math.atan2(dy, dx);
-                          // @ts-ignore
-                          const x = (link.source.x + link.target.x) / 2;
-                          // @ts-ignore
-                          const y = (link.source.y + link.target.y) / 2;
-                          ctx.fillText(label, x, y); // Position the label on the line
+
+                          // draw label with a box as background
+                          const textWidth = ctx.measureText(label).width;
+                          const bkgdPadding = 2;
+                          ctx.fillStyle = theme === "dark" ? "black" : "white";
+                          ctx.fillRect(
+                            // @ts-ignore
+                            (link.source.x + link.target.x) / 2 -
+                              textWidth / 2 -
+                              bkgdPadding,
+                            // @ts-ignore
+                            (link.source.y + link.target.y) / 2 -
+                              7 -
+                              bkgdPadding,
+                            textWidth + bkgdPadding * 2,
+                            14 + bkgdPadding * 2
+                          );
+                          ctx.fillStyle = theme === "dark" ? "white" : "#000";
+                          ctx.fillText(
+                            label,
+                            (link.source.x + link.target.x) / 2,
+                            (link.source.y + link.target.y) / 2
+                          );
                         }}
                         linkTarget="target"
                       />
