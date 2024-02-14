@@ -103,8 +103,8 @@ const kAvailableEdges = [
 
 export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const analysis = useQuery(api.analyses.get, { id: params.id });
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
+  const [nodes, setNodes] = useState<Node[] | undefined>();
+  const [edges, setEdges] = useState<Edge[] | undefined>();
   const generateDownloadUrl = useAction(api.actions.generateDownloadUrl);
   const retryAnalysis = useAction(api.actions.retryAnalysis);
   const [nodeType, setNodeType] = useState(kAvailableNodes[0].key);
@@ -454,13 +454,13 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         const graphml = `
                       <graphml>
                         <graph id="G" edgedefault="undirected">
-                          ${nodes
+                          ${(nodes || [])
                             .map(
                               (n) =>
                                 `<node id="${n.id}"><data key="mz">${n.mz}</data></node>`
                             )
                             .join("\n")}
-                          ${edges
+                          ${(edges || [])
                             .map(
                               (e, i) =>
                                 `<edge id="${i}" source="${e.source}" target="${e.target}"><data key="mzDiff">${e.mzDiff}</data></edge>`
@@ -488,8 +488,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       onClick={() => {
                         // download edges and nodes as two .csv files in a zip
                         const zip = new JSZip();
-                        zip.file("nodes.csv", Papa.unparse(nodes));
-                        zip.file("edges.csv", Papa.unparse(edges));
+                        zip.file("nodes.csv", Papa.unparse(nodes || []));
+                        zip.file("edges.csv", Papa.unparse(edges || []));
                         zip
                           .generateAsync({ type: "blob" })
                           .then((content: any) => {
@@ -506,128 +506,132 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              {edges.length === 0 && nodes.length === 0 ? (
+              {edges === undefined && nodes === undefined ? (
                 <div className="flex items-center h-[60%] justify-center gap-2">
                   Loading graph now <Loader2 className="animate-spin" />
                 </div>
               ) : (
                 <div className="w-[65vw] h-[50vh] overflow-hidden">
-                  <ForceGraph2D
-                    ref={fgRef}
-                    graphData={{ links: edges, nodes }}
-                    nodeId="id"
-                    linkSource="source"
-                    linkWidth={8}
-                    nodeCanvasObject={(node, ctx, globalScale) => {
-                      const curr = kAvailableNodes.find(
-                        (n) => n.key === nodeType
-                      );
-                      if (curr?.type === "label") {
-                        // Draw circle
+                  {edges?.length === 0 && nodes?.length === 0 ? (
+                    <span>No data to display</span>
+                  ) : (
+                    <ForceGraph2D
+                      ref={fgRef}
+                      graphData={{ links: edges || [], nodes: nodes || [] }}
+                      nodeId="id"
+                      linkSource="source"
+                      linkWidth={8}
+                      nodeCanvasObject={(node, ctx, globalScale) => {
+                        const curr = kAvailableNodes.find(
+                          (n) => n.key === nodeType
+                        );
+                        if (curr?.type === "label") {
+                          // Draw circle
+                          ctx.beginPath();
+                          const x = node.x as number;
+                          const y = node.y as number;
+
+                          ctx.arc(x, y, 8, 0, 2 * Math.PI, false); // Adjust the radius as needed
+                          ctx.fillStyle = "white"; // Circle color
+                          ctx.fill();
+                          ctx.strokeStyle = "#ADD8E6";
+                          ctx.lineWidth = 2; // Adjust border width as needed
+                          ctx.stroke();
+
+                          // Draw label
+                          const label =
+                            typeof node[nodeType] === "number"
+                              ? node[nodeType].toFixed(2)
+                              : String(node[nodeType]);
+                          ctx.font = `4px Sans-Serif`;
+                          ctx.textAlign = "center";
+                          ctx.textBaseline = "middle";
+                          ctx.fillStyle = "black"; // Text color
+                          ctx.fillText(label, x, y); // Position the label on the circle
+                        } else if (curr?.key === "ratio") {
+                          const ratioCols = analysis.config.experiments.map(
+                            (e) => `${e.name}_ratio`
+                          );
+                          // based on different ratio, draw a pie chart with different colors
+                          const ratio = ratioCols.map((col) => node[col]);
+                          const total = ratio.reduce((a, b) => a + b, 0);
+                          const startAngle = 0;
+                          const endAngle = Math.PI * 2;
+                          let lastAngle = startAngle;
+                          for (let i = 0; i < ratio.length; i++) {
+                            const ratioValue = ratio[i];
+                            const angle = (ratioValue / total) * endAngle;
+                            ctx.beginPath();
+                            // @ts-ignore
+                            ctx.moveTo(node.x, node.y);
+                            ctx.arc(
+                              // @ts-ignore
+                              node.x,
+                              node.y,
+                              8,
+                              lastAngle,
+                              lastAngle + angle
+                            );
+                            ctx.fillStyle = `hsl(${
+                              (i * 360) / ratio.length
+                            }, 100%, 50%)`;
+                            ctx.fill();
+                            lastAngle += angle;
+                          }
+                        }
+                      }}
+                      nodePointerAreaPaint={(node, color, ctx) => {
                         ctx.beginPath();
                         const x = node.x as number;
                         const y = node.y as number;
-
-                        ctx.arc(x, y, 8, 0, 2 * Math.PI, false); // Adjust the radius as needed
-                        ctx.fillStyle = "white"; // Circle color
+                        ctx.arc(x, y, 5, 0, 2 * Math.PI, false); // Match the radius used in nodeCanvasObject
+                        ctx.fillStyle = color;
                         ctx.fill();
-                        ctx.strokeStyle = "#ADD8E6";
-                        ctx.lineWidth = 2; // Adjust border width as needed
+                      }}
+                      linkCanvasObject={(link, ctx, globalScale) => {
+                        // Draw line
+                        ctx.beginPath();
+                        ctx.moveTo(
+                          // @ts-ignore
+                          link.source.x as number,
+                          // @ts-ignore
+                          link.source.y as number
+                        );
+                        ctx.lineTo(
+                          // @ts-ignore
+                          link.target.x as number,
+                          // @ts-ignore
+                          link.target.y as number
+                        );
+
+                        ctx.strokeStyle = theme === "dark" ? "white" : "#000"; // Line color
                         ctx.stroke();
 
-                        // Draw label
+                        // Draw label with precision 2
                         const label =
-                          typeof node[nodeType] === "number"
-                            ? node[nodeType].toFixed(2)
-                            : String(node[nodeType]);
-                        ctx.font = `4px Sans-Serif`;
+                          typeof link[edgeLabel] === "number"
+                            ? link[edgeLabel].toFixed(2)
+                            : String(link[edgeLabel]);
+                        ctx.font = `${3}px Sans-Serif`;
                         ctx.textAlign = "center";
                         ctx.textBaseline = "middle";
-                        ctx.fillStyle = "black"; // Text color
-                        ctx.fillText(label, x, y); // Position the label on the circle
-                      } else if (curr?.key === "ratio") {
-                        const ratioCols = analysis.config.experiments.map(
-                          (e) => `${e.name}_ratio`
-                        );
-                        // based on different ratio, draw a pie chart with different colors
-                        const ratio = ratioCols.map((col) => node[col]);
-                        const total = ratio.reduce((a, b) => a + b, 0);
-                        const startAngle = 0;
-                        const endAngle = Math.PI * 2;
-                        let lastAngle = startAngle;
-                        for (let i = 0; i < ratio.length; i++) {
-                          const ratioValue = ratio[i];
-                          const angle = (ratioValue / total) * endAngle;
-                          ctx.beginPath();
-                          // @ts-ignore
-                          ctx.moveTo(node.x, node.y);
-                          ctx.arc(
-                            // @ts-ignore
-                            node.x,
-                            node.y,
-                            8,
-                            lastAngle,
-                            lastAngle + angle
-                          );
-                          ctx.fillStyle = `hsl(${
-                            (i * 360) / ratio.length
-                          }, 100%, 50%)`;
-                          ctx.fill();
-                          lastAngle += angle;
-                        }
-                      }
-                    }}
-                    nodePointerAreaPaint={(node, color, ctx) => {
-                      ctx.beginPath();
-                      const x = node.x as number;
-                      const y = node.y as number;
-                      ctx.arc(x, y, 5, 0, 2 * Math.PI, false); // Match the radius used in nodeCanvasObject
-                      ctx.fillStyle = color;
-                      ctx.fill();
-                    }}
-                    linkCanvasObject={(link, ctx, globalScale) => {
-                      // Draw line
-                      ctx.beginPath();
-                      ctx.moveTo(
+                        ctx.fillStyle = theme === "dark" ? "white" : "#000"; // Text color
+                        // draw label in the middle of the line, with a small offset, don't overlap the line
+                        // calculate the angle of the line to get the offset
                         // @ts-ignore
-                        link.source.x as number,
+                        const dx = link.target.x - link.source.x;
                         // @ts-ignore
-                        link.source.y as number
-                      );
-                      ctx.lineTo(
+                        const dy = link.target.y - link.source.y;
+                        const angle = Math.atan2(dy, dx);
                         // @ts-ignore
-                        link.target.x as number,
+                        const x = (link.source.x + link.target.x) / 2;
                         // @ts-ignore
-                        link.target.y as number
-                      );
-
-                      ctx.strokeStyle = theme === "dark" ? "white" : "#000"; // Line color
-                      ctx.stroke();
-
-                      // Draw label with precision 2
-                      const label =
-                        typeof link[edgeLabel] === "number"
-                          ? link[edgeLabel].toFixed(2)
-                          : String(link[edgeLabel]);
-                      ctx.font = `${3}px Sans-Serif`;
-                      ctx.textAlign = "center";
-                      ctx.textBaseline = "middle";
-                      ctx.fillStyle = theme === "dark" ? "white" : "#000"; // Text color
-                      // draw label in the middle of the line, with a small offset, don't overlap the line
-                      // calculate the angle of the line to get the offset
-                      // @ts-ignore
-                      const dx = link.target.x - link.source.x;
-                      // @ts-ignore
-                      const dy = link.target.y - link.source.y;
-                      const angle = Math.atan2(dy, dx);
-                      // @ts-ignore
-                      const x = (link.source.x + link.target.x) / 2;
-                      // @ts-ignore
-                      const y = (link.source.y + link.target.y) / 2;
-                      ctx.fillText(label, x, y); // Position the label on the line
-                    }}
-                    linkTarget="target"
-                  />
+                        const y = (link.source.y + link.target.y) / 2;
+                        ctx.fillText(label, x, y); // Position the label on the line
+                      }}
+                      linkTarget="target"
+                    />
+                  )}
                 </div>
               )}
             </MagicCard>
