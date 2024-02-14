@@ -618,21 +618,17 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           ctx.textBaseline = "middle";
                           ctx.fillStyle = theme === "dark" ? "white" : "#000"; // Text color
 
-                          // draw label with a box as background
+                          // draw label with a realllllly thin and short box as background, just to make it more readable, nothing else!
+                          // make sure it won't take any spaces beyond the texts width and height
                           const textWidth = ctx.measureText(label).width;
-                          const bkgdPadding = 2;
                           ctx.fillStyle = theme === "dark" ? "black" : "white";
                           ctx.fillRect(
                             // @ts-ignore
-                            (link.source.x + link.target.x) / 2 -
-                              textWidth / 2 -
-                              bkgdPadding,
+                            (link.source.x + link.target.x) / 2 - textWidth / 2,
                             // @ts-ignore
-                            (link.source.y + link.target.y) / 2 -
-                              7 -
-                              bkgdPadding,
-                            textWidth + bkgdPadding * 2,
-                            14 + bkgdPadding * 2
+                            (link.source.y + link.target.y) / 2 - 2,
+                            textWidth,
+                            4
                           );
                           ctx.fillStyle = theme === "dark" ? "white" : "#000";
                           ctx.fillText(
@@ -647,11 +643,11 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       />
                       {/* legend for ratios */}
                       {nodeType === "ratio" && (
-                        <div className="flex items-center justify-center gap-2 w-18 flex-col left-[30px] top-[60px] absolute">
+                        <div className="flex items-center justify-center gap-2 w-18 flex-col left-[30px] top-[40px] absolute">
                           {analysis.config.experiments.map((e, i) => (
                             <div
                               key={i}
-                              className="flex items-center justify-center gap-2 w-full"
+                              className="flex items-center justify-center gap-2 w-full text-sm"
                             >
                               <div
                                 className="w-4 h-4"
