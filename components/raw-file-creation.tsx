@@ -117,7 +117,12 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
           <span>✨ Create </span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+        className="sm:max-w-[425px]"
+      >
         <DialogHeader>
           <DialogTitle>Upload your raw file</DialogTitle>
           <DialogDescription>

@@ -292,7 +292,12 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
           <span>✨ Create </span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+        className="sm:max-w-[500px]"
+      >
         <DialogHeader>
           <DialogTitle>Customize reactions database</DialogTitle>
           <DialogDescription className="flex items-end justify-start flex-wrap gap-2 py-2">
