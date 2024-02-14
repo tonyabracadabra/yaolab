@@ -637,7 +637,9 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           ctx.fillStyle = theme === "dark" ? "white" : "#000";
                           ctx.fillText(
                             label,
+                            // @ts-ignore
                             (link.source.x + link.target.x) / 2,
+                            // @ts-ignore
                             (link.source.y + link.target.y) / 2
                           );
                         }}
