@@ -194,3 +194,22 @@ export const generateDownloadUrl = zAction({
     }
   },
 });
+
+export const removeAnalysis = zAction({
+  args: { id: zid("analyses") },
+  handler: async ({ runAction, runMutation, runQuery }, { id }) => {
+    const analysis = await runQuery(api.analyses.get, { id });
+    if (analysis.result) {
+      await Promise.all([
+        runAction(api.actions.removeFile, {
+          storageId: analysis.result.edges,
+        }),
+        runAction(api.actions.removeFile, {
+          storageId: analysis.result.nodes,
+        }),
+      ]);
+    }
+
+    await runMutation(api.analyses.remove, { id });
+  },
+});
