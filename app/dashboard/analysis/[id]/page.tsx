@@ -634,11 +634,11 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       />
                       {/* legend for ratios */}
                       {nodeType === "ratio" && (
-                        <div className="flex items-center justify-center gap-2 w-8 h-8 left-[20px] top-[30px] absolute">
+                        <div className="flex items-center justify-center gap-2 w-8 h-8 flex-col left-[30px] top-[50px] absolute">
                           {analysis.config.experiments.map((e, i) => (
                             <div
                               key={i}
-                              className="flex items-center justify-center gap-2 flex-col"
+                              className="flex items-center justify-center gap-2"
                             >
                               <div
                                 className="w-4 h-4"
