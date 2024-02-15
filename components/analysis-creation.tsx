@@ -199,13 +199,7 @@ export default function AnalysisCreation({
   return (
     <div className="w-full px-8 py-4 space-y-6 h-full flex flex-col justify-center rounded-lg">
       <Form {...form}>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            return form.handleSubmit(onSubmit);
-          }}
-          className="space-y-8 px-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 px-6">
           <div className="flex items-center gap-24">
             <FormField
               control={form.control}
