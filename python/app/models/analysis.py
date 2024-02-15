@@ -52,7 +52,7 @@ class MSTool(str, Enum):
 class Reaction(BaseModel):
     formulaChange: str
     description: str
-    massDiff: float
+    mzDiff: float
 
 
 class ReactionDatabase(BaseModel):
@@ -69,23 +69,6 @@ class RawFile(BaseModel):
     mgf: str
     targetedIons: str
     sampleCols: list[str]
-
-    class Config:
-        arbitrary_types_allowed = True
-
-
-class Edge(BaseModel):
-    id1: str
-    id2: str
-    value: float
-    correlation: float
-    rtDiff: float
-    mzDiff: float
-    matchedMzDiff: float
-    matchedFormulaChange: float
-    matchedReactionDesc: float
-    redundantData: float
-    modCos: float
 
     class Config:
         arbitrary_types_allowed = True

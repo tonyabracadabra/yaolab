@@ -4,13 +4,7 @@ from typing import Callable
 
 import pandas as pd
 from app.models.analysis import MSTool
-from app.utils.constants import (
-    ID_COL,
-    MSMS_ASSIGNED_COL,
-    MSMS_SPECTRUM_COL,
-    MZ_COL,
-    RT_COL,
-)
+from app.utils.constants import MDialColumn, TargetIonsColumn
 
 
 def _preprocess_mzmine3(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
@@ -24,9 +18,9 @@ def _preprocess_mzmine3(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
     # Normalize column names
     df = df.rename(
         columns={
-            "row m/z": MZ_COL,
-            "row retention time": RT_COL,
-            "row ID": ID_COL,
+            "row m/z": TargetIonsColumn.MZ,
+            "row retention time": TargetIonsColumn.RT,
+            "row ID": TargetIonsColumn.ID,
         }
         | rename_dict
     )
@@ -44,7 +38,7 @@ def _preprocess_mdial(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
     bytesIO.seek(0)
     df = pd.read_csv(bytesIO, sep="\t", skiprows=4)
     # retain rows with only MS/MS assigned
-    df = df[df[MSMS_ASSIGNED_COL]]
+    df = df[df[MDialColumn.MSMS_ASSIGNED]]
     # Drop the selected columns
     df = df.drop(
         df.columns[
@@ -58,14 +52,16 @@ def _preprocess_mdial(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
     # Normalize column names
     df = df.rename(
         columns={
-            "Average Mz": MZ_COL,
-            "Average Rt(min)": RT_COL,
-            "Alignment ID": ID_COL,
+            "Average Mz": TargetIonsColumn.MZ,
+            "Average Rt(min)": TargetIonsColumn.RT,
+            "Alignment ID": TargetIonsColumn.ID,
         }
     )
 
     # all columns after MS/MS Spectrum are sample columns
-    sample_cols = df.columns[df.columns.get_loc(MSMS_SPECTRUM_COL) + 1 :].tolist()
+    sample_cols = df.columns[
+        df.columns.get_loc(MDialColumn.MSMS_SPECTRUM) + 1 :
+    ].tolist()
 
     return df, sample_cols
 

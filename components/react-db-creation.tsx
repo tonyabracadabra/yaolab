@@ -95,7 +95,7 @@ const ReactionForm = ({ onReactionAdd }: ReactionFormInterface) => {
               onReactionAdd({
                 formulaChange,
                 description,
-                massDiff: masses[0],
+                mzDiff: masses[0],
               });
             } catch {
               toast.error("Error calculating mass, please try again later");
@@ -205,7 +205,7 @@ const ReactionsFieldsArray = ({
                 {field.formulaChange}
               </TableCell>
               <TableCell>{field.description}</TableCell>
-              <TableCell>{field.massDiff}</TableCell>
+              <TableCell>{field.mzDiff}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -393,7 +393,7 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
                               ...partialReactions.map((reaction, index) => {
                                 return {
                                   ...reaction,
-                                  massDiff: masses[index],
+                                  mzDiff: masses[index],
                                 };
                               }),
                             ]);

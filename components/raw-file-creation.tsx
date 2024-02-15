@@ -132,7 +132,10 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
         </DialogHeader>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={(e) => {
+              e.preventDefault();
+              return form.handleSubmit(onSubmit);
+            }}
             className="flex flex-col justify-center gap-4"
           >
             <FormField

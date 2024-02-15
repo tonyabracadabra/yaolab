@@ -11,7 +11,7 @@ export const ExperimentSchema = z.object({
 export const ReactionSchema = z.object({
   formulaChange: z.string(),
   description: z.string(),
-  massDiff: z.number(),
+  mzDiff: z.number(),
 });
 
 export const AnalysisConfigSchema = z.object({
@@ -58,11 +58,11 @@ export const EdgeSchema = z.object({
   target: z.string(),
   value: z.number(),
   correlation: z.number(),
-  retentionTimeDiff: z.number(),
+  rtDiff: z.number(),
   mzDiff: z.number(),
   matchedMzDiff: z.number(),
   matchedFormulaChange: z.string(),
-  matchedReactionDescription: z.string(),
+  matchedDescription: z.string(),
   redundantData: z.string(),
   modCos: z.number(),
 });

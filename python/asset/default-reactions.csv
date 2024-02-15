@@ -1,4 +1,4 @@
-id,description,massDiff,formulaChange
+id,description,mzDiff,formulaChange
 1,oxidativedeamination,0.984,(-NH2+OH)
 2,Demethylation -Hydroxylation,1.9793,(-CH2+O)
 3,dehydrogenation/hydrogenation,2.0157,(H2)

@@ -1,37 +1,61 @@
+from enum import Enum, EnumMeta
 from pathlib import Path
 
 import pandas as pd
 
-# constants for standard target ions
-ID_COL = "id"
-MZ_COL = "mz"
-RT_COL = "rt"
-SAMPLE_COL = "sample"
+_prefix = lambda x, y: f"{x.capitalize()}{y.capitalize()}"
+_matched = lambda x: _prefix("matched", x)
 
-# MDial delimiter
-MSMS_SPECTRUM_COL = "MS/MS spectrum"
-MSMS_ASSIGNED_COL = "MS/MS assigned"
 
-# these are columns in the reaction file
-MASS_DIFF_COL = "massDiff"
-FORMULA_CHANGE_COL = "formulaChange"
-REACTION_DESCRIPTION_COL = "description"
+class AutoValueEnumMeta(EnumMeta):
+    def __getattribute__(cls, name):
+        member = super().__getattribute__(name)
+        if isinstance(member, Enum):
+            return member.value
+        return member
 
-# edge csv
-SOURCE_COL = "source"
-TARGET_COL = "target"
-VALUE_COL = "value"
-CORRELATION_COL = "correlation"
-RT_DIFF_COL = "retentionTimeDiff"
-MZ_DIFF_COL = "mzDiff"
-SAMPLE_START_COL_INDEX = 17  # Adjust this based on your DataFrame structure
-MODCOS_COL = "modCos"
-REDUNDANT_DATA_COL = "redundantData"
-MATCHED_MZ_DIFF_COL = "matchedMZDiff"
-MATCHED_FORMULA_CHANGE_COL = "matchedFormulaChange"
-MATCHED_REACTION_DESCRIPTION_COL = "matchedDescription"
+
+class TargetIonsColumn(AutoValueEnumMeta):
+    ID = "id"
+    MZ = "mz"
+    RT = "rt"
+    SAMPLE = "sample"
+
+
+class ReactionColumn(AutoValueEnumMeta):
+    MZ_DIFF = "mzDiff"
+    FORMULA_CHANGE = "formulaChange"
+    REACTION_DESCRIPTION = "description"
+
+
+class EdgeColumn(AutoValueEnumMeta):
+    SOURCE = "source"
+    TARGET = "target"
+    VALUE = "value"
+    CORRELATION = "correlation"
+    MZ_DIFF = ReactionColumn.MZ_DIFF
+    FORMULA_CHANGE = ReactionColumn.FORMULA_CHANGE
+    REACTION_DESCRIPTION = ReactionColumn.REACTION_DESCRIPTION
+    MATCHED_MZ_DIFF = _matched(ReactionColumn.MZ_DIFF)
+    MATCHED_FORMULA_CHANGE = _matched(ReactionColumn.FORMULA_CHANGE)
+    MATCHED_REACTION_DESCRIPTION = _matched(ReactionColumn.REACTION_DESCRIPTION)
+    RT_DIFF = "rtDiff"
+    MODCOS = "modCos"
+    REDUNDANT_DATA = "redundantData"
+
+
+class MDialColumn(str, Enum):
+    MSMS_SPECTRUM = "MS/MS spectrum"
+    MSMS_ASSIGNED = "MS/MS assigned"
+
 
 # load default reaction dataframe of 119 reactions from local file
 DEFAULT_REACTION_DF = pd.read_csv(
     Path(__file__).parents[2] / "asset" / "default-reactions.csv"
-)[[MASS_DIFF_COL, FORMULA_CHANGE_COL, REACTION_DESCRIPTION_COL]]
+)[
+    [
+        ReactionColumn.MZ_DIFF,
+        ReactionColumn.FORMULA_CHANGE,
+        ReactionColumn.REACTION_DESCRIPTION,
+    ]
+]

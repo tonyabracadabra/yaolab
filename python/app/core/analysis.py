@@ -3,7 +3,7 @@ from typing import Any, Callable
 import numpy as np
 import pandas as pd
 from app.models.analysis import Analysis
-from app.utils.constants import ID_COL, SAMPLE_COL, SOURCE_COL, TARGET_COL
+from app.utils.constants import EdgeColumn, TargetIonsColumn
 from pydantic import BaseModel
 from scipy.sparse import coo_matrix
 
@@ -50,9 +50,9 @@ class AnalysisWorker(BaseModel):
             load_data, self.analysis, convex=self.convex
         )
 
-        samples_df = targeted_ions_df[SAMPLE_COL]
+        samples_df = targeted_ions_df[TargetIonsColumn.SAMPLE]
         targeted_ions_df = targeted_ions_df[""]
-        ids: np.ndarray = targeted_ions_df[ID_COL].values
+        ids: np.ndarray = targeted_ions_df[TargetIonsColumn.ID].values
 
         ion_interaction_matrix: coo_matrix = await self._run_step(
             create_ion_interaction_matrix,
@@ -67,7 +67,7 @@ class AnalysisWorker(BaseModel):
             ids,
         )
 
-        edges: pd.DataFrame = await self._run_step(
+        edges_raw: pd.DataFrame = await self._run_step(
             combine_matrices_and_extract_edges,
             ion_interaction_matrix,
             similarity_matrix,
@@ -75,16 +75,16 @@ class AnalysisWorker(BaseModel):
             ms2_similarity_threshold=config.ms2SimilarityThreshold,
         )
 
-        await self._run_step(
+        edges_with_metrics = await self._run_step(
             calculate_edge_metrics,
             samples_df,
             targeted_ions_df,
-            edges,
+            edges_raw,
         )
 
-        await self._run_step(
+        edges = await self._run_step(
             edge_value_matching,
-            edges,
+            edges_with_metrics,
             reaction_df,
             rt_time_window=config.rtTimeWindow,
             mz_error_threshold=config.mzErrorThreshold,
@@ -94,7 +94,9 @@ class AnalysisWorker(BaseModel):
         nodes: pd.DataFrame = pd.concat([targeted_ions_df, samples_df], axis=1)
         # filter out nodes that are not in the edges
         nodes = nodes[
-            nodes[ID_COL].isin(edges[[TARGET_COL, SOURCE_COL]].values.flatten())
+            nodes[TargetIonsColumn.ID].isin(
+                edges[[EdgeColumn.TARGET, EdgeColumn.SOURCE]].values.flatten()
+            )
         ]
 
         exps = [e.name for e in config.experiments]

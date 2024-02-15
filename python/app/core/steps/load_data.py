@@ -3,7 +3,7 @@ from typing import Literal
 
 import pandas as pd
 from app.models.analysis import Analysis, Experiment, ReactionDatabase
-from app.utils.constants import DEFAULT_REACTION_DF, ID_COL, SAMPLE_COL
+from app.utils.constants import DEFAULT_REACTION_DF, TargetIonsColumn
 from app.utils.convex import load_mgf, load_parquet
 from app.utils.logger import log
 from matchms.Spectrum import Spectrum
@@ -23,7 +23,7 @@ async def _load_reaction_db(
                 pd.DataFrame([reaction.dict() for reaction in reaction_db.reactions]),
             ]
         )
-        reaction_df[ID_COL] = range(len(reaction_df)) + 1
+        reaction_df[TargetIonsColumn.ID] = range(len(reaction_df)) + 1
         return reaction_df
 
 
@@ -33,7 +33,7 @@ def _filter_metabolites(
     minSignalThreshold: float,
     signalEnrichmentFactor: float,
 ) -> pd.DataFrame:
-    samples_df = data[SAMPLE_COL]
+    samples_df = data[TargetIonsColumn.SAMPLE]
     cond = pd.Series(False, index=data.index)
     for experiment in experiments:
         sample_group, blank_group = (
@@ -49,7 +49,9 @@ def _filter_metabolites(
         )
         cond |= filter_cond
 
-        data[(SAMPLE_COL, experiment.name)] = samples_df[sample_group].mean(axis=1)
+        data[(TargetIonsColumn.SAMPLE, experiment.name)] = samples_df[
+            sample_group
+        ].mean(axis=1)
 
     return data[cond].drop_duplicates()
 
