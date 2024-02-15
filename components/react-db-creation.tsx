@@ -261,7 +261,13 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
     setIsSubmitting(false);
   };
 
-  const onSubmit = async (values: ReactionDatabaseInput) => {
+  const onSubmit = async (
+    values: ReactionDatabaseInput,
+    e?: BaseSyntheticEvent
+  ) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     setIsSubmitting(true);
     const { id } = await createReactionDatabase({
       name: values.name,

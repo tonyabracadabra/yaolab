@@ -5,7 +5,7 @@ import { useFileUpload } from "@/lib/utils";
 import { useAuth } from "@clerk/nextjs";
 import { useAction, useMutation } from "convex/react";
 import { CheckCircle2Icon, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { BaseSyntheticEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -60,7 +60,13 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
     setStatus("idle");
   };
 
-  const onSubmit = async (values: RawFileCreationInput) => {
+  const onSubmit = async (
+    values: RawFileCreationInput,
+    e?: BaseSyntheticEvent
+  ) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     setStatus("processing");
     try {
       const [{ storageId: mgfId }, { storageId: targetedIonsId }] =
@@ -132,10 +138,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
         </DialogHeader>
         <Form {...form}>
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              return form.handleSubmit(onSubmit);
-            }}
+            onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col justify-center gap-4"
           >
             <FormField
