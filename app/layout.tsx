@@ -1,6 +1,7 @@
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { Analytics } from "@vercel/analytics/react";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
@@ -38,6 +39,7 @@ export default function RootLayout({
             <main>{children}</main>
             <Toaster position="top-center" />
           </ThemeProvider>
+          <Analytics />
         </body>
       </html>
     </ConvexClerkClientProvider>

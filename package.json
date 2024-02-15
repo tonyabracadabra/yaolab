@@ -30,6 +30,7 @@
     "@reactflow/node-resizer": "^2.2.8",
     "@tanstack/react-table": "^8.11.7",
     "@types/papaparse": "^5.3.14",
+    "@vercel/analytics": "^1.1.4",
     "boring-avatars": "^1.10.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
