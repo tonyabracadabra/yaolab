@@ -7,9 +7,9 @@ from scipy.sparse import coo_matrix
 
 
 @jit(nopython=True)
-def _calculate_ppm_diff(ion_mass_values, theoretical_mz_diffs, mz_error_threshold):
+def _calculate_adj_matrix(ion_mass_values, theoretical_mz_diffs, mz_error_threshold):
     ion_count = len(ion_mass_values)
-    ppm_diff_matrix = np.zeros((ion_count, ion_count), dtype=np.float32)
+    adj_matrix = np.zeros((ion_count, ion_count), dtype=np.float32)
 
     for i in range(ion_count):
         for j in range(i, ion_count):  # Optimize by considering only unique pairs
@@ -29,14 +29,11 @@ def _calculate_ppm_diff(ion_mass_values, theoretical_mz_diffs, mz_error_threshol
                     else left
                 )
 
-            # Calculate ppm difference
-            ppm_diff = abs(mz_difference - nearest_diff) / nearest_diff * 1e6
-
             # Apply threshold and populate symmetric matrix
-            if ppm_diff < mz_error_threshold:
-                ppm_diff_matrix[i, j] = ppm_diff_matrix[j, i] = 1
+            if abs(mz_difference - nearest_diff) < mz_error_threshold:
+                adj_matrix[i, j] = adj_matrix[j, i] = 1
 
-    return ppm_diff_matrix
+    return adj_matrix
 
 
 @log("Creating ion interaction matrix")
@@ -49,11 +46,9 @@ async def create_ion_interaction_matrix(
     theoretical_mz_diffs = np.sort(reaction_df[ReactionColumn.MZ_DIFF].values)
 
     # Calculate the ppm difference matrix using the optimized Numba function
-    ppm_diff_matrix = _calculate_ppm_diff(
+    adj_matrix = _calculate_adj_matrix(
         ion_mass_values, theoretical_mz_diffs, mz_error_threshold
     )
 
     # Construct the interaction matrix
-    ion_interaction_matrix = coo_matrix(ppm_diff_matrix, dtype=np.int8)
-
-    return ion_interaction_matrix
+    return coo_matrix(adj_matrix, dtype=np.int8)
