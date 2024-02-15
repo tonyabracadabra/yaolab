@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-_prefix = lambda x, y: f"{x.capitalize()}{y.capitalize()}"
+_prefix = lambda x, y: f"{x.lower()}{y.capitalize()}"
 _matched = lambda x: _prefix("matched", x)
 
 
