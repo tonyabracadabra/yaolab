@@ -5,7 +5,7 @@ import { readFirstKLines } from "@/lib/utils";
 import { useAction, useMutation } from "convex/react";
 import { Atom, DownloadCloud, Loader2, Minus, Plus } from "lucide-react";
 import Papa from "papaparse";
-import { useState } from "react";
+import { BaseSyntheticEvent, useState } from "react";
 import { Control, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
