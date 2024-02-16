@@ -5,7 +5,7 @@ import { useFileUpload } from "@/lib/utils";
 import { useAuth } from "@clerk/nextjs";
 import { useAction, useMutation } from "convex/react";
 import { CheckCircle2Icon, Loader2 } from "lucide-react";
-import { BaseSyntheticEvent, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -60,13 +60,8 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
     setStatus("idle");
   };
 
-  const onSubmit = async (
-    values: RawFileCreationInput,
-    e?: BaseSyntheticEvent
-  ) => {
-    e?.preventDefault();
-    e?.stopPropagation();
-
+  const onSubmit = async () => {
+    const values = form.getValues();
     setStatus("processing");
     try {
       const [{ storageId: mgfId }, { storageId: targetedIonsId }] =
@@ -119,7 +114,12 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="outline" size="xs" className="font-bold text-primary">
+        <Button
+          type="button"
+          variant="outline"
+          size="xs"
+          className="font-bold text-primary"
+        >
           <span>✨ Create </span>
         </Button>
       </DialogTrigger>
@@ -137,10 +137,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col justify-center gap-4"
-          >
+          <form className="flex flex-col justify-center gap-4">
             <FormField
               control={form.control}
               name="name"
@@ -236,7 +233,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
               }}
             />
             <DialogFooter>
-              <Button type="submit">
+              <Button type="button" onClick={onSubmit}>
                 {status === "processing" && (
                   <div className="flex items-center gap-2">
                     Preprocessing your files

@@ -5,7 +5,7 @@ import { readFirstKLines } from "@/lib/utils";
 import { useAction, useMutation } from "convex/react";
 import { Atom, DownloadCloud, Loader2, Minus, Plus } from "lucide-react";
 import Papa from "papaparse";
-import { BaseSyntheticEvent, useState } from "react";
+import { useState } from "react";
 import { Control, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -261,12 +261,8 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
     setIsSubmitting(false);
   };
 
-  const onSubmit = async (
-    values: ReactionDatabaseInput,
-    e?: BaseSyntheticEvent
-  ) => {
-    e?.preventDefault();
-    e?.stopPropagation();
+  const onSubmit = async () => {
+    const values = form.getValues();
 
     setIsSubmitting(true);
     const { id } = await createReactionDatabase({
@@ -312,10 +308,7 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-4"
-          >
+          <form className="flex flex-col gap-4">
             <FormField
               control={form.control}
               name="name"
@@ -420,7 +413,7 @@ export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
             </FormItem>
             <ReactionsFieldsArray control={form.control} />
             <DialogFooter>
-              <Button type="submit">
+              <Button type="button" onClick={onSubmit}>
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
                     Uploading
