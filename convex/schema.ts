@@ -104,7 +104,7 @@ export const ReactionDatabaseSchema = z.object({
 
 export const RawFileCreationInputSchema = z.object({
   name: z.string(),
-  desc: z.string(),
+  desc: z.optional(z.string()),
   tool: MSTool,
   mgf: z.string(),
   targetedIons: z.string(),
