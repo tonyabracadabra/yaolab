@@ -2,10 +2,15 @@ import { zid, zodToConvexFields } from "convex-helpers/server/zod";
 import { defineSchema, defineTable } from "convex/server";
 import { z } from "zod";
 
-export const ExperimentSchema = z.object({
+export const BioSampleSchema = z.object({
   name: z.string(),
-  sampleGroups: z.array(z.string()),
-  blankGroups: z.array(z.string()),
+  sample: z.array(z.string()),
+  blank: z.array(z.string()),
+});
+
+export const DrugSampleSchema = z.object({
+  name: z.string(),
+  groups: z.array(z.string()),
 });
 
 export const ReactionSchema = z.object({
@@ -25,7 +30,8 @@ export const AnalysisConfigSchema = z.object({
   mzErrorThreshold: z.number().default(0.01),
   rtTimeWindow: z.number().default(0.02),
   correlationThreshold: z.number().default(0.95),
-  experiments: z.array(ExperimentSchema),
+  bioSamples: z.array(BioSampleSchema),
+  drugSample: z.optional(DrugSampleSchema),
 });
 
 export const AnalysisCreationInputSchema = z.object({

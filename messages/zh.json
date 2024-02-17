@@ -23,6 +23,8 @@
     "start-analysis": "开始分析",
     "select-raw-file": "选择原始文件",
     "experiment-group-name": "实验组名称",
+    "drug-sample-name": "药物样本名称",
+    "groups": "实验组",
     "sample-groups": "样本组",
     "blank-groups": "空白组",
     "select-or-create-reaction-db": "选择或<create></create>反应数据库",

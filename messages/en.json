@@ -23,6 +23,8 @@
     "start-analysis": "Start Analysis",
     "select-raw-file": "Select Raw File",
     "experiment-group-name": "Experiment Group Name",
+    "drug-sample-name": "Drug Sample Name",
+    "groups": "Experiment Groups",
     "sample-groups": "Sample Groups",
     "blank-groups": "Blank Groups",
     "select-or-create-reaction-db": "Select or <create></create> reaction database",

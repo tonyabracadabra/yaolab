@@ -222,14 +222,14 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                 <Badge className="flex items-center justify-center gap-2">
                   <FlaskConical className="h-4 w-4" />
                   <span className="bg-secondary/50 rounded-full w-4 h-4">
-                    {analysis.config.experiments.length}
+                    {analysis.config.bioSamples.length}
                   </span>
-                  Experiments
+                  Bio Samples
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 <div className="text-neutral-400 gap-4 flex flex-col items-center justify-center py-2">
-                  {analysis.config.experiments.map((e, i) => (
+                  {analysis.config.bioSamples.map((e, i) => (
                     <div
                       key={i}
                       className="w-full flex-col flex items-start max-w-[400px] gap-2"
@@ -541,7 +541,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         linkWidth={8}
                         nodeCanvasObject={(node, ctx, globalScale) => {
                           if (ratioModeEnabled) {
-                            const ratioCols = analysis.config.experiments.map(
+                            const ratioCols = analysis.config.bioSamples.map(
                               (e) => `${e.name}_ratio`
                             );
                             // based on different ratio, draw a pie chart with different colors
@@ -670,7 +670,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       {/* legend for ratios */}
                       {ratioModeEnabled && (
                         <div className="flex items-center justify-center gap-2 w-18 flex-col left-[30px] top-[40px] absolute">
-                          {analysis.config.experiments.map((e, i) => (
+                          {analysis.config.bioSamples.map((e, i) => (
                             <div
                               key={i}
                               className="flex items-center justify-center gap-2 w-full text-sm"
@@ -680,7 +680,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                                 style={{
                                   backgroundColor: `hsl(${
                                     (i * 360) /
-                                    analysis.config.experiments.length
+                                    analysis.config.bioSamples.length
                                   }, 100%, 50%)`,
                                 }}
                               />
