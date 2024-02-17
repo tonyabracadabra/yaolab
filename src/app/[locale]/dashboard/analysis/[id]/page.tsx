@@ -20,6 +20,8 @@ import { useAction, useQuery } from "convex/react";
 import JSZip from "jszip";
 import { ForceGraph2D } from "react-force-graph";
 
+import { HelperTooltip } from "@/src/components/help-tooltip";
+import { Switch } from "@/src/components/switch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,19 +64,12 @@ const kAvailableNodes = [
   {
     key: "mz",
     label: "m/z",
-    type: "label",
     col: "mz",
   },
   {
     key: "rt",
     label: "Retention Time",
-    type: "label",
     col: "rt",
-  },
-  {
-    key: "ratio",
-    label: "Compound Responses Between Sample Groups",
-    type: "custom",
   },
 ];
 
@@ -107,8 +102,9 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const [edges, setEdges] = useState<Edge[] | undefined>();
   const generateDownloadUrl = useAction(api.actions.generateDownloadUrl);
   const retryAnalysis = useAction(api.actions.retryAnalysis);
-  const [nodeType, setNodeType] = useState(kAvailableNodes[0].key);
+  const [nodeLabel, setNodeLabel] = useState(kAvailableNodes[0].col);
   const [edgeLabel, setEdgeLabel] = useState(kAvailableEdges[0].col);
+  const [ratioModeEnabled, setRatioModeEnabled] = useState(false);
   const { theme } = useTheme();
   const fgRef = useRef();
   const { getToken } = useAuth();
@@ -398,14 +394,14 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
           )}
           {analysis.status === "complete" && (
             <MagicCard className="h-[70vh] mt-1">
-              <div className="flex items-center justify-between gap-2 w-full">
-                <div className="flex items-center justify-center gap-2">
-                  <div>
+              <div className="flex items-start justify-between gap-4 w-full">
+                <div className="flex items-start justify-center gap-4">
+                  <div className="flex flex-col gap-4 items-start">
                     <Label>Node</Label>
                     <Select
-                      value={nodeType}
+                      value={nodeLabel}
                       onValueChange={(value) => {
-                        setNodeType(value);
+                        setNodeLabel(value);
                       }}
                     >
                       <SelectTrigger>
@@ -420,7 +416,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
+                  <div className="flex flex-col gap-4 items-start">
                     <Label>Edge</Label>
                     <Select
                       value={edgeLabel}
@@ -437,6 +433,16 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="flex flex-col gap-6 items-start">
+                    <div className="flex items-center justify-center gap-2">
+                      <Label>Compound response Mode</Label>
+                      <HelperTooltip text="Enable this to see the compound response mode" />
+                    </div>
+                    <Switch
+                      checked={ratioModeEnabled}
+                      onCheckedChange={(value) => setRatioModeEnabled(value)}
+                    />
                   </div>
                 </div>
                 <DropdownMenu>
@@ -523,33 +529,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         linkSource="source"
                         linkWidth={8}
                         nodeCanvasObject={(node, ctx, globalScale) => {
-                          const curr = kAvailableNodes.find(
-                            (n) => n.key === nodeType
-                          );
-                          if (curr?.type === "label") {
-                            // Draw circle
-                            ctx.beginPath();
-                            const x = node.x as number;
-                            const y = node.y as number;
-
-                            ctx.arc(x, y, 8, 0, 2 * Math.PI, false); // Adjust the radius as needed
-                            ctx.fillStyle = "white"; // Circle color
-                            ctx.fill();
-                            ctx.strokeStyle = "#ADD8E6";
-                            ctx.lineWidth = 2; // Adjust border width as needed
-                            ctx.stroke();
-
-                            // Draw label
-                            const label =
-                              typeof node[nodeType] === "number"
-                                ? node[nodeType].toFixed(2)
-                                : String(node[nodeType]);
-                            ctx.font = `4px Sans-Serif`;
-                            ctx.textAlign = "center";
-                            ctx.textBaseline = "middle";
-                            ctx.fillStyle = "black"; // Text color
-                            ctx.fillText(label, x, y); // Position the label on the circle
-                          } else if (curr?.key === "ratio") {
+                          if (ratioModeEnabled) {
                             const ratioCols = analysis.config.experiments.map(
                               (e) => `${e.name}_ratio`
                             );
@@ -580,6 +560,36 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                               lastAngle += angle;
                             }
                           }
+
+                          const curr = kAvailableNodes.find(
+                            (n) => n.key === nodeLabel
+                          );
+
+                          // Draw circle
+                          ctx.beginPath();
+                          const x = node.x as number;
+                          const y = node.y as number;
+
+                          ctx.arc(x, y, 8, 0, 2 * Math.PI, false); // Adjust the radius as needed
+
+                          if (!ratioModeEnabled) {
+                            ctx.fillStyle = "white"; // Circle color
+                            ctx.strokeStyle = "#ADD8E6";
+                            ctx.fill();
+                            ctx.lineWidth = 2; // Adjust border width as needed
+                            ctx.stroke();
+                          }
+
+                          // Draw label
+                          const label =
+                            typeof node[nodeLabel] === "number"
+                              ? node[nodeLabel].toFixed(2)
+                              : String(node[nodeLabel]);
+                          ctx.font = `4px Sans-Serif`;
+                          ctx.textAlign = "center";
+                          ctx.textBaseline = "middle";
+                          ctx.fillStyle = "black"; // Text color
+                          ctx.fillText(label, x, y); // Position the label on the circle
                         }}
                         nodePointerAreaPaint={(node, color, ctx) => {
                           ctx.beginPath();
@@ -642,7 +652,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         linkTarget="target"
                       />
                       {/* legend for ratios */}
-                      {nodeType === "ratio" && (
+                      {ratioModeEnabled && (
                         <div className="flex items-center justify-center gap-2 w-18 flex-col left-[30px] top-[40px] absolute">
                           {analysis.config.experiments.map((e, i) => (
                             <div
