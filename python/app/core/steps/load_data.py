@@ -30,7 +30,7 @@ async def _load_reaction_db(
 def _filter_metabolites(
     data: pd.DataFrame,
     bio_samples: list[BioSample],
-    drug_sample: DrugSample,
+    drug_sample: DrugSample | None,
     min_signal_threshold: float,
     signal_enrichment_factor: float,
 ) -> pd.DataFrame:
@@ -54,16 +54,15 @@ def _filter_metabolites(
             axis=1
         )
 
-    data[(TargetIonsColumn.SAMPLE, drug_sample.name)] = samples_df[
-        drug_sample.groups
-    ].mean(axis=1)
-
-    # If a specific m/z in the drug sample exceeds the minimum signal threshold and is more than the signal enrichment factor times the response of any blank sample,
-    # it's flagged as a potential prototype compound
-
-    data[TargetIonsColumn.IS_PROTOTYPE] = cond & (
-        data[(TargetIonsColumn.SAMPLE, drug_sample.name)] > min_signal_threshold
-    )
+    if drug_sample:
+        data[(TargetIonsColumn.SAMPLE, drug_sample.name)] = samples_df[
+            drug_sample.groups
+        ].mean(axis=1)
+        # If a specific m/z in the drug sample exceeds the minimum signal threshold and is more than the signal enrichment factor times the response of any blank sample,
+        # it's flagged as a potential prototype compound
+        data[TargetIonsColumn.IS_PROTOTYPE] = cond & (
+            data[(TargetIonsColumn.SAMPLE, drug_sample.name)] > min_signal_threshold
+        )
 
     return data[cond].drop_duplicates()
 
