@@ -71,13 +71,13 @@ export const EdgeSchema = z.object({
   matchedDescription: z.string(),
   redundantData: z.string(),
   modCos: z.number(),
-  isPrototype: z.boolean(),
 });
 
 export const NodeSchema = z.object({
   id: z.string(),
   mz: z.number(),
   rt: z.number(),
+  isPrototype: z.boolean(),
 });
 
 export const AnalysisResultSchema = z.object({

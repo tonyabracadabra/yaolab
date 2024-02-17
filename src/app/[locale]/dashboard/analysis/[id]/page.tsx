@@ -122,9 +122,9 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
 
   useEffect(() => {
     if (hidePrototypeCompounds) {
-      setEdges((edges) => {
-        if (!edges) return edges;
-        return edges.filter((e) => !e.isPrototype);
+      setNodes((nodes) => {
+        if (!nodes) return nodes;
+        return nodes.filter((n) => !n.isPrototype);
       });
     }
   }, [hidePrototypeCompounds]);
