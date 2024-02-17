@@ -163,6 +163,7 @@ export default function AnalysisCreation({
             blank: [],
           },
         ],
+        drugSample: defaultAnalysis?.config.drugSample,
         signalEnrichmentFactor:
           defaultAnalysis?.config.signalEnrichmentFactor || 30,
         minSignalThreshold: defaultAnalysis?.config.minSignalThreshold || 5e5,

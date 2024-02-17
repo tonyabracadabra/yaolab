@@ -272,7 +272,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
                   <Checkbox
                     id="terms"
                     checked={checked}
-                    onCheckedChange={setChecked}
+                    onCheckedChange={(value) => setChecked(!value)}
                   />
                   <label
                     htmlFor="terms"
