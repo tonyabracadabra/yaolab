@@ -29,8 +29,8 @@ class ReactionColumn(AutoValueEnumMeta):
 
 
 class EdgeColumn(AutoValueEnumMeta):
-    SOURCE = "source"
-    TARGET = "target"
+    ID1 = "id1"
+    ID2 = "id2"
     VALUE = "value"
     CORRELATION = "correlation"
     MZ_DIFF = ReactionColumn.MZ_DIFF

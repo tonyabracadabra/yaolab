@@ -23,8 +23,8 @@ async def combine_matrices_and_extract_edges(
     # Create a DataFrame from filtered data
     edge_data = pd.DataFrame(
         {
-            EdgeColumn.SOURCE: ids[row[valid_indices]],
-            EdgeColumn.TARGET: ids[col[valid_indices]],
+            EdgeColumn.ID1: ids[row[valid_indices]],
+            EdgeColumn.ID2: ids[col[valid_indices]],
             EdgeColumn.VALUE: data[valid_indices],
         }
     )

@@ -557,7 +557,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         ref={fgRef}
                         graphData={{ links: edges || [], nodes: nodes || [] }}
                         nodeId="id"
-                        linkSource="source"
+                        linkSource="id1"
+                        linkTarget="id2"
                         linkWidth={8}
                         nodeCanvasObject={(node, ctx, globalScale) => {
                           if (ratioModeEnabled) {
@@ -686,7 +687,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                             (link.source.y + link.target.y) / 2
                           );
                         }}
-                        linkTarget="target"
                       />
                       {/* legend for ratios */}
                       {ratioModeEnabled && (
