@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { FormLabelWithTooltip } from "./form-label-tooltip";
 import { Button } from "./ui/button";
+import { Card } from "./ui/card";
+import { Checkbox } from "./ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +23,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "./ui/form";
 import { Input } from "./ui/input";
 import {
   Select,
@@ -140,18 +149,32 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
         </DialogHeader>
         <Form {...form}>
           <form className="flex flex-col justify-center gap-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input type="text" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            <div className="flex items-center justify-center gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input type="text" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="desc"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Input type="text" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="tool"
@@ -234,22 +257,40 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
                 );
               }}
             />
-            <DialogFooter>
-              <Button type="button" onClick={onSubmit}>
-                {status === "processing" && (
-                  <div className="flex items-center gap-2">
-                    Preprocessing your files
-                    <Loader2 className="animate-spin" />
-                  </div>
-                )}
-                {status === "done" && (
-                  <div className="flex items-center justify-center gap-2">
-                    <CheckCircle2Icon size={16} />
-                    Done
-                  </div>
-                )}
-                {status === "idle" && "Upload"}
-              </Button>
+
+            <DialogFooter className="flex items-center justify-between gap-6">
+              <Card className="p-4 flex flex-col gap-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="terms" />
+                  <label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Accept terms and conditions
+                  </label>
+                </div>
+                <FormDescription>
+                  By checking the box, you agree to our terms and conditions to
+                  upload your files and share your data with us
+                </FormDescription>
+                <div className="flex flex-row-reverse px-4">
+                  <Button type="button" onClick={onSubmit}>
+                    {status === "processing" && (
+                      <div className="flex items-center gap-2">
+                        Preprocessing your files
+                        <Loader2 className="animate-spin" />
+                      </div>
+                    )}
+                    {status === "done" && (
+                      <div className="flex items-center justify-center gap-2">
+                        <CheckCircle2Icon size={16} />
+                        Done
+                      </div>
+                    )}
+                    {status === "idle" && "Upload"}
+                  </Button>
+                </div>
+              </Card>
             </DialogFooter>
           </form>
         </Form>
