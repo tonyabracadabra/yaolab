@@ -59,12 +59,11 @@ def _filter_metabolites(
     ].mean(axis=1)
 
     # If a specific m/z in the drug sample exceeds the minimum signal threshold and is more than the signal enrichment factor times the response of any blank sample,
-    # it's flagged as a potential prototype compound (value 1); otherwise, it's not (value 0).
+    # it's flagged as a potential prototype compound
 
-    data[TargetIonsColumn.PROTOTYPE_COMPOUND] = (
-        cond
-        & (data[(TargetIonsColumn.SAMPLE, drug_sample.name)] > min_signal_threshold)
-    ).astype(int)
+    data[TargetIonsColumn.IS_PROTOTYPE] = cond & (
+        data[(TargetIonsColumn.SAMPLE, drug_sample.name)] > min_signal_threshold
+    )
 
     return data[cond].drop_duplicates()
 

@@ -106,6 +106,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const [edgeLabel, setEdgeLabel] = useState(kAvailableEdges[0].col);
   const [ratioModeEnabled, setRatioModeEnabled] = useState(false);
   const [showRedundantData, setShowRedundantData] = useState(false);
+  const [hidePrototypeCompounds, setHidePrototypeCompounds] = useState(false);
   const { theme } = useTheme();
   const fgRef = useRef();
   const { getToken } = useAuth();
@@ -118,6 +119,15 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     // @ts-ignore
     fgRef.current.d3Force("link").distance(40);
   }, [edges, nodes]);
+
+  useEffect(() => {
+    if (hidePrototypeCompounds) {
+      setEdges((edges) => {
+        if (!edges) return edges;
+        return edges.filter((e) => !e.isPrototype);
+      });
+    }
+  }, [hidePrototypeCompounds]);
 
   useEffect(() => {
     const fetchAndProcessData = async (result: AnalysisResult) => {
@@ -447,12 +457,22 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   </div>
                   <div className="flex flex-col gap-6 items-start">
                     <div className="flex items-center justify-center gap-2">
-                      <Label>Display Redundant Data</Label>
+                      <Label>Highlight Redundant Data</Label>
                       <HelperTooltip text="Highlight edges that have redundant data" />
                     </div>
                     <Switch
                       checked={showRedundantData}
-                      onCheckedChange={(value) => setShowRedundantData(value)}
+                      onCheckedChange={setShowRedundantData}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-6 items-start">
+                    <div className="flex items-center justify-center gap-2">
+                      <Label>Hide prototype compounds</Label>
+                      <HelperTooltip text="Highlight edges that have redundant data" />
+                    </div>
+                    <Switch
+                      checked={hidePrototypeCompounds}
+                      onCheckedChange={setHidePrototypeCompounds}
                     />
                   </div>
                 </div>

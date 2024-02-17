@@ -19,7 +19,7 @@ class TargetIonsColumn(AutoValueEnumMeta):
     ID = "id"
     MZ = "mz"
     RT = "rt"
-    PROTOTYPE_COMPOUND = "prototypeCompound"
+    IS_PROTOTYPE = "isPrototype"
     SAMPLE = "sample"
 
 
