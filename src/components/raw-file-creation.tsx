@@ -63,6 +63,7 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
   const [open, setOpen] = useState(false);
   const createRawFile = useMutation(api.rawFiles.create);
   const [status, setStatus] = useState<"idle" | "processing" | "done">("idle");
+  const [checked, setChecked] = useState(false);
   const { getToken } = useAuth();
 
   const onClose = () => {
@@ -72,6 +73,13 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
   };
 
   const onSubmit = async () => {
+    if (!checked) {
+      toast.error(
+        "You need to accept the terms and conditions to upload files"
+      );
+      return;
+    }
+
     const values = form.getValues();
     setStatus("processing");
     try {
@@ -261,7 +269,11 @@ export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
             <DialogFooter className="flex items-center justify-between gap-6">
               <Card className="p-4 flex flex-col gap-4">
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="terms" />
+                  <Checkbox
+                    id="terms"
+                    checked={checked}
+                    onCheckedChange={setChecked}
+                  />
                   <label
                     htmlFor="terms"
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
