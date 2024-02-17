@@ -105,7 +105,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const [nodeLabel, setNodeLabel] = useState(kAvailableNodes[0].col);
   const [edgeLabel, setEdgeLabel] = useState(kAvailableEdges[0].col);
   const [ratioModeEnabled, setRatioModeEnabled] = useState(false);
-  const [showRedundantData, setShowRedundantData] = useState(false);
+  const [highlightRedundant, setHighlightRedundant] = useState(false);
   const [hidePrototypeCompounds, setHidePrototypeCompounds] = useState(false);
   const { theme } = useTheme();
   const fgRef = useRef();
@@ -461,8 +461,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       <HelperTooltip text="Highlight edges that have redundant data" />
                     </div>
                     <Switch
-                      checked={showRedundantData}
-                      onCheckedChange={setShowRedundantData}
+                      checked={highlightRedundant}
+                      onCheckedChange={setHighlightRedundant}
                     />
                   </div>
                   <div className="flex flex-col gap-6 items-start">
@@ -647,6 +647,10 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           );
 
                           ctx.strokeStyle = theme === "dark" ? "white" : "#000"; // Line color
+                          if (highlightRedundant && link.redundantData) {
+                            ctx.strokeStyle = "red";
+                          }
+
                           ctx.stroke();
 
                           // Draw label with precision 2
@@ -664,10 +668,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           const textWidth = ctx.measureText(label).width;
                           ctx.fillStyle = theme === "dark" ? "black" : "white";
 
-                          if (showRedundantData && link.redundantData) {
-                            ctx.fillStyle = "red";
-                          }
-
                           ctx.fillRect(
                             // @ts-ignore
                             (link.source.x + link.target.x) / 2 - textWidth / 2,
@@ -677,6 +677,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                             4
                           );
                           ctx.fillStyle = theme === "dark" ? "white" : "#000";
+
                           ctx.fillText(
                             label,
                             // @ts-ignore
