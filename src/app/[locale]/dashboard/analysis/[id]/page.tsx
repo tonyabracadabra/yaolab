@@ -105,6 +105,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const [nodeLabel, setNodeLabel] = useState(kAvailableNodes[0].col);
   const [edgeLabel, setEdgeLabel] = useState(kAvailableEdges[0].col);
   const [ratioModeEnabled, setRatioModeEnabled] = useState(false);
+  const [showRedundantData, setShowRedundantData] = useState(false);
   const { theme } = useTheme();
   const fgRef = useRef();
   const { getToken } = useAuth();
@@ -444,6 +445,16 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       onCheckedChange={(value) => setRatioModeEnabled(value)}
                     />
                   </div>
+                  <div className="flex flex-col gap-6 items-start">
+                    <div className="flex items-center justify-center gap-2">
+                      <Label>Display Redundant Data</Label>
+                      <HelperTooltip text="Highlight edges that have redundant data" />
+                    </div>
+                    <Switch
+                      checked={showRedundantData}
+                      onCheckedChange={(value) => setShowRedundantData(value)}
+                    />
+                  </div>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -632,6 +643,11 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           // make sure it won't take any spaces beyond the texts width and height
                           const textWidth = ctx.measureText(label).width;
                           ctx.fillStyle = theme === "dark" ? "black" : "white";
+
+                          if (showRedundantData && link.redundantData) {
+                            ctx.fillStyle = "red";
+                          }
+
                           ctx.fillRect(
                             // @ts-ignore
                             (link.source.x + link.target.x) / 2 - textWidth / 2,
