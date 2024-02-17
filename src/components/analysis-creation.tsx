@@ -556,7 +556,7 @@ export default function AnalysisCreation({
                           }}
                         />
                       </div>
-                      <CardTitle className="text-lg">Drug data</CardTitle>
+                      <CardTitle className="text-lg">Drug Sample</CardTitle>
                       <CardDescription className="text-md">
                         Optionally configure Drug sample data can help in
                         further filtering the endogenous metabolites
