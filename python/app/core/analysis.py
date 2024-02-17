@@ -99,7 +99,10 @@ class AnalysisWorker(BaseModel):
             )
         ]
 
-        exps = [e.name for e in config.bioSamples] + [config.drugSample.name]
+        exps = [e.name for e in config.bioSamples]
+        if config.drugSample:
+            exps.append(config.drugSample.name)
+
         ratios = [exp + "_ratio" for exp in exps]
         nodes[ratios] = nodes[exps].div(nodes[exps].sum(axis=1), axis=0)
 
