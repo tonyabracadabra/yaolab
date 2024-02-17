@@ -239,7 +239,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         <div className="flex flex-col gap-2">
                           <div>Blank Groups</div>
                           <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                            {e.blankGroups.map((g, j) => (
+                            {e.blank.map((g, j) => (
                               <Badge key={j}>{g}</Badge>
                             ))}
                           </div>
@@ -247,7 +247,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         <div className="flex flex-col gap-2">
                           <div>Sample Groups</div>
                           <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                            {e.sampleGroups.map((g, j) => (
+                            {e.sample.map((g, j) => (
                               <Badge key={j}>{g}</Badge>
                             ))}
                           </div>
