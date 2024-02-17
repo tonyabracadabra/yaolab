@@ -16,10 +16,15 @@ class AnalysisTriggerInput(BaseModel):
     id: str
 
 
-class Experiment(BaseModel):
+class BioSample(BaseModel):
     name: str
-    sampleGroups: list[str]
-    blankGroups: list[str]
+    sample: list[str]
+    blank: list[str]
+
+
+class DrugSample(BaseModel):
+    name: str
+    groups: list[str]
 
 
 class AnalysisConfig(BaseModel):
@@ -28,8 +33,9 @@ class AnalysisConfig(BaseModel):
     ms2SimilarityThreshold: float
     mzErrorThreshold: float
     rtTimeWindow: float
-    experiments: list[Experiment]
     correlationThreshold: float
+    bioSamples: list[BioSample]
+    drugSample: DrugSample
 
     class Config:
         arbitrary_types_allowed = True

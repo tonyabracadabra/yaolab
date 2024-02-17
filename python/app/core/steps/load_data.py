@@ -2,7 +2,7 @@ import asyncio
 from typing import Literal
 
 import pandas as pd
-from app.models.analysis import Analysis, Experiment, ReactionDatabase
+from app.models.analysis import Analysis, BioSample, DrugSample, ReactionDatabase
 from app.utils.constants import DEFAULT_REACTION_DF, TargetIonsColumn
 from app.utils.convex import load_mgf, load_parquet
 from app.utils.logger import log
@@ -29,29 +29,42 @@ async def _load_reaction_db(
 
 def _filter_metabolites(
     data: pd.DataFrame,
-    experiments: list[Experiment],
-    minSignalThreshold: float,
-    signalEnrichmentFactor: float,
+    bio_samples: list[BioSample],
+    drug_sample: DrugSample,
+    min_signal_threshold: float,
+    signal_enrichment_factor: float,
 ) -> pd.DataFrame:
     samples_df = data[TargetIonsColumn.SAMPLE]
     cond = pd.Series(False, index=data.index)
-    for experiment in experiments:
+    for bio in bio_samples:
         sample_group, blank_group = (
-            experiment.sampleGroups,
-            experiment.blankGroups,
+            bio.sample,
+            bio.blank,
         )
 
         blank_mean = samples_df[blank_group].mean(axis=1)
         sample_max = samples_df[sample_group].max(axis=1)
 
-        filter_cond = (sample_max > minSignalThreshold) & (
-            sample_max > signalEnrichmentFactor * blank_mean
+        filter_cond = (sample_max > min_signal_threshold) & (
+            sample_max > signal_enrichment_factor * blank_mean
         )
         cond |= filter_cond
 
-        data[(TargetIonsColumn.SAMPLE, experiment.name)] = samples_df[
-            sample_group
-        ].mean(axis=1)
+        data[(TargetIonsColumn.SAMPLE, bio.name)] = samples_df[sample_group].mean(
+            axis=1
+        )
+
+    data[(TargetIonsColumn.SAMPLE, drug_sample.name)] = samples_df[
+        drug_sample.groups
+    ].mean(axis=1)
+
+    # If a specific m/z in the drug sample exceeds the minimum signal threshold and is more than the signal enrichment factor times the response of any blank sample,
+    # it's flagged as a potential prototype compound (value 1); otherwise, it's not (value 0).
+
+    data[TargetIonsColumn.PROTOTYPE_COMPOUND] = (
+        cond
+        & (data[(TargetIonsColumn.SAMPLE, drug_sample.name)] > min_signal_threshold)
+    ).astype(int)
 
     return data[cond].drop_duplicates()
 
@@ -70,9 +83,10 @@ async def load_data(
 
     targeted_ions_df = _filter_metabolites(
         data=targeted_ions_df,
-        experiments=analysis.config.experiments,
-        minSignalThreshold=analysis.config.minSignalThreshold,
-        signalEnrichmentFactor=analysis.config.signalEnrichmentFactor,
+        bio_samples=analysis.config.bioSamples,
+        drug_sample=analysis.config.drugSample,
+        min_signal_threshold=analysis.config.minSignalThreshold,
+        signal_enrichment_factor=analysis.config.signalEnrichmentFactor,
     )
 
     return spectra, targeted_ions_df, reaction_df
