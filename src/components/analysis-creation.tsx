@@ -548,8 +548,10 @@ export default function AnalysisCreation({
                           onCheckedChange={(value) => {
                             setEnableDrugSample(value);
                             if (!value) {
+                              form.setValue("config.drugSample", undefined);
+                            } else {
                               form.setValue("config.drugSample", {
-                                name: "",
+                                name: "My drug sample",
                                 groups: [],
                               });
                             }
