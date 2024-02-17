@@ -3,8 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-_prefix = lambda x, y: f"{x.lower()}{y.capitalize()}"
-_matched = lambda x: _prefix("matched", x)
+_matched = lambda x: f"matched{x[0].upper()}{x[1:]}"
 
 
 class AutoValueEnumMeta(EnumMeta):
