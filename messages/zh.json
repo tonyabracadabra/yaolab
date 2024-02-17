@@ -1,0 +1,33 @@
+{
+  "Index": {
+    "dashboard": "工作台"
+  },
+  "New": {
+    "choose-raw": "选择原始文件",
+    "new-analysis": "新建分析",
+    "all-analysis": "所有分析",
+    "choose-raw-file": "选择原始文件",
+    "choose-reaction-db": "选择反应数据库",
+    "ms2-similarity-threshold": "MS2相似性过滤阈值",
+    "advanced-settings": "高级设置",
+    "mz-error-threshold": "∆m/z误差阈值（Da）",
+    "correlation-threshold": "相关阈值",
+    "rt-time-window": "∆Rt时间窗口（分钟）",
+    "min-signal-threshold": "最小信号阈值",
+    "signal-enrichment-factor": "信号富集因子",
+    "create": "创建",
+    "default-reactions-label": "默认反应数据库（119个反应）",
+    "no-custom-reactions-created": "未创建自定义反应数据库",
+    "experiment-groups": "配置实验组",
+    "download-default-reactions": "下载默认反应",
+    "start-analysis": "开始分析",
+    "select-raw-file": "选择原始文件",
+    "experiment-group-name": "实验组名称",
+    "sample-groups": "样本组",
+    "blank-groups": "空白组",
+    "select-or-create-reaction-db": "选择或<create></create>反应数据库",
+    "select-or-create-raw": "选择或<create></create>原始文件",
+    "select-columns": "选择列...",
+    "select-exp-or-create": "选择一个实验进行配置或<create></create>一个新的实验"
+  }
+}

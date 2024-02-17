@@ -1,0 +1,33 @@
+{
+  "Index": {
+    "dashboard": "Dashboard"
+  },
+  "New": {
+    "choose-raw": "Choose raw file",
+    "new-analysis": "New analysis",
+    "all-analysis": "All Analysis",
+    "choose-raw-file": "Choose your raw file",
+    "choose-reaction-db": "Choose reaction database",
+    "ms2-similarity-threshold": "MS2 Similarity Filter Threshold",
+    "advanced-settings": "Advanced Settings",
+    "mz-error-threshold": "∆m/z Error Threshold (Da)",
+    "correlation-threshold": "Correlation Threshold",
+    "rt-time-window": "∆Rt Time Window (min)",
+    "min-signal-threshold": "Minimum Signal Threshold",
+    "signal-enrichment-factor": "Signal Enrichment Factor",
+    "create": "Create",
+    "default-reactions-label": "Default Reactions (119 reactions)",
+    "no-custom-reactions-created": "No custom reaction db created",
+    "experiment-groups": "Configure Experiment Groups",
+    "download-default-reactions": "Download Default Reactions",
+    "start-analysis": "Start Analysis",
+    "select-raw-file": "Select Raw File",
+    "experiment-group-name": "Experiment Group Name",
+    "sample-groups": "Sample Groups",
+    "blank-groups": "Blank Groups",
+    "select-or-create-reaction-db": "Select or <create></create> reaction database",
+    "select-or-create-raw": "Select or <create></create> raw file",
+    "select-columns": "Select columns ...",
+    "select-exp-or-create": "Select an experiment to configure or <create></create> a new experiment"
+  }
+}
