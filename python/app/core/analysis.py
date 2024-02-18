@@ -21,7 +21,7 @@ class AnalysisWorker(BaseModel):
     def _convex_mutation_wrapper(self, step: str, status: AnalysisStatus) -> None:
         self.convex.mutation(
             "analyses:updateStepStatus",
-            {"id": self.id, "step": step, status: AnalysisStatus},
+            {"id": self.id, "step": step, "status": status},
         )
 
     async def _run_step(self, func: Callable[..., Any], *args, **kwargs) -> Any:
