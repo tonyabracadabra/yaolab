@@ -404,65 +404,69 @@ export default function AnalysisCreation({
                     {t("experiment-groups")}
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="flex items-start gap-16">
+                <AccordionContent className="flex items-start gap-8">
                   <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">
-                        Biological samples
-                      </CardTitle>
-                      <CardDescription className="text-md">
-                        Configure the biological samples and blank groups
-                      </CardDescription>
-                      <div className="flex flex-col gap-4 p-2 h-full justify-between">
-                        <div className="flex items-center gap-2 justify-center">
-                          <Select
-                            onValueChange={(v) => {
-                              if (!v) return;
-                              setCurrBioSample(+v);
-                            }}
-                            value={currBioSample.toString()}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choose raw file to be analyzed" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {bioSampleFields?.map((f, i) => {
-                                return (
-                                  <SelectItem key={i} value={i.toString()}>
-                                    {f.name}
-                                  </SelectItem>
-                                );
-                              })}
-                            </SelectContent>
-                          </Select>
+                    <CardHeader className="flex">
+                      <div className="flex justify-between items-start gap-4">
+                        <div>
+                          <CardTitle className="text-lg">
+                            Biological samples
+                          </CardTitle>
+                          <CardDescription className="text-md">
+                            Configure the biological samples and blank groups
+                          </CardDescription>
                         </div>
-                        <FormDescription>
-                          {t.rich("select-exp-or-create", {
-                            create: () => (
-                              <Button
-                                type="button"
-                                onClick={() => {
-                                  appendBioSample({
-                                    name: `new sample ${
-                                      bioSampleFields.length + 1
-                                    }`,
-                                    sample: [],
-                                    blank: [],
-                                  });
-                                  setCurrBioSample(bioSampleFields.length);
-                                  toast.success(
-                                    "New experiment group added, please configure sample groups and blank groups"
+                        <div className="flex w-[250px] flex-col gap-4 h-full justify-between">
+                          <div className="flex items-center gap-2 justify-center">
+                            <Select
+                              onValueChange={(v) => {
+                                if (!v) return;
+                                setCurrBioSample(+v);
+                              }}
+                              value={currBioSample.toString()}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choose raw file to be analyzed" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {bioSampleFields?.map((f, i) => {
+                                  return (
+                                    <SelectItem key={i} value={i.toString()}>
+                                      {f.name}
+                                    </SelectItem>
                                   );
-                                }}
-                                variant="outline"
-                                size="xs"
-                                className="font-bold"
-                              >
-                                <span>✨ {t("create")} </span>
-                              </Button>
-                            ),
-                          })}
-                        </FormDescription>
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <FormDescription>
+                            {t.rich("select-exp-or-create", {
+                              create: () => (
+                                <Button
+                                  type="button"
+                                  onClick={() => {
+                                    appendBioSample({
+                                      name: `new sample ${
+                                        bioSampleFields.length + 1
+                                      }`,
+                                      sample: [],
+                                      blank: [],
+                                    });
+                                    setCurrBioSample(bioSampleFields.length);
+                                    toast.success(
+                                      "New experiment group added, please configure sample groups and blank groups"
+                                    );
+                                  }}
+                                  variant="outline"
+                                  size="xs"
+                                  className="font-bold"
+                                >
+                                  <span>✨ {t("create")} </span>
+                                </Button>
+                              ),
+                            })}
+                          </FormDescription>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -543,27 +547,31 @@ export default function AnalysisCreation({
                   </Card>
                   <Card>
                     <CardHeader className="relative">
-                      <div className="absolute right-4 top-4">
-                        <Switch
-                          checked={enableDrugSample}
-                          onCheckedChange={(value) => {
-                            setEnableDrugSample(value);
-                            if (!value) {
-                              form.setValue("config.drugSample", undefined);
-                            } else {
-                              form.setValue("config.drugSample", {
-                                name: "My drug sample",
-                                groups: [],
-                              });
-                            }
-                          }}
-                        />
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-col">
+                          <CardTitle className="text-lg">Drug Sample</CardTitle>
+                          <CardDescription className="text-md">
+                            Optionally configure Drug sample data can help in
+                            further filtering the endogenous metabolites
+                          </CardDescription>
+                        </div>
+                        <div>
+                          <Switch
+                            checked={enableDrugSample}
+                            onCheckedChange={(value) => {
+                              setEnableDrugSample(value);
+                              if (!value) {
+                                form.setValue("config.drugSample", undefined);
+                              } else {
+                                form.setValue("config.drugSample", {
+                                  name: "My drug sample",
+                                  groups: [],
+                                });
+                              }
+                            }}
+                          />
+                        </div>
                       </div>
-                      <CardTitle className="text-lg">Drug Sample</CardTitle>
-                      <CardDescription className="text-md">
-                        Optionally configure Drug sample data can help in
-                        further filtering the endogenous metabolites
-                      </CardDescription>
                     </CardHeader>
                     {enableDrugSample && (
                       <CardContent className="flex flex-col gap-6">
