@@ -651,6 +651,16 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           ctx.fill();
                         }}
                         linkCanvasObject={(link, ctx, globalScale) => {
+                          if (!link.source || !link.target) {
+                            return;
+                          }
+                          // if node is not found, skip drawing the link
+                          if (
+                            !nodes?.find((n) => n.id === link.id1) ||
+                            !nodes?.find((n) => n.id === link.id2)
+                          ) {
+                            return;
+                          }
                           // Draw line
                           ctx.beginPath();
                           ctx.moveTo(
