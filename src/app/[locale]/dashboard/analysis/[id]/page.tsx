@@ -119,7 +119,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const [ratioModeEnabled, setRatioModeEnabled] = useState(false);
   const [highlightRedundant, setHighlightRedundant] = useState(false);
   const [hidePrototypeCompounds, setHidePrototypeCompounds] = useState(false);
-  const [prototypeMap, setPrototypeMap] = useState<Record<string, boolean>>({});
   const { theme } = useTheme();
   const fgRef = useRef();
   const { getToken } = useAuth();
@@ -131,16 +130,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     fgRef.current.d3Force("charge").strength(-50).distanceMax(100);
     // @ts-ignore
     fgRef.current.d3Force("link").distance(40);
-
-    // update prototype map
-    if (oriGraphData !== undefined) {
-      setPrototypeMap(
-        oriGraphData.nodes?.reduce(
-          (acc, curr) => ({ ...acc, [curr.id]: curr.isPrototype }),
-          {}
-        ) || {}
-      );
-    }
   }, [oriGraphData]);
 
   useEffect(() => {
@@ -149,7 +138,9 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         setGraphData({
           nodes: (oriGraphData.nodes || []).filter((n) => !n.isPrototype),
           edges: (oriGraphData.edges || []).filter(
-            (e) => !prototypeMap[e.id1] && !prototypeMap[e.id2]
+            (e) =>
+              // @ts-ignore
+              e.source.isPrototype === false && e.target.isPrototype === false
           ),
         });
       } else {
