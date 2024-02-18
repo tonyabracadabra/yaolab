@@ -3,13 +3,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Literal
 
+from app.utils.constants import AutoValueEnumMeta
 from pydantic import BaseModel, Extra
-
-
-class AnalysisStatus(str, Enum):
-    RUNNING = "running"
-    FAILED = "failed"
-    COMPLETE = "complete"
 
 
 class AnalysisTriggerInput(BaseModel):
@@ -50,7 +45,13 @@ class AnalysisCreationInput(BaseModel):
         arbitrary_types_allowed = True
 
 
-class MSTool(str, Enum):
+class AnalysisStatus(AutoValueEnumMeta):
+    RUNNING = "running"
+    FAILED = "failed"
+    COMPLETE = "complete"
+
+
+class MSTool(AutoValueEnumMeta):
     MZmine3 = "MZmine3"
     MDial = "MDial"
 
