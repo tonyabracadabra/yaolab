@@ -95,7 +95,7 @@ class AnalysisWorker(BaseModel):
         # filter out nodes that are not in the edges
         nodes = nodes[
             nodes[TargetIonsColumn.ID].isin(
-                edges[[EdgeColumn.TARGET, EdgeColumn.SOURCE]].values.flatten()
+                edges[[EdgeColumn.ID1, EdgeColumn.ID2]].values.flatten()
             )
         ]
 

@@ -238,33 +238,52 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                <div className="text-neutral-400 gap-4 flex flex-col items-center justify-center py-2">
-                  {analysis.config.bioSamples.map((e, i) => (
-                    <div
-                      key={i}
-                      className="w-full flex-col flex items-start max-w-[400px] gap-2"
-                    >
-                      <div className="font-bold text-lg">{e.name}</div>
-                      <div className="flex items-center justify-center gap-4">
-                        <div className="flex flex-col gap-2">
-                          <div>Blank Groups</div>
-                          <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                            {e.blank.map((g, j) => (
-                              <Badge key={j}>{g}</Badge>
-                            ))}
+                <div className="flex flex-col gap-4">
+                  <div className="text-neutral-400 gap-4 flex flex-col items-center justify-center py-2">
+                    {analysis.config.bioSamples.map((e, i) => (
+                      <div
+                        key={i}
+                        className="w-full flex-col flex items-start max-w-[400px] gap-2"
+                      >
+                        <div className="font-bold text-lg">{e.name}</div>
+                        <div className="flex items-center justify-center gap-4">
+                          <div className="flex flex-col gap-2">
+                            <div>Blank Groups</div>
+                            <div className="text-neutral-500 gap-2 flex items-center justify-center">
+                              {e.blank.map((g, j) => (
+                                <Badge key={j}>{g}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <div>Sample Groups</div>
+                            <div className="text-neutral-500 gap-2 flex items-center justify-center">
+                              {e.sample.map((g, j) => (
+                                <Badge key={j}>{g}</Badge>
+                              ))}
+                            </div>
                           </div>
                         </div>
+                      </div>
+                    ))}
+                  </div>
+                  {analysis.config.drugSample && (
+                    <div className="flex flex-col gap-2">
+                      <div className="font-bold text-lg">
+                        {analysis.config.drugSample.name}
+                      </div>
+                      <div className="flex items-center justify-center gap-4">
                         <div className="flex flex-col gap-2">
-                          <div>Sample Groups</div>
+                          <div>Drug Groups</div>
                           <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                            {e.sample.map((g, j) => (
+                            {analysis.config.drugSample.groups.map((g, j) => (
                               <Badge key={j}>{g}</Badge>
                             ))}
                           </div>
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               </TooltipContent>
             </Tooltip>
