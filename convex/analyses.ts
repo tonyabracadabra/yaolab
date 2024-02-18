@@ -5,6 +5,7 @@ import {
   AnalysisCreationInputSchema,
   AnalysisResultSchema,
   AnalysisStatus,
+  AnalysisStep,
   Progress,
   ReactionSchema,
 } from "./schema";
@@ -68,7 +69,7 @@ export const update = zMutation({
 export const updateStepStatus = zMutation({
   args: {
     id: zid("analyses"),
-    step: Progress.element.shape.step,
+    step: AnalysisStep,
     status: AnalysisStatus,
   },
   handler: async ({ db }, { id, step, status }) => {

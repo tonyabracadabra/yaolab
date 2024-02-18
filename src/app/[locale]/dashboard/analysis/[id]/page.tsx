@@ -98,8 +98,20 @@ const kAvailableEdges = [
 
 export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const analysis = useQuery(api.analyses.get, { id: params.id });
-  const [nodes, setNodes] = useState<Node[] | undefined>();
-  const [edges, setEdges] = useState<Edge[] | undefined>();
+  const [oriGraphData, setOriGraphData] = useState<
+    | {
+        nodes: Node[];
+        edges: Edge[];
+      }
+    | undefined
+  >();
+  const [graphData, setGraphData] = useState<
+    | {
+        nodes: Node[];
+        edges: Edge[];
+      }
+    | undefined
+  >();
   const generateDownloadUrl = useAction(api.actions.generateDownloadUrl);
   const retryAnalysis = useAction(api.actions.retryAnalysis);
   const [nodeLabel, setNodeLabel] = useState(kAvailableNodes[0].col);
@@ -107,6 +119,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const [ratioModeEnabled, setRatioModeEnabled] = useState(false);
   const [highlightRedundant, setHighlightRedundant] = useState(false);
   const [hidePrototypeCompounds, setHidePrototypeCompounds] = useState(false);
+  const [prototypeMap, setPrototypeMap] = useState<Record<string, boolean>>({});
   const { theme } = useTheme();
   const fgRef = useRef();
   const { getToken } = useAuth();
@@ -118,16 +131,39 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     fgRef.current.d3Force("charge").strength(-50).distanceMax(100);
     // @ts-ignore
     fgRef.current.d3Force("link").distance(40);
-  }, [edges, nodes]);
+
+    // update prototype map
+    if (oriGraphData !== undefined) {
+      setPrototypeMap(
+        oriGraphData.nodes?.reduce(
+          (acc, curr) => ({ ...acc, [curr.id]: curr.isPrototype }),
+          {}
+        ) || {}
+      );
+    }
+  }, [oriGraphData]);
 
   useEffect(() => {
-    if (hidePrototypeCompounds) {
-      setNodes((nodes) => {
-        if (!nodes) return nodes;
-        return nodes.filter((n) => !n.isPrototype);
-      });
+    if (oriGraphData) {
+      if (hidePrototypeCompounds) {
+        setGraphData({
+          nodes: (oriGraphData.nodes || []).filter((n) => !n.isPrototype),
+          edges: (oriGraphData.edges || []).filter(
+            (e) => !prototypeMap[e.id1] && !prototypeMap[e.id2]
+          ),
+        });
+      } else {
+        setGraphData(oriGraphData);
+      }
     }
-  }, [hidePrototypeCompounds]);
+  }, [
+    setGraphData,
+    hidePrototypeCompounds,
+    prototypeMap,
+    oriGraphData,
+    graphData,
+    setOriGraphData,
+  ]);
 
   useEffect(() => {
     const fetchAndProcessData = async (result: AnalysisResult) => {
@@ -171,15 +207,14 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
           (e) => nodesIds.has(e.id1) && nodesIds.has(e.id2)
         );
 
-        // Update state with parsed data
-        setNodes(nodesRaw.map((n) => ({ ...n, id: `${n.id}` })));
-        setEdges(
-          edgesRawFiltered.map((e) => ({
+        setOriGraphData({
+          nodes: nodesRaw.map((n) => ({ ...n, id: `${n.id}` })),
+          edges: edgesRawFiltered.map((e) => ({
             ...e,
             id1: `${e.id1}`,
             id2: `${e.id2}`,
-          }))
-        );
+          })),
+        });
       } catch (error) {
         console.error("Failed to fetch and process data", error);
       }
@@ -188,7 +223,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     if (analysis?.result) {
       fetchAndProcessData(analysis.result);
     }
-  }, [analysis?.result, generateDownloadUrl, setEdges, setNodes]);
+  }, [analysis?.result, generateDownloadUrl, setGraphData]);
 
   if (!analysis) {
     return (
@@ -505,18 +540,21 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     <Button
                       variant="ghost"
                       className="w-full"
+                      disabled={!graphData}
                       onClick={() => {
+                        if (!graphData) return;
+
                         // Download graphml file, given the nodes and edges
                         const graphml = `
                       <graphml>
                         <graph id="G" edgedefault="undirected">
-                          ${(nodes || [])
+                          ${(graphData?.nodes || [])
                             .map(
                               (n) =>
                                 `<node id="${n.id}"><data key="mz">${n.mz}</data></node>`
                             )
                             .join("\n")}
-                          ${(edges || [])
+                          ${(graphData.edges || [])
                             .map(
                               (e, i) =>
                                 `<edge id="${i}" source="${e.id1}" target="${e.id2}"><data key="mzDiff">${e.mzDiff}</data></edge>`
@@ -541,11 +579,20 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     <Button
                       variant="ghost"
                       className="w-full"
+                      disabled={!graphData}
                       onClick={() => {
+                        if (!graphData) return;
+
                         // download edges and nodes as two .csv files in a zip
                         const zip = new JSZip();
-                        zip.file("nodes.csv", Papa.unparse(nodes || []));
-                        zip.file("edges.csv", Papa.unparse(edges || []));
+                        zip.file(
+                          "nodes.csv",
+                          Papa.unparse(graphData.nodes || [])
+                        );
+                        zip.file(
+                          "edges.csv",
+                          Papa.unparse(graphData.edges || [])
+                        );
                         zip
                           .generateAsync({ type: "blob" })
                           .then((content: any) => {
@@ -562,19 +609,23 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              {edges === undefined && nodes === undefined ? (
+              {graphData === undefined ? (
                 <div className="flex items-center h-[60%] justify-center gap-2">
                   Loading graph now <Loader2 className="animate-spin" />
                 </div>
               ) : (
                 <div className="w-[65vw] h-[50vh] overflow-hidden">
-                  {edges?.length === 0 && nodes?.length === 0 ? (
+                  {graphData.edges?.length === 0 &&
+                  graphData.nodes?.length === 0 ? (
                     <span>No data to display</span>
                   ) : (
                     <div className="relative">
                       <ForceGraph2D
                         ref={fgRef}
-                        graphData={{ links: edges || [], nodes: nodes || [] }}
+                        graphData={{
+                          links: graphData?.edges || [],
+                          nodes: graphData?.nodes || [],
+                        }}
                         nodeId="id"
                         linkSource="id1"
                         linkTarget="id2"
@@ -651,16 +702,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           ctx.fill();
                         }}
                         linkCanvasObject={(link, ctx, globalScale) => {
-                          if (!link.source || !link.target) {
-                            return;
-                          }
-                          // if node is not found, skip drawing the link
-                          if (
-                            !nodes?.find((n) => n.id === link.id1) ||
-                            !nodes?.find((n) => n.id === link.id2)
-                          ) {
-                            return;
-                          }
+                          if (!link.source || !link.target) return;
+
                           // Draw line
                           ctx.beginPath();
                           ctx.moveTo(
