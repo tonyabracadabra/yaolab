@@ -16,7 +16,7 @@ async def calculate_edge_metrics(
     ].to_dict("index")
 
     def calculate_metrics(row):
-        source, target = row[EdgeColumn.SOURCE], row[EdgeColumn.TARGET]
+        source, target = row[EdgeColumn.ID1], row[EdgeColumn.ID2]
         if source not in id_to_mz_rt or target not in id_to_mz_rt:
             return None, None, None
 
