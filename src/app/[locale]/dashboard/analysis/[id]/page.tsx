@@ -520,7 +520,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     <div className="flex flex-col gap-6 items-start">
                       <div className="flex items-center justify-center gap-2">
                         <Label>Hide prototype compounds</Label>
-                        <HelperTooltip text="Highlight edges that have redundant data" />
+                        <HelperTooltip text="Opt not to show prototype compounds" />
                       </div>
                       <Switch
                         checked={hidePrototypeCompounds}
