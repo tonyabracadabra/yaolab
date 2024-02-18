@@ -190,8 +190,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
           nodesTextPromise,
         ]);
 
-        // Parse CSV text directly
-        const edgesRaw = Papa.parse<Edge>(edgesText, {
+        const parseConfig = {
           header: true,
           dynamicTyping: true,
           transform: function (value: string, field: string): any {
@@ -202,12 +201,11 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             }
             return value;
           },
-        }).data;
+        };
 
-        const nodesRaw = Papa.parse<Node>(nodesText, {
-          header: true,
-          dynamicTyping: true,
-        }).data;
+        // Parse CSV text directly
+        const edgesRaw = Papa.parse<Edge>(edgesText, parseConfig).data;
+        const nodesRaw = Papa.parse<Node>(nodesText, parseConfig).data;
 
         // remove edges that have missing nodes
         const nodesIds = new Set(nodesRaw.map((n) => n.id));
