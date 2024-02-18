@@ -42,7 +42,7 @@ export default function LocaleLayout({
               disableTransitionOnChange
             >
               <SiteHeader />
-              <main className="h-[100vh] overflow-hidden">{children}</main>
+              <main className="h-[85vh] overflow-auto">{children}</main>
               <Toaster position="top-center" />
             </ThemeProvider>
             <Analytics />
