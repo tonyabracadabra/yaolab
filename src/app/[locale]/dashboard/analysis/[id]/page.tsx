@@ -583,11 +583,11 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         const zip = new JSZip();
                         zip.file(
                           "nodes.csv",
-                          Papa.unparse(graphData.nodes || [])
+                          Papa.unparse<Node>(graphData.nodes || [])
                         );
                         zip.file(
                           "edges.csv",
-                          Papa.unparse(graphData.edges || [])
+                          Papa.unparse<Edge>(graphData.edges || [])
                         );
                         zip
                           .generateAsync({ type: "blob" })
