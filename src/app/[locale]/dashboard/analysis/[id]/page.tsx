@@ -168,7 +168,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         // remove edges that have missing nodes
         const nodesIds = new Set(nodesRaw.map((n) => n.id));
         const edgesRawFiltered = edgesRaw.filter(
-          (e) => nodesIds.has(e.source) && nodesIds.has(e.target)
+          (e) => nodesIds.has(e.id1) && nodesIds.has(e.id2)
         );
 
         // Update state with parsed data
@@ -176,8 +176,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         setEdges(
           edgesRawFiltered.map((e) => ({
             ...e,
-            source: `${e.source}`,
-            target: `${e.target}`,
+            id1: `${e.id1}`,
+            id2: `${e.id2}`,
           }))
         );
       } catch (error) {
@@ -500,7 +500,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           ${(edges || [])
                             .map(
                               (e, i) =>
-                                `<edge id="${i}" source="${e.source}" target="${e.target}"><data key="mzDiff">${e.mzDiff}</data></edge>`
+                                `<edge id="${i}" source="${e.id1}" target="${e.id2}"><data key="mzDiff">${e.mzDiff}</data></edge>`
                             )
                             .join("\n")}
                         </graph>
