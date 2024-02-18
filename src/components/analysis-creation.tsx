@@ -815,7 +815,7 @@ export default function AnalysisCreation({
           <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-lg">
             {isSubmitting ? (
               <div className="flex items-center gap-2">
-                Initiating analysis
+                Initializing analysis
                 <Loader2 className="animate-spin" />
               </div>
             ) : (

@@ -51,7 +51,7 @@ class AnalysisStatus(AutoValueEnumMeta):
     COMPLETE = "complete"
 
 
-class MSTool(AutoValueEnumMeta):
+class MSTool(str, Enum):
     MZmine3 = "MZmine3"
     MDial = "MDial"
 

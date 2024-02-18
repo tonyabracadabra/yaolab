@@ -79,9 +79,6 @@ class PreprocessIonsInput(BaseModel):
     targetedIons: str
     tool: MSTool
 
-    class Config:
-        arbitrary_types_allowed = True
-
 
 @router.post("/preprocessIons")
 async def preprocess_ions(
