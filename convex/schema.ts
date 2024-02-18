@@ -55,7 +55,7 @@ export const AnalysisStep = z.enum([
 export const Progress = z.array(
   z.object({
     step: AnalysisStep,
-    status: z.enum(["running", "done"]),
+    status: AnalysisStatus,
   })
 );
 

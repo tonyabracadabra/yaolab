@@ -5,7 +5,6 @@ import {
   AnalysisCreationInputSchema,
   AnalysisResultSchema,
   AnalysisStatus,
-  AnalysisStep,
   Progress,
   ReactionSchema,
 } from "./schema";
@@ -66,33 +65,27 @@ export const update = zMutation({
   },
 });
 
-export const startStep = zMutation({
-  args: { id: zid("analyses"), step: AnalysisStep },
-  handler: async ({ db }, { id, step }) => {
-    const analysis = await db.get(id);
-    if (!analysis) {
-      throw new Error("Analysis not found");
-    }
-
-    await db.patch(id, {
-      progress: [...analysis.progress, { step, status: "running" }],
-    });
+export const updateStepStatus = zMutation({
+  args: {
+    id: zid("analyses"),
+    step: Progress.element.shape.step,
+    status: AnalysisStatus,
   },
-});
-
-export const completeStep = zMutation({
-  args: { id: zid("analyses"), step: Progress.element.shape.step },
-  handler: async ({ db }, { id, step }) => {
+  handler: async ({ db }, { id, step, status }) => {
     const analysis = await db.get(id);
     if (!analysis) {
       throw new Error("Analysis not found");
     }
 
     const progress = analysis.progress.map((p) =>
-      p.step === step ? { ...p, status: "done" as "done" } : p
+      p.step === step ? { ...p, status } : p
     );
 
     await db.patch(id, { progress });
+
+    if (status === "failed") {
+      await db.patch(id, { status });
+    }
   },
 });
 
