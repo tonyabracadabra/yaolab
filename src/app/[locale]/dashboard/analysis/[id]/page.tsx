@@ -516,16 +516,18 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       onCheckedChange={setHighlightRedundant}
                     />
                   </div>
-                  <div className="flex flex-col gap-6 items-start">
-                    <div className="flex items-center justify-center gap-2">
-                      <Label>Hide prototype compounds</Label>
-                      <HelperTooltip text="Highlight edges that have redundant data" />
+                  {analysis.config.drugSample && (
+                    <div className="flex flex-col gap-6 items-start">
+                      <div className="flex items-center justify-center gap-2">
+                        <Label>Hide prototype compounds</Label>
+                        <HelperTooltip text="Highlight edges that have redundant data" />
+                      </div>
+                      <Switch
+                        checked={hidePrototypeCompounds}
+                        onCheckedChange={setHidePrototypeCompounds}
+                      />
                     </div>
-                    <Switch
-                      checked={hidePrototypeCompounds}
-                      onCheckedChange={setHidePrototypeCompounds}
-                    />
-                  </div>
+                  )}
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
