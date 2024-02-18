@@ -86,5 +86,7 @@ async def load_data(
         min_signal_threshold=analysis.config.minSignalThreshold,
         signal_enrichment_factor=analysis.config.signalEnrichmentFactor,
     )
+    # drop rows that has id of nan
+    targeted_ions_df = targeted_ions_df.dropna(subset=[TargetIonsColumn.ID])
 
     return spectra, targeted_ions_df, reaction_df
