@@ -194,6 +194,14 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         const edgesRaw = Papa.parse<Edge>(edgesText, {
           header: true,
           dynamicTyping: true,
+          transform: function (value: string, field: string): any {
+            if (value.toLowerCase() === "true") {
+              return true;
+            } else if (value.toLowerCase() === "false") {
+              return false;
+            }
+            return value;
+          },
         }).data;
 
         const nodesRaw = Papa.parse<Node>(nodesText, {

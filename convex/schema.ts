@@ -70,7 +70,7 @@ export const EdgeSchema = z.object({
   matchedMzDiff: z.number(),
   matchedFormulaChange: z.string(),
   matchedDescription: z.string(),
-  redundantData: z.string(),
+  redundantData: z.boolean(),
   modCos: z.number(),
 });
 
