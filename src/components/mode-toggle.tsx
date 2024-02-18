@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
-import { Computer, MoonStar, Sun } from "lucide-react";
+import { Computer } from "lucide-react";
 import { Button } from "./ui/button";
 
 export function ModeToggle() {
@@ -26,11 +26,11 @@ export function ModeToggle() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="font-sans">
         <DropdownMenuItem onClick={() => setTheme("light")}>
-          <Sun className="w-4 h-4 mr-4" />
+          <SunIcon className="w-4 h-4 mr-4" />
           Light
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
-          <MoonStar className="w-4 h-4 mr-4" />
+          <MoonIcon className="w-4 h-4 mr-4" />
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("system")}>
