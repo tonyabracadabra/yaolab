@@ -53,12 +53,10 @@ class AnalysisWorker(BaseModel):
 
         config = self.analysis.config
 
-        spectra, targeted_ions_df, reaction_df = await self._run_step(
+        spectra, targeted_ions_df, samples_df, reaction_df = await self._run_step(
             load_data, self.analysis, convex=self.convex
         )
 
-        samples_df = targeted_ions_df[TargetIonsColumn.SAMPLE]
-        targeted_ions_df = targeted_ions_df[""]
         ids: np.ndarray = targeted_ions_df[TargetIonsColumn.ID].values
 
         ion_interaction_matrix: coo_matrix = await self._run_step(

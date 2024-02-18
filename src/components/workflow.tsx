@@ -14,7 +14,6 @@ import ReactFlow, {
 import { Loader2 } from "lucide-react";
 import "reactflow/dist/style.css";
 import { z } from "zod";
-import { MagicCard } from "./magicui/magic-card";
 import { Card } from "./ui/card";
 
 interface WorkflowInterface {
@@ -165,18 +164,7 @@ function RunningNode({ data }: { data: { label: string } }) {
   );
 }
 
-function NotStartedNode({ data }: { data: { label: string } }) {
-  return (
-    <>
-      <Handle type="target" position={Position.Top} />
-      <MagicCard className="text-xs px-[6px] py-3">{data.label}</MagicCard>
-      <Handle type="source" position={Position.Bottom} id="a" />
-      <Handle type="source" position={Position.Bottom} id="b" />
-    </>
-  );
-}
-
-function DoneNode({ data }: { data: { label: string } }) {
+function CompleteNode({ data }: { data: { label: string } }) {
   return (
     <>
       <Handle type="target" position={Position.Top} />
@@ -196,8 +184,7 @@ function Flow({ progress, log }: WorkflowInterface) {
   const nodeTypes = useMemo(
     () => ({
       running: RunningNode,
-      done: DoneNode,
-      notStarted: NotStartedNode,
+      complete: CompleteNode,
     }),
     []
   );

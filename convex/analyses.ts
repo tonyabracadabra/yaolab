@@ -78,9 +78,9 @@ export const updateStepStatus = zMutation({
       throw new Error("Analysis not found");
     }
 
-    const progress = analysis.progress.map((p) =>
-      p.step === step ? { ...p, status } : p
-    );
+    const progress = !analysis.progress.find((p) => p.step === step)
+      ? [...analysis.progress, { step, status }]
+      : analysis.progress.map((p) => (p.step === step ? { ...p, status } : p));
 
     await db.patch(id, { progress });
 

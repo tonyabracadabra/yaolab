@@ -141,7 +141,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
           edges: (oriGraphData.edges || []).filter(
             (e) =>
               // @ts-ignore
-              e.source.isPrototype === false && e.target.isPrototype === false
+              e.source?.isPrototype === false && e.target?.isPrototype === false
           ),
         });
       } else {

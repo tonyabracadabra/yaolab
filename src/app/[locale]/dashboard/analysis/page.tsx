@@ -143,7 +143,11 @@ export default function AnalysisList() {
                 variant="ghost"
                 className="w-full flex items-center justify-between gap-2"
                 onClick={async () => {
-                  const token = await getToken();
+                  const token = await getToken({
+                    template: "convex",
+                    skipCache: true,
+                  });
+
                   if (!token) return;
 
                   restart({ id: row.original.id, token });

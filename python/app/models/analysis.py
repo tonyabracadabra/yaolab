@@ -30,7 +30,7 @@ class AnalysisConfig(BaseModel):
     rtTimeWindow: float
     correlationThreshold: float
     bioSamples: list[BioSample]
-    drugSample: DrugSample
+    drugSample: DrugSample | None
 
     class Config:
         arbitrary_types_allowed = True

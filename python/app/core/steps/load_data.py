@@ -71,7 +71,7 @@ def _filter_metabolites(
 async def load_data(
     analysis: Analysis,
     convex: ConvexClient,
-) -> tuple[list[Spectrum], pd.DataFrame, pd.DataFrame]:
+) -> tuple[list[Spectrum], pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     tasks = [
         load_mgf(analysis.rawFile.mgf, convex=convex),
         load_parquet(analysis.rawFile.targetedIons, convex=convex),
@@ -86,7 +86,10 @@ async def load_data(
         min_signal_threshold=analysis.config.minSignalThreshold,
         signal_enrichment_factor=analysis.config.signalEnrichmentFactor,
     )
+
+    samples_df = targeted_ions_df[TargetIonsColumn.SAMPLE]
+    targeted_ions_df = targeted_ions_df[""]
     # drop rows that has id of nan
     targeted_ions_df = targeted_ions_df.dropna(subset=[TargetIonsColumn.ID])
 
-    return spectra, targeted_ions_df, reaction_df
+    return spectra, targeted_ions_df, samples_df, reaction_df
