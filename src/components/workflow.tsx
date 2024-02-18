@@ -215,15 +215,12 @@ function Flow({ progress, log }: WorkflowInterface) {
     // set the animation for the edges
     setEdges(
       edges.map((edge) => {
-        const sourceStatus = progress?.find(
-          (step) => step.step === edge.source
-        )?.status;
         const targetStatus = progress?.find(
           (step) => step.step === edge.target
         )?.status;
         return {
           ...edge,
-          animated: sourceStatus === "done" && targetStatus === undefined,
+          animated: targetStatus === "running",
         };
       })
     );
