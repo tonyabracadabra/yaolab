@@ -122,6 +122,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const { theme } = useTheme();
   const fgRef = useRef();
   const { getToken } = useAuth();
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     if (!fgRef.current) return;
@@ -529,17 +530,21 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm">
-                      <Download className="w-4 h-4" />
+                      {downloading ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <Download size={16} />
+                      )}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="flex flex-col items-center justify-center">
                     <Button
                       variant="ghost"
                       className="w-full"
-                      disabled={!graphData}
+                      disabled={!graphData || downloading}
                       onClick={() => {
                         if (!graphData) return;
-
+                        setDownloading(true);
                         // Download graphml file, given the nodes and edges
                         const graphml = `
                       <graphml>
@@ -568,6 +573,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         a.href = url;
                         a.download = "graph.graphml";
                         a.click();
+
+                        setDownloading(false);
                       }}
                     >
                       GraphML
@@ -575,9 +582,10 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     <Button
                       variant="ghost"
                       className="w-full"
-                      disabled={!graphData}
+                      disabled={!graphData || downloading}
                       onClick={() => {
                         if (!graphData) return;
+                        setDownloading(true);
 
                         // download edges and nodes as two .csv files in a zip
                         const zip = new JSZip();
@@ -598,6 +606,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                             a.download = "raw-data.zip";
                             a.click();
                           });
+
+                        setDownloading(false);
                       }}
                     >
                       Raw (Nodes & Edges)
