@@ -430,7 +430,9 @@ export default function AnalysisCreation({
                               {bioSampleFields?.map((f, i) => {
                                 return (
                                   <SelectItem key={i} value={i.toString()}>
-                                    {f.name}
+                                    {form.watch(
+                                      `config.bioSamples.${i}.name`
+                                    ) || `Sample ${i + 1}`}
                                   </SelectItem>
                                 );
                               })}
