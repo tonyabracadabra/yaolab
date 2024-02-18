@@ -87,12 +87,12 @@ const kAvailableEdges = [
     label: "Matched m/z Difference",
   },
   {
-    col: "matchedRtDiff",
-    label: "Matched Retention Time Difference",
-  },
-  {
     col: "matchedFormulaChange",
     label: "Matched Formula Change",
+  },
+  {
+    col: "matchedDescription",
+    label: "Matched Reaction Description",
   },
 ];
 
