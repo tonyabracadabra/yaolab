@@ -150,7 +150,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   }, [
     setGraphData,
     hidePrototypeCompounds,
-    prototypeMap,
     oriGraphData,
     graphData,
     setOriGraphData,
