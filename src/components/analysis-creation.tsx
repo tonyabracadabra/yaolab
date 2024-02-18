@@ -557,6 +557,7 @@ export default function AnalysisCreation({
                         </div>
                         <div>
                           <Switch
+                            className="h-4 w-8"
                             checked={enableDrugSample}
                             onCheckedChange={(value) => {
                               setEnableDrugSample(value);

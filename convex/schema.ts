@@ -49,6 +49,7 @@ export const AnalysisStep = z.enum([
   "combine_matrices_and_extract_edges",
   "calculate_edge_metrics",
   "edge_value_matching",
+  "postprocessing",
   "upload_result",
 ]);
 
