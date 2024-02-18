@@ -191,7 +191,9 @@ export default function AnalysisCreation({
   const downloadDefaultReactions = useAction(
     api.actions.downloadDefaultReactions
   );
-  const [enableDrugSample, setEnableDrugSample] = useState(false);
+  const [enableDrugSample, setEnableDrugSample] = useState(
+    !!defaultAnalysis?.config.drugSample
+  );
 
   const allRawFiles = useQuery(api.rawFiles.getAllRawFiles, {});
   const allReactionDatabases = useQuery(
