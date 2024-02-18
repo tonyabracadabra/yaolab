@@ -145,12 +145,12 @@ const features = [
 
 export default function Home() {
   return (
-    <main className="p-8 px-8 h-full w-full sm:px-16 xl:px-32 font-sans">
+    <div className="p-8 px-8 h-full w-full sm:px-16 xl:px-32 font-sans">
       <BentoGrid>
         {features.map((feature, idx) => (
           <BentoCard key={idx} {...feature} />
         ))}
       </BentoGrid>
-    </main>
+    </div>
   );
 }

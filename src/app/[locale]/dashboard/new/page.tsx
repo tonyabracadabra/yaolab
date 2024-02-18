@@ -45,7 +45,7 @@ export default function Analysis() {
   };
 
   return (
-    <main className="h-full flex w-full font-sans">
+    <>
       {from ? (
         <AnalysisWrapper
           id={from as Id<"analyses">}
@@ -54,6 +54,6 @@ export default function Analysis() {
       ) : (
         <AnalysisCreation onCreate={handleSubmit} />
       )}
-    </main>
+    </>
   );
 }

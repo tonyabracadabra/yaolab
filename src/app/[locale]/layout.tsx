@@ -30,10 +30,10 @@ export default function LocaleLayout({
 
   return (
     <ConvexClerkClientProvider>
-      <html lang={locale}>
+      <html lang={locale} className="h-full">
         <NextIntlClientProvider messages={messages}>
           <body
-            className={`${GeistSans.variable} ${GeistMono.variable} ${inter.className} ${urbanist.className}`}
+            className={`h-full ${GeistSans.variable} ${GeistMono.variable} ${inter.className} ${urbanist.className}`}
           >
             <ThemeProvider
               attribute="class"
@@ -42,7 +42,7 @@ export default function LocaleLayout({
               disableTransitionOnChange
             >
               <SiteHeader />
-              <main>{children}</main>
+              <main className="h-[100vh] overflow-hidden">{children}</main>
               <Toaster position="top-center" />
             </ThemeProvider>
             <Analytics />

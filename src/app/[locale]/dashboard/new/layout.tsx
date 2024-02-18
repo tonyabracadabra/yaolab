@@ -10,9 +10,5 @@ export default function AnalysisLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div>
-      <main>{children}</main>
-    </div>
-  );
+  return <>{children}</>;
 }
