@@ -52,7 +52,7 @@ import {
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import Papa from "papaparse";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 type Edge = z.infer<typeof EdgeSchema>;
@@ -96,22 +96,15 @@ const kAvailableEdges = [
   },
 ];
 
+type GraphData = {
+  nodes: Node[];
+  edges: Edge[];
+};
+
 export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const analysis = useQuery(api.analyses.get, { id: params.id });
-  const [oriGraphData, setOriGraphData] = useState<
-    | {
-        nodes: Node[];
-        edges: Edge[];
-      }
-    | undefined
-  >();
-  const [graphData, setGraphData] = useState<
-    | {
-        nodes: Node[];
-        edges: Edge[];
-      }
-    | undefined
-  >();
+  const [oriGraphData, setOriGraphData] = useState<GraphData | undefined>();
+  const [graphData, setGraphData] = useState<GraphData | undefined>();
   const generateDownloadUrl = useAction(api.actions.generateDownloadUrl);
   const retryAnalysis = useAction(api.actions.retryAnalysis);
   const [nodeLabel, setNodeLabel] = useState(kAvailableNodes[0].col);
@@ -133,17 +126,74 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     fgRef.current.d3Force("link").distance(40);
   }, [oriGraphData]);
 
+  const connectedComponents: string[][] = useMemo(() => {
+    if (!oriGraphData) return [];
+
+    // hide all the non connected subgraphs that contains at least one prototype compound
+    const nodes = oriGraphData.nodes;
+    const edges = oriGraphData.edges;
+    const connectedComponents = [];
+    const visited = new Set();
+    const adjList = new Map();
+    for (const node of nodes) {
+      adjList.set(node.id, []);
+    }
+    for (const edge of edges) {
+      if (edge.id1 === undefined || edge.id2 === undefined) {
+        console.error("Edge id is missing", edge);
+        continue;
+      }
+      adjList.get(edge.id1).push(edge.id2);
+      adjList.get(edge.id2).push(edge.id1);
+    }
+    for (const node of nodes) {
+      if (!visited.has(node.id)) {
+        const connectedComponent = [];
+        if (node.id === undefined) {
+          console.error("Node id is missing", node);
+        } else {
+          const queue: string[] = [node.id as string];
+          while (queue.length > 0) {
+            const curr = queue.shift() as string;
+            if (!visited.has(curr)) {
+              visited.add(curr);
+              connectedComponent.push(curr);
+              for (const neighbor of adjList.get(curr)) {
+                queue.push(neighbor as string);
+              }
+            }
+          }
+          connectedComponents.push(connectedComponent);
+        }
+      }
+    }
+
+    return connectedComponents;
+  }, [oriGraphData]);
+
+  const graphsWithoutPrototype = useMemo(() => {
+    if (!oriGraphData) return;
+
+    const prototypeNodes = oriGraphData.nodes.filter((n) => n.isPrototype);
+    const connectedComponentsWithPrototype = connectedComponents.filter((cc) =>
+      cc.some((n) => prototypeNodes.some((p) => p.id === n))
+    );
+    const nodesToKeep = connectedComponentsWithPrototype.reduce((acc, curr) => {
+      return acc.concat(curr);
+    }, []);
+    const edgesToKeep = oriGraphData.edges.filter(
+      (e) => nodesToKeep.includes(e.id1) && nodesToKeep.includes(e.id2)
+    );
+    return {
+      nodes: oriGraphData.nodes.filter((n) => nodesToKeep.includes(n.id)),
+      edges: edgesToKeep,
+    };
+  }, [oriGraphData]);
+
   useEffect(() => {
     if (oriGraphData) {
       if (hidePrototypeCompounds) {
-        setGraphData({
-          nodes: (oriGraphData.nodes || []).filter((n) => !n.isPrototype),
-          edges: (oriGraphData.edges || []).filter(
-            (e) =>
-              // @ts-ignore
-              e.source?.isPrototype === false && e.target?.isPrototype === false
-          ),
-        });
+        setGraphData(graphsWithoutPrototype);
       } else {
         setGraphData(oriGraphData);
       }
