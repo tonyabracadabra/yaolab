@@ -510,7 +510,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
           </TooltipProvider>
         </div>
       </div>
-      <div className="flex flex-col gap-2 items-center justify-center w-full h-[50vh]">
+      <div className="flex flex-col gap-2 items-center justify-center w-full h-full">
         {analysis.status === "running" && <div>{analysis.log}</div>}
         <div className="w-full h-full">
           {analysis.status === "failed" && (
@@ -545,7 +545,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             </div>
           )}
           {analysis.status === "complete" && (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-4">
               <div className="flex items-start justify-between gap-4 w-full p-4 bg-primary-foreground rounded-lg">
                 <div className="flex items-start justify-center gap-4">
                   <div className="flex flex-col gap-4 items-start">
@@ -639,7 +639,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   )}
                 </div>
               </div>
-              <MagicCard className="h-[70vh] mt-1 relative">
+              <MagicCard className="h-[68vh] relative">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -792,7 +792,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     Loading graph now <Loader2 className="animate-spin" />
                   </div>
                 ) : (
-                  <div className="overflow-hidden w-max h-max">
+                  <div className="overflow-hidden w-[75vw] h-[65vh]">
                     {graphData.edges?.length === 0 &&
                     graphData.nodes?.length === 0 ? (
                       <span>No data to display</span>
