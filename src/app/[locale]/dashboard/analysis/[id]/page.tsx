@@ -329,7 +329,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-start justify-between gap-4 p-2">
                   <div className="flex flex-col gap-2">
                     <div>Bio Samples</div>
                     <div className="text-neutral-400 gap-4 flex flex-col items-center justify-center py-2">
@@ -719,7 +719,12 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                               (e) => `${e.name}_ratio`
                             );
                             // based on different ratio, draw a pie chart with different colors
-                            const ratio = ratioCols.map((col) => node[col]);
+                            let ratio = ratioCols.map((col) => node[col]);
+                            if (analysis.config.drugSample) {
+                              ratio.push(
+                                node[`${analysis.config.drugSample.name}_ratio`]
+                              );
+                            }
                             const total = ratio.reduce((a, b) => a + b, 0);
                             const startAngle = 0;
                             const endAngle = Math.PI * 2;
@@ -848,27 +853,25 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           );
                         }}
                       />
-                      <div className="flex flex-col gap-4 absolute left-[30px] top-[60px] items-start justify-center">
+                      <div className="flex flex-col gap-4 absolute left-[30px] top-[60px] items-start">
                         {/* legend for prototype */}
-                        <div className="flex items-center justify-center gap-2 w-18 flex-col  ">
-                          <div className="flex items-center justify-center gap-2 w-full text-sm">
-                            <div
-                              className="w-4 h-4"
-                              style={{
-                                backgroundColor: "white",
-                                border: "2px solid yellow",
-                              }}
-                            />
-                            <span>Prototype</span>
-                          </div>
+                        <div className="flex items-center justify-start gap-2 w-full text-sm">
+                          <div
+                            className="w-4 h-4"
+                            style={{
+                              backgroundColor: "white",
+                              border: "2px solid yellow",
+                            }}
+                          />
+                          <span>Prototype</span>
                         </div>
                         {/* legend for ratios */}
                         {ratioModeEnabled && (
-                          <div className="flex items-center justify-center gap-2 w-18 flex-col">
+                          <div className="flex items-center justify-start gap-2 w-18 flex-col">
                             {analysis.config.bioSamples.map((e, i) => (
                               <div
                                 key={i}
-                                className="flex items-center justify-center gap-2 w-full text-sm"
+                                className="flex items-center justify-start gap-2 w-full text-sm"
                               >
                                 <div
                                   className="w-4 h-4"
@@ -882,6 +885,29 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                                 <span>{e.name}</span>
                               </div>
                             ))}
+                            {analysis.config.drugSample && (
+                              <div className="flex items-center justify-start gap-2 w-full text-sm">
+                                <div
+                                  className="w-4 h-4"
+                                  style={{
+                                    backgroundColor: `hsl(${
+                                      (analysis.config.bioSamples.length *
+                                        360) /
+                                      (analysis.config.bioSamples.length + 1)
+                                    }, 100%, 50%)`,
+                                  }}
+                                />
+                                <span>{analysis.config.drugSample.name}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {/* legend for redundant */}
+                        {highlightRedundant && (
+                          <div className="flex items-center justify-start gap-2">
+                            {/* a thin red line */}
+                            <div className="w-4 h-[2px] bg-red-500" />
+                            <span>Redundant</span>
                           </div>
                         )}
                       </div>
