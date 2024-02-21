@@ -2,7 +2,7 @@
 
 import { DashboardNav } from "@/src/components/nav";
 import { useConvexAuth } from "convex/react";
-import { ListPlus, Loader2, Waypoints } from "lucide-react";
+import { File, ListPlus, Loader2, Waypoints } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export default function DashboardLayout({
@@ -29,6 +29,12 @@ export default function DashboardLayout({
               icon: Waypoints,
               href: "/dashboard/analysis",
               regex: /\/dashboard\/analysis(\/.*)?$/,
+            },
+            {
+              title: t("all-rawfiles"),
+              icon: File,
+              href: "/dashboard/raw",
+              regex: /\/dashboard\/raw-files(\/.*)?$/,
             },
           ]}
         />

@@ -109,6 +109,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const retryAnalysis = useAction(api.actions.retryAnalysis);
   const [nodeLabel, setNodeLabel] = useState(kAvailableNodes[0].col);
   const [edgeLabel, setEdgeLabel] = useState(kAvailableEdges[0].col);
+  const [nodeSize, setNodeSize] = useState(kAvailableNodes[1].col);
   const [ratioModeEnabled, setRatioModeEnabled] = useState(false);
   const [highlightRedundant, setHighlightRedundant] = useState(false);
   const [hidePrototypeCompounds, setHidePrototypeCompounds] = useState(false);
@@ -201,6 +202,28 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
       edges: newEdges,
     };
   }, [oriGraphData]);
+
+  const nodeIdtoSizes = useMemo(() => {
+    // normalize the node size based on the nodeSize column
+    if (!graphData) return;
+    const nodeSizeCol = nodeSize;
+    const nodeSizes = graphData.nodes
+      .map((node) => node[nodeSizeCol as "mz" | "rt"])
+      .filter((size) => size !== undefined) as number[];
+
+    const minSize = Math.min(...nodeSizes);
+    const maxSize = Math.max(...nodeSizes);
+    // return a map not list
+    const res = new Map();
+    for (let i = 0; i < graphData.nodes.length; i++) {
+      // set to the normalized size based on min and max
+      const normalized =
+        (graphData.nodes[i][nodeSizeCol as "rt" | "mz"] - minSize) /
+        (maxSize - minSize);
+      res.set(graphData.nodes[i].id, normalized * 10 + 5);
+    }
+    return res;
+  }, [graphData, nodeSize]);
 
   useEffect(() => {
     if (oriGraphData) {
@@ -297,193 +320,195 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
 
   return (
     <div className="flex flex-col gap-4 px-4 py-2 w-full">
-      <div className="flex items-center justify-between gap-2 w-full">
+      <div className="flex items-center justify-between gap-4 w-full">
         <Link href="/dashboard/analysis">
           <Button
             size="sm"
             variant="secondary"
-            className="flex w-fit items-center justify-center gap-2"
+            className="flex w-fit min-w-[150px] items-center justify-center gap-2 flex-nowrap"
           >
-            <List size={16} /> All analyses
+            <List size={16} />
+            All analyses
           </Button>
         </Link>
-        <div className="flex items-center justify-center gap-2">
-          <Badge className="flex items-center justify-center gap-1">
-            <FileIcon size={14} />
-            <span className="ml-2">{analysis.rawFile?.name}</span>
-          </Badge>
-          <Badge className="flex items-center justify-center gap-1">
-            <Atom size={14} />
-            <span className="ml-2">
-              {typeof analysis.reactionDb === "string"
-                ? "default"
-                : analysis.reactionDb}
-            </span>
-          </Badge>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Badge className="flex items-center justify-center gap-2">
-                  <FlaskConical className="h-4 w-4" />
-                  Experiments
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <div className="flex items-start justify-between gap-4 p-2">
-                  <div className="flex flex-col gap-2">
-                    <div>Bio Samples</div>
-                    <div className="text-neutral-400 gap-4 flex flex-col items-center justify-center py-2">
-                      {analysis.config.bioSamples.map((e, i) => (
-                        <div
-                          key={i}
-                          className="w-full flex-col flex items-start max-w-[400px] gap-2"
-                        >
-                          <div className="font-bold text-lg">{e.name}</div>
-                          <div className="flex items-center justify-center gap-4">
-                            <div className="flex flex-col gap-2">
-                              <div>Blank Groups</div>
-                              <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                                {e.blank.map((g, j) => (
-                                  <Badge key={j}>{g}</Badge>
-                                ))}
-                              </div>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                              <div>Sample Groups</div>
-                              <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                                {e.sample.map((g, j) => (
-                                  <Badge key={j}>{g}</Badge>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  {analysis.config.drugSample && (
-                    <div className="flex flex-col gap-2">
-                      <div>Drug Sample</div>
-                      <div className="text-neutral-400 flex flex-col gap-2">
-                        <div className="font-bold text-lg">
-                          {analysis.config.drugSample.name}
-                        </div>
+        <Badge className="flex items-center justify-center gap-1">
+          <FileIcon size={14} />
+          <span className="ml-2">{analysis.rawFile?.name}</span>
+        </Badge>
+        <Badge className="flex items-center justify-center gap-1">
+          <Atom size={14} />
+          <span className="ml-2">
+            {typeof analysis.reactionDb === "string"
+              ? "default"
+              : analysis.reactionDb}
+          </span>
+        </Badge>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Badge className="flex items-center justify-center gap-2">
+                <FlaskConical className="h-4 w-4" />
+                Experiments
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <div className="flex items-start justify-between gap-4 p-2">
+                <div className="flex flex-col gap-2">
+                  <div>Bio Samples</div>
+                  <div className="text-neutral-400 gap-4 flex flex-col items-center justify-center py-2">
+                    {analysis.config.bioSamples.map((e, i) => (
+                      <div
+                        key={i}
+                        className="w-full flex-col flex items-start max-w-[400px] gap-2"
+                      >
+                        <div className="font-bold text-lg">{e.name}</div>
                         <div className="flex items-center justify-center gap-4">
                           <div className="flex flex-col gap-2">
-                            <div>Drug Groups</div>
+                            <div>Blank Groups</div>
                             <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                              {analysis.config.drugSample.groups.map((g, j) => (
+                              {e.blank.map((g, j) => (
+                                <Badge key={j}>{g}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <div>Sample Groups</div>
+                            <div className="text-neutral-500 gap-2 flex items-center justify-center">
+                              {e.sample.map((g, j) => (
                                 <Badge key={j}>{g}</Badge>
                               ))}
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </div>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger>
-                <Badge>
-                  <Settings2 className="h-4 w-4 mr-2" />
-                  Configs
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <div className="flex items-center justify-center gap-2 flex-wrap max-w-[400px] h-fit p-2 text-xs">
-                  <div className="flex items-center justify-center gap-4">
-                    <div className="flex flex-col gap-2">
-                      <div>Correlation Threshold</div>
-                      <div className="text-neutral-500">
-                        {analysis.config.correlationThreshold}
+                {analysis.config.drugSample && (
+                  <div className="flex flex-col gap-2">
+                    <div>Drug Sample</div>
+                    <div className="text-neutral-400 flex flex-col gap-2">
+                      <div className="font-bold text-lg">
+                        {analysis.config.drugSample.name}
                       </div>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <div>MS2 Similarity Threshold</div>
-                      <div className="text-neutral-500">
-                        {analysis.config.ms2SimilarityThreshold}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <div>m/z Error Threshold</div>
-                      <div className="text-neutral-500">
-                        {analysis.config.mzErrorThreshold}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <div>Retention Time Window</div>
-                      <div className="text-neutral-500">
-                        {analysis.config.rtTimeWindow}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <div>Signal Enrichment Factor</div>
-                      <div className="text-neutral-500">
-                        {analysis.config.signalEnrichmentFactor}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <div>Minimum Signal Threshold</div>
-                      <div className="text-neutral-500">
-                        {analysis.config.minSignalThreshold}
+                      <div className="flex items-center justify-center gap-4">
+                        <div className="flex flex-col gap-2">
+                          <div>Drug Groups</div>
+                          <div className="text-neutral-500 gap-2 flex items-center justify-center">
+                            {analysis.config.drugSample.groups.map((g, j) => (
+                              <Badge key={j}>{g}</Badge>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
+                )}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger>
+              <Badge>
+                <Settings2 className="h-4 w-4 mr-2" />
+                Configs
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <div className="flex items-center justify-center gap-2 flex-wrap max-w-[400px] h-fit p-2 text-xs">
+                <div className="flex items-center justify-center gap-4">
+                  <div className="flex flex-col gap-2">
+                    <div>Correlation Threshold</div>
+                    <div className="text-neutral-500">
+                      {analysis.config.correlationThreshold}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div>MS2 Similarity Threshold</div>
+                    <div className="text-neutral-500">
+                      {analysis.config.ms2SimilarityThreshold}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div>m/z Error Threshold</div>
+                    <div className="text-neutral-500">
+                      {analysis.config.mzErrorThreshold}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div>Retention Time Window</div>
+                    <div className="text-neutral-500">
+                      {analysis.config.rtTimeWindow}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div>Signal Enrichment Factor</div>
+                    <div className="text-neutral-500">
+                      {analysis.config.signalEnrichmentFactor}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div>Minimum Signal Threshold</div>
+                    <div className="text-neutral-500">
+                      {analysis.config.minSignalThreshold}
+                    </div>
+                  </div>
                 </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <div className="w-full flex justify-end gap-4">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <div className="flex flex-col items-start justify-center gap-1">
+                  <div className="flex items-center justify-center gap-24">
+                    <div
+                      className={cn("flex items-center justify-center gap-2")}
+                    >
+                      <LucideWorkflow size={16} />
+                      {analysis.status === "running" ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="animate-spin" size={14} />
+                          {
+                            analysis.progress.find(
+                              (p) => p.status === "running"
+                            )?.step
+                          }
+                        </div>
+                      ) : analysis.status === "failed" ? (
+                        <Badge className="flex items-center justify-center gap-2 bg-destructive text-red-50 hover:bg-destructive/80">
+                          <XIcon size={12} />
+                          Failed
+                        </Badge>
+                      ) : (
+                        <Badge className="flex items-center justify-center gap-2 text-green-50 bg-green-400 hover:opacity-80 hover:bg-green-400">
+                          <BadgeCheck size={12} />
+                          Completed
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-center gap-4 text-xs max-w-[200px]">
+                      <TimerIcon size={16} />
+                      {
+                        new Date(analysis._creationTime)
+                          .toString()
+                          .split("GMT")[0]
+                      }
+                    </div>
+                  </div>
+                  <div className="text-muted-foreground text-xs">
+                    * Hover to view the workflow
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="-left-12">
+                <Workflow progress={analysis.progress} log={analysis.log} />
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
-      </div>
-      <div className="w-full flex justify-end gap-4">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <div className="flex flex-col items-start justify-center gap-1">
-                <div className="flex items-center justify-center gap-24">
-                  <div className={cn("flex items-center justify-center gap-2")}>
-                    <LucideWorkflow size={16} />
-                    {analysis.status === "running" ? (
-                      <div className="flex items-center justify-center gap-2">
-                        <Loader2 className="animate-spin" size={14} />
-                        {
-                          analysis.progress.find((p) => p.status === "running")
-                            ?.step
-                        }
-                      </div>
-                    ) : analysis.status === "failed" ? (
-                      <Badge className="flex items-center justify-center gap-2 bg-destructive text-red-50 hover:bg-destructive/80">
-                        <XIcon size={12} />
-                        Failed
-                      </Badge>
-                    ) : (
-                      <Badge className="flex items-center justify-center gap-2 text-green-50 bg-green-400 hover:opacity-80 hover:bg-green-400">
-                        <BadgeCheck size={12} />
-                        Completed
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-center gap-4 text-xs max-w-[200px]">
-                    <TimerIcon size={16} />
-                    {
-                      new Date(analysis._creationTime)
-                        .toString()
-                        .split("GMT")[0]
-                    }
-                  </div>
-                </div>
-                <div className="text-muted-foreground text-xs">
-                  * Hover to view the workflow
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="-left-12">
-              <Workflow progress={analysis.progress} log={analysis.log} />
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
       </div>
       <div className="flex flex-col gap-2 items-center justify-center w-full h-[50vh]">
         {analysis.status === "running" && <div>{analysis.log}</div>}
@@ -520,8 +545,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             </div>
           )}
           {analysis.status === "complete" && (
-            <MagicCard className="h-[70vh] mt-1">
-              <div className="flex items-start justify-between gap-4 w-full">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-start justify-between gap-4 w-full p-4 bg-primary-foreground rounded-lg">
                 <div className="flex items-start justify-center gap-4">
                   <div className="flex flex-col gap-4 items-start">
                     <Label>Node</Label>
@@ -561,7 +586,26 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="flex flex-col gap-6 items-start">
+                  {/* node size */}
+                  <div className="flex flex-col gap-4 items-start">
+                    <Label>Node Size</Label>
+                    <Select
+                      value={nodeSize}
+                      onValueChange={(value) => setNodeSize(value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a node column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {kAvailableNodes.map((v, i) => (
+                          <SelectItem key={i} value={v.col}>
+                            {v.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex flex-col gap-6 items-start ml-2">
                     <div className="flex items-center justify-center gap-2">
                       <Label>Compound response Mode</Label>
                       <HelperTooltip text="Enable this to see the compound response mode" />
@@ -594,9 +638,15 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     </div>
                   )}
                 </div>
+              </div>
+              <MagicCard className="h-[70vh] mt-1 relative">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="absolute right-12 top-12"
+                    >
                       {downloading ? (
                         <Loader2 className="animate-spin" />
                       ) : (
@@ -681,18 +731,72 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     </Button>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
-              {graphData === undefined ? (
-                <div className="flex items-center h-[60%] justify-center gap-2">
-                  Loading graph now <Loader2 className="animate-spin" />
+                <div className="flex flex-col gap-4 absolute left-12 top-12 items-start">
+                  {/* legend for prototype */}
+                  <div className="flex items-center justify-start gap-2 w-full text-sm">
+                    <div
+                      className="w-4 h-4"
+                      style={{
+                        backgroundColor: "white",
+                        border: "2px solid yellow",
+                      }}
+                    />
+                    <span>Prototype</span>
+                  </div>
+                  {/* legend for ratios */}
+                  {ratioModeEnabled && (
+                    <div className="flex items-center justify-start gap-2 w-18 flex-col">
+                      {analysis.config.bioSamples.map((e, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-start gap-2 w-full text-sm"
+                        >
+                          <div
+                            className="w-4 h-4"
+                            style={{
+                              backgroundColor: `hsl(${
+                                (i * 360) / analysis.config.bioSamples.length
+                              }, 100%, 50%)`,
+                            }}
+                          />
+                          <span>{e.name}</span>
+                        </div>
+                      ))}
+                      {analysis.config.drugSample && (
+                        <div className="flex items-center justify-start gap-2 w-full text-sm">
+                          <div
+                            className="w-4 h-4"
+                            style={{
+                              backgroundColor: `hsl(${
+                                (analysis.config.bioSamples.length * 360) /
+                                (analysis.config.bioSamples.length + 1)
+                              }, 100%, 50%)`,
+                            }}
+                          />
+                          <span>{analysis.config.drugSample.name}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {/* legend for redundant */}
+                  {highlightRedundant && (
+                    <div className="flex items-center justify-start gap-2">
+                      {/* a thin red line */}
+                      <div className="w-4 h-[2px] bg-red-500" />
+                      <span>Redundant</span>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="w-[65vw] h-[50vh] overflow-hidden">
-                  {graphData.edges?.length === 0 &&
-                  graphData.nodes?.length === 0 ? (
-                    <span>No data to display</span>
-                  ) : (
-                    <div className="relative">
+                {graphData === undefined ? (
+                  <div className="flex items-center h-[60%] justify-center gap-2">
+                    Loading graph now <Loader2 className="animate-spin" />
+                  </div>
+                ) : (
+                  <div className="overflow-hidden w-max h-max">
+                    {graphData.edges?.length === 0 &&
+                    graphData.nodes?.length === 0 ? (
+                      <span>No data to display</span>
+                    ) : (
                       <ForceGraph2D
                         ref={fgRef}
                         graphData={{
@@ -714,6 +818,10 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         linkTarget="id2"
                         linkWidth={8}
                         nodeCanvasObject={(node, ctx, globalScale) => {
+                          if (!nodeIdtoSizes) return;
+
+                          const size = nodeIdtoSizes?.get(node.id as any) || 8;
+
                           if (ratioModeEnabled) {
                             const ratioCols = analysis.config.bioSamples.map(
                               (e) => `${e.name}_ratio`
@@ -729,6 +837,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                             const startAngle = 0;
                             const endAngle = Math.PI * 2;
                             let lastAngle = startAngle;
+
                             for (let i = 0; i < ratio.length; i++) {
                               const ratioValue = ratio[i];
                               const angle = (ratioValue / total) * endAngle;
@@ -739,7 +848,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                                 // @ts-ignore
                                 node.x,
                                 node.y,
-                                8,
+                                size,
                                 lastAngle,
                                 lastAngle + angle
                               );
@@ -760,7 +869,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           const x = node.x as number;
                           const y = node.y as number;
 
-                          ctx.arc(x, y, 8, 0, 2 * Math.PI, false); // Adjust the radius as needed
+                          ctx.arc(x, y, size, 0, 2 * Math.PI, false); // Adjust the radius as needed
 
                           if (!ratioModeEnabled) {
                             ctx.fillStyle = "white"; // Circle color
@@ -853,69 +962,11 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           );
                         }}
                       />
-                      <div className="flex flex-col gap-4 absolute left-[30px] top-[60px] items-start">
-                        {/* legend for prototype */}
-                        <div className="flex items-center justify-start gap-2 w-full text-sm">
-                          <div
-                            className="w-4 h-4"
-                            style={{
-                              backgroundColor: "white",
-                              border: "2px solid yellow",
-                            }}
-                          />
-                          <span>Prototype</span>
-                        </div>
-                        {/* legend for ratios */}
-                        {ratioModeEnabled && (
-                          <div className="flex items-center justify-start gap-2 w-18 flex-col">
-                            {analysis.config.bioSamples.map((e, i) => (
-                              <div
-                                key={i}
-                                className="flex items-center justify-start gap-2 w-full text-sm"
-                              >
-                                <div
-                                  className="w-4 h-4"
-                                  style={{
-                                    backgroundColor: `hsl(${
-                                      (i * 360) /
-                                      analysis.config.bioSamples.length
-                                    }, 100%, 50%)`,
-                                  }}
-                                />
-                                <span>{e.name}</span>
-                              </div>
-                            ))}
-                            {analysis.config.drugSample && (
-                              <div className="flex items-center justify-start gap-2 w-full text-sm">
-                                <div
-                                  className="w-4 h-4"
-                                  style={{
-                                    backgroundColor: `hsl(${
-                                      (analysis.config.bioSamples.length *
-                                        360) /
-                                      (analysis.config.bioSamples.length + 1)
-                                    }, 100%, 50%)`,
-                                  }}
-                                />
-                                <span>{analysis.config.drugSample.name}</span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        {/* legend for redundant */}
-                        {highlightRedundant && (
-                          <div className="flex items-center justify-start gap-2">
-                            {/* a thin red line */}
-                            <div className="w-4 h-[2px] bg-red-500" />
-                            <span>Redundant</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </MagicCard>
+                    )}
+                  </div>
+                )}
+              </MagicCard>
+            </div>
           )}
         </div>
       </div>
