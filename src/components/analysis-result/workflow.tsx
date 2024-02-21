@@ -14,7 +14,7 @@ import ReactFlow, {
 import { Loader2 } from "lucide-react";
 import "reactflow/dist/style.css";
 import { z } from "zod";
-import { Card } from "./ui/card";
+import { Card } from "../ui/card";
 
 interface WorkflowInterface {
   progress: z.infer<typeof Progress>;

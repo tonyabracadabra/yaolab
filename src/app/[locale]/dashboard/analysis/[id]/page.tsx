@@ -4,8 +4,9 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { AnalysisResultSchema, EdgeSchema, NodeSchema } from "@/convex/schema";
 import { cn } from "@/lib/utils";
+import AnalysisResult from "@/src/components/analysis-result/task-result";
+import { Workflow } from "@/src/components/analysis-result/workflow";
 import { MagicCard } from "@/src/components/magicui/magic-card";
-import AnalysisResult from "@/src/components/task-result";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -14,7 +15,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
-import { Workflow } from "@/src/components/workflow";
 import { useAuth } from "@clerk/nextjs";
 import { useAction, useQuery } from "convex/react";
 import JSZip from "jszip";

@@ -10,10 +10,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { FormLabelWithTooltip } from "./form-label-tooltip";
-import { Button } from "./ui/button";
-import { Card } from "./ui/card";
-import { Checkbox } from "./ui/checkbox";
+import { FormLabelWithTooltip } from "../../form-label-tooltip";
+import { Button } from "../../ui/button";
+import { Card } from "../../ui/card";
+import { Checkbox } from "../../ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog";
+} from "../../ui/dialog";
 import {
   Form,
   FormControl,
@@ -30,15 +30,15 @@ import {
   FormField,
   FormItem,
   FormLabel,
-} from "./ui/form";
-import { Input } from "./ui/input";
+} from "../../ui/form";
+import { Input } from "../../ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
+} from "../../ui/select";
 
 interface RawFileCreationInterface {
   onCreate: (id: Id<"rawFiles">) => void;
@@ -50,7 +50,7 @@ const LocalRawFileInputSchema = RawFileCreationInputSchema.extend({
 });
 type RawFileCreationInput = z.infer<typeof LocalRawFileInputSchema>;
 
-export function RawFileCreation({ onCreate }: RawFileCreationInterface) {
+export function RawFileCreationDialog({ onCreate }: RawFileCreationInterface) {
   const form = useForm<RawFileCreationInput>({
     defaultValues: {
       name: "My Raw File",

@@ -1,9 +1,11 @@
 import { api } from "@/convex/_generated/api";
+import { AnalysisCreationInputSchema } from "@/convex/schema";
 import { clsx, type ClassValue } from "clsx";
 import { useAction } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
+import { z } from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -99,3 +101,7 @@ export const readFirstKLines = (file: File, k: number): Promise<string[]> => {
 export function getRandomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+export type AnalysisCreationInputType = z.infer<
+  typeof AnalysisCreationInputSchema
+>;

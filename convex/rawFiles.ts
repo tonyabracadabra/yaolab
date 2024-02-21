@@ -1,3 +1,4 @@
+import { zid } from "convex-helpers/server/zod";
 import { RawFileCreationInputSchema } from "./schema";
 import { zMutation, zQuery } from "./utils";
 
@@ -27,5 +28,19 @@ export const getAllRawFiles = zQuery({
       .query("rawFiles")
       .withIndex("user", (q) => q.eq("user", user))
       .collect();
+  },
+});
+
+export const remove = zMutation({
+  args: { id: zid("rawFiles") },
+  handler: async ({ db }, { id }) => {
+    await db.delete(id);
+  },
+});
+
+export const get = zQuery({
+  args: { id: zid("rawFiles") },
+  handler: async ({ db }, { id }) => {
+    return await db.get(id);
   },
 });

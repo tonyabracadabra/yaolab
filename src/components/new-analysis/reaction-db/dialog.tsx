@@ -9,8 +9,8 @@ import { useState } from "react";
 import { Control, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { FormLabelWithTooltip } from "./form-label-tooltip";
-import { Button } from "./ui/button";
+import { FormLabelWithTooltip } from "../../form-label-tooltip";
+import { Button } from "../../ui/button";
 
 import { useTranslations } from "next-intl";
 import {
@@ -21,10 +21,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog";
-import { Form, FormField, FormItem, FormLabel } from "./ui/form";
-import { Input } from "./ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+} from "../../ui/dialog";
+import { Form, FormField, FormItem, FormLabel } from "../../ui/form";
+import { Input } from "../../ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 import {
   Table,
   TableBody,
@@ -32,7 +32,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./ui/table";
+} from "../../ui/table";
 
 type ReactionDatabaseInput = z.infer<typeof ReactionDatabaseSchema>;
 type Reaction = z.infer<typeof ReactionSchema>;
@@ -244,7 +244,9 @@ interface ReactionDbCreationInterface {
   onCreate: (id: Id<"reactionDatabases">) => void;
 }
 
-export function ReactionDbCreation({ onCreate }: ReactionDbCreationInterface) {
+export function ReactionDbCreationDialog({
+  onCreate,
+}: ReactionDbCreationInterface) {
   const form = useForm<ReactionDatabaseInput>({
     defaultValues: {
       // random name with date

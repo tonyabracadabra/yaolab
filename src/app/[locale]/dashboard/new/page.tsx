@@ -3,7 +3,7 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { AnalysisConfigSchema } from "@/convex/schema";
-import AnalysisCreation from "@/src/components/analysis-creation";
+import AnalysisCreation from "@/src/components/new-analysis";
 import { useQuery } from "convex/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
