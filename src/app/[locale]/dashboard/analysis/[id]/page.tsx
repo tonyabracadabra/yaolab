@@ -827,7 +827,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   )}
                   {/* legend for ratios */}
                   {ratioModeEnabled && ratioColColors && (
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-4">
                       <div className="flex items-start justify-start gap-2 w-18 flex-col">
                         {ratioColColors.map((col, i) => (
                           <div
@@ -850,7 +850,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         onValueChange={(v) => setColorScheme(v)}
                       >
                         <SelectTrigger>
-                          <div className="mt-2 w-4 h-4 rounded-full rainbow-conic-gradient" />
+                          <div className="w-4 h-4 rounded-full rainbow-conic-gradient" />
                           {colorSchemes.find((c) => c.value === colorScheme)
                             ?.label || "Color Scheme"}
                         </SelectTrigger>
