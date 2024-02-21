@@ -9,7 +9,8 @@ import {
 } from "@tanstack/react-table";
 
 import { api } from "@/convex/_generated/api";
-import { AnalysisOutputSchema } from "@/convex/analyses";
+import { Id } from "@/convex/_generated/dataModel";
+import { RawFileSchema } from "@/convex/schema";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +22,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/src/components/ui/alert-dialog";
-import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
 import {
   DropdownMenu,
@@ -36,34 +36,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/components/ui/table";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { EnterIcon } from "@radix-ui/react-icons";
 import Avatar from "boring-avatars";
-import { useAction, useMutation, useQuery } from "convex/react";
-import {
-  CheckIcon,
-  Copy,
-  Loader2,
-  MoreHorizontal,
-  RefreshCcw,
-  Trash2,
-  XIcon,
-} from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
+import { Loader2, MoreHorizontal, Trash2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { z } from "zod";
 
-type AnalysisOutput = z.infer<typeof AnalysisOutputSchema>;
+type RawFile = z.infer<typeof RawFileSchema> & {
+  _id: Id<"rawFiles">;
+};
 
 export default function RawfileList() {
   const rawFiles = useQuery(api.rawFiles.getAll, {});
-  const remove = useMutation(api.analyses.remove);
+  const remove = useMutation(api.rawFiles.remove);
   const { user } = useUser();
   const router = useRouter();
-  const { getToken } = useAuth();
-  const restart = useAction(api.actions.retryAnalysis);
   const pathname = usePathname();
 
-  const columns: ColumnDef<AnalysisOutput>[] = [
+  const columns: ColumnDef<RawFile>[] = [
     {
       accessorKey: "_id",
       header: "",
@@ -71,7 +63,7 @@ export default function RawfileList() {
         <Button
           variant="ghost"
           onClick={() => {
-            router.push(`${pathname}/${row.original.id}`);
+            router.push(`${pathname}/${row.original._id}`);
           }}
         >
           <EnterIcon className="stroke-[0.8px] w-4 h-4 stroke-muted-foreground opacity-75" />
@@ -89,45 +81,6 @@ export default function RawfileList() {
       ),
     },
     {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => {
-        if (row.original.status === "running") {
-          return (
-            <Badge className="flex items-center justify-center gap-2 w-fit">
-              <Loader2 className="animate-spin" size={12} />
-              <div>{row.original.status}</div>
-            </Badge>
-          );
-        } else if (row.original.status === "complete") {
-          return (
-            <Badge className="flex items-center justify-center gap-2 w-fit bg-green-500 text-green-50 hover:bg-green-600">
-              <CheckIcon size={12} />
-              <div>{row.original.status}</div>
-            </Badge>
-          );
-        } else {
-          return (
-            <Badge className="flex items-center justify-center gap-2 w-fit bg-destructive text-red-50 hover:bg-red-700">
-              <XIcon size={12} />
-              <div>{row.original.status}</div>
-            </Badge>
-          );
-        }
-      },
-    },
-    {
-      accessorKey: "reactionDb",
-      header: "Reaction Database",
-    },
-    {
-      accessorKey: "creationTime",
-      header: "Created At",
-      cell: ({ row }) => (
-        <div>{new Date(row.original.creationTime).toLocaleDateString()}</div>
-      ),
-    },
-    {
       accessorKey: "_id",
       header: "",
       cell: ({ row }) => (
@@ -139,33 +92,6 @@ export default function RawfileList() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="flex flex-col items-center justify-center">
-              <Button
-                variant="ghost"
-                className="w-full flex items-center justify-between gap-2"
-                onClick={async () => {
-                  const token = await getToken({
-                    template: "convex",
-                    skipCache: true,
-                  });
-
-                  if (!token) return;
-
-                  restart({ id: row.original.id, token });
-                }}
-              >
-                <RefreshCcw className="stroke-[1.2px] w-4 h-4" />
-                Restart
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full flex items-center justify-between gap-2"
-                onClick={() => {
-                  router.push(`/dashboard/new?from=${row.original.id}`);
-                }}
-              >
-                <Copy className="stroke-[1.2px] w-4 h-4" />
-                Copy
-              </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
@@ -191,7 +117,7 @@ export default function RawfileList() {
                     <AlertDialogAction
                       className="bg-destructive hover:bg-destructive text-white"
                       onClick={() => {
-                        remove({ id: row.original.id });
+                        remove({ id: row.original._id });
                       }}
                     >
                       Delete
