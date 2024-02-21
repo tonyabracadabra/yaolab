@@ -55,7 +55,7 @@ import { z } from "zod";
 type AnalysisOutput = z.infer<typeof AnalysisOutputSchema>;
 
 export default function RawfileList() {
-  const analyses = useQuery(api.analyses.getAll, {});
+  const rawFiles = useQuery(api.rawFiles.getAll, {});
   const remove = useMutation(api.analyses.remove);
   const { user } = useUser();
   const router = useRouter();
@@ -207,7 +207,7 @@ export default function RawfileList() {
   ];
 
   const table = useReactTable({
-    data: analyses || [],
+    data: rawFiles || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -235,7 +235,7 @@ export default function RawfileList() {
           ))}
         </TableHeader>
         <TableBody className="max-h-[70vh] overflow-hidden">
-          {analyses === undefined ? (
+          {rawFiles === undefined ? (
             <TableRow className="flex items-center justify-center">
               <Loader2 className="animate-spin" />
             </TableRow>
@@ -256,7 +256,7 @@ export default function RawfileList() {
                   ))}
                 </TableRow>
               ))}
-              {analyses.length === 0 && (
+              {rawFiles.length === 0 && (
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}

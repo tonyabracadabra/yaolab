@@ -22,7 +22,7 @@ export const create = zMutation({
   },
 });
 
-export const getAllRawFiles = zQuery({
+export const getAll = zQuery({
   handler: async ({ db, user }) => {
     return await db
       .query("rawFiles")

@@ -6,6 +6,7 @@
     "choose-raw": "Choose raw file",
     "new-analysis": "New analysis",
     "all-analysis": "All Analysis",
+    "all-rawfiles": "Raw Files",
     "choose-raw-file": "Choose your raw file",
     "choose-reaction-db": "Choose reaction database",
     "ms2-similarity-threshold": "MS2 Similarity Filter Threshold",

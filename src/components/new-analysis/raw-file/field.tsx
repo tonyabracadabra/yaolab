@@ -29,7 +29,7 @@ interface RawFileFormFieldInterface {
 
 export function RawFileFormField({ form }: RawFileFormFieldInterface) {
   const t = useTranslations("New");
-  const allRawFiles = useQuery(api.rawFiles.getAllRawFiles, {});
+  const allRawFiles = useQuery(api.rawFiles.getAll, {});
 
   return (
     <FormField

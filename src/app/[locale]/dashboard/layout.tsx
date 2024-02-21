@@ -34,7 +34,7 @@ export default function DashboardLayout({
               title: t("all-rawfiles"),
               icon: File,
               href: "/dashboard/raw",
-              regex: /\/dashboard\/raw-files(\/.*)?$/,
+              regex: /\/dashboard\/raw(\/.*)?$/,
             },
           ]}
         />
