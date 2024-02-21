@@ -41,6 +41,7 @@
     "convex-helpers": "latest",
     "d3": "^7.8.5",
     "d3-hierarchy": "^3.1.2",
+    "d3-scale-chromatic": "^3.0.0",
     "date-fns": "^2.30.0",
     "filepond": "^4.30.4",
     "geist": "^1.1.0",

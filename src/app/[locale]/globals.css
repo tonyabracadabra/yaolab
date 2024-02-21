@@ -110,3 +110,16 @@
 .cl-navbarButton {
   @apply text-primary;
 }
+
+.rainbow-conic-gradient {
+  background-image: conic-gradient(
+    red,
+    orange,
+    yellow,
+    green,
+    blue,
+    indigo,
+    violet,
+    red
+  );
+}

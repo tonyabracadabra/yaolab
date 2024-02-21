@@ -17,6 +17,7 @@ import {
 } from "@/src/components/ui/tooltip";
 import { useAuth } from "@clerk/nextjs";
 import { useAction, useQuery } from "convex/react";
+import * as d3 from "d3-scale-chromatic";
 import JSZip from "jszip";
 import { ForceGraph2D } from "react-force-graph";
 
@@ -101,6 +102,37 @@ type GraphData = {
   edges: Edge[];
 };
 
+const colorSchemes = [
+  {
+    label: "Accent",
+    value: "accent",
+  },
+  {
+    label: "Tableau",
+    value: "tableau",
+  },
+  {
+    label: "Purple",
+    value: "purple",
+  },
+  {
+    label: "Green",
+    value: "green",
+  },
+  {
+    label: "Orange",
+    value: "orange",
+  },
+  {
+    label: "Classic",
+    value: "classic",
+  },
+  {
+    label: "Rainbow",
+    value: "rainbow",
+  },
+];
+
 export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const analysis = useQuery(api.analyses.get, { id: params.id });
   const [oriGraphData, setOriGraphData] = useState<GraphData | undefined>();
@@ -117,6 +149,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const fgRef = useRef();
   const { getToken } = useAuth();
   const [downloading, setDownloading] = useState(false);
+  const [colorScheme, setColorScheme] = useState("schemeOrRd");
 
   useEffect(() => {
     if (!fgRef.current) return;
@@ -224,6 +257,47 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     }
     return res;
   }, [graphData, nodeSize]);
+
+  const ratioColColors: { col: string; color: string }[] | undefined =
+    useMemo(() => {
+      if (!analysis) return;
+      const ratioCols = analysis.config.bioSamples.map(
+        (e) => `${e.name}_ratio`
+      );
+      if (analysis.config.drugSample) {
+        ratioCols.push(`${analysis.config.drugSample.name}_ratio`);
+      }
+
+      let colors = d3.schemeAccent;
+      if (colorScheme === "tableau") {
+        colors = d3.schemeTableau10;
+      } else if (colorScheme === "purple") {
+        colors = ratioCols.map((_, i) =>
+          d3.interpolatePurples((1 * i) / ratioCols.length)
+        );
+      } else if (colorScheme === "green") {
+        colors = ratioCols.map((_, i) =>
+          d3.interpolateGreens((1 * i) / ratioCols.length)
+        );
+      } else if (colorScheme === "orange") {
+        colors = ratioCols.map((_, i) =>
+          d3.interpolateOranges((1 * i) / ratioCols.length)
+        );
+      } else if (colorScheme === "classic") {
+        colors = d3.schemeCategory10;
+      } else if (colorScheme === "rainbow") {
+        colors = ratioCols.map((_, i) =>
+          d3.interpolateRainbow((1 * i) / ratioCols.length)
+        );
+      }
+
+      return ratioCols.map((col, i) => {
+        return {
+          col,
+          color: colors[i % colors.length],
+        };
+      });
+    }, [analysis, colorScheme]);
 
   useEffect(() => {
     if (oriGraphData) {
@@ -731,9 +805,9 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     </Button>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <div className="flex flex-col gap-4 absolute left-12 top-12 items-start">
+                <div className="flex flex-col gap-4 absolute left-12 top-12 items-start z-[10000]">
                   {/* legend for prototype */}
-                  <div className="flex items-center justify-start gap-2 w-full text-sm">
+                  <div className="flex items-start justify-start gap-2 w-full text-sm">
                     <div
                       className="w-4 h-4"
                       style={{
@@ -743,47 +817,55 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     />
                     <span>Prototype</span>
                   </div>
-                  {/* legend for ratios */}
-                  {ratioModeEnabled && (
-                    <div className="flex items-center justify-start gap-2 w-18 flex-col">
-                      {analysis.config.bioSamples.map((e, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center justify-start gap-2 w-full text-sm"
-                        >
-                          <div
-                            className="w-4 h-4"
-                            style={{
-                              backgroundColor: `hsl(${
-                                (i * 360) / analysis.config.bioSamples.length
-                              }, 100%, 50%)`,
-                            }}
-                          />
-                          <span>{e.name}</span>
-                        </div>
-                      ))}
-                      {analysis.config.drugSample && (
-                        <div className="flex items-center justify-start gap-2 w-full text-sm">
-                          <div
-                            className="w-4 h-4"
-                            style={{
-                              backgroundColor: `hsl(${
-                                (analysis.config.bioSamples.length * 360) /
-                                (analysis.config.bioSamples.length + 1)
-                              }, 100%, 50%)`,
-                            }}
-                          />
-                          <span>{analysis.config.drugSample.name}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
                   {/* legend for redundant */}
                   {highlightRedundant && (
                     <div className="flex items-center justify-start gap-2">
                       {/* a thin red line */}
                       <div className="w-4 h-[2px] bg-red-500" />
                       <span>Redundant</span>
+                    </div>
+                  )}
+                  {/* legend for ratios */}
+                  {ratioModeEnabled && ratioColColors && (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-start justify-start gap-2 w-18 flex-col">
+                        {ratioColColors.map((col, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center justify-start gap-2"
+                          >
+                            <div
+                              className="w-4 h-4"
+                              style={{
+                                backgroundColor: col.color,
+                              }}
+                            />
+                            <span>{col.col}</span>
+                          </div>
+                        ))}
+                      </div>
+                      {/* button that randomly swaps the color theme */}
+                      <Select
+                        value={colorScheme}
+                        onValueChange={(v) => setColorScheme(v)}
+                      >
+                        <SelectTrigger>
+                          <div className="mt-2 w-4 h-4 rounded-full rainbow-conic-gradient" />
+                          {colorSchemes.find((c) => c.value === colorScheme)
+                            ?.label || "Color Scheme"}
+                        </SelectTrigger>
+                        <SelectContent>
+                          {colorSchemes.map((scheme, i) => (
+                            <SelectItem
+                              key={i}
+                              value={scheme.value}
+                              onClick={() => setColorScheme(scheme.value)}
+                            >
+                              {scheme.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   )}
                 </div>
@@ -818,21 +900,13 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         linkTarget="id2"
                         linkWidth={8}
                         nodeCanvasObject={(node, ctx, globalScale) => {
-                          if (!nodeIdtoSizes) return;
+                          if (!nodeIdtoSizes || !ratioColColors) return;
 
                           const size = nodeIdtoSizes?.get(node.id as any) || 8;
-
+                          const ratio = ratioColColors?.map(
+                            (v) => node[v.col] || 0
+                          ) as number[];
                           if (ratioModeEnabled) {
-                            const ratioCols = analysis.config.bioSamples.map(
-                              (e) => `${e.name}_ratio`
-                            );
-                            // based on different ratio, draw a pie chart with different colors
-                            let ratio = ratioCols.map((col) => node[col]);
-                            if (analysis.config.drugSample) {
-                              ratio.push(
-                                node[`${analysis.config.drugSample.name}_ratio`]
-                              );
-                            }
                             const total = ratio.reduce((a, b) => a + b, 0);
                             const startAngle = 0;
                             const endAngle = Math.PI * 2;
@@ -852,9 +926,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                                 lastAngle,
                                 lastAngle + angle
                               );
-                              ctx.fillStyle = `hsl(${
-                                (i * 360) / ratio.length
-                              }, 100%, 50%)`;
+                              ctx.fillStyle = ratioColColors[i].color;
                               ctx.fill();
                               lastAngle += angle;
                             }
