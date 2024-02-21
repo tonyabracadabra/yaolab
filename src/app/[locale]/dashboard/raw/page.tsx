@@ -40,7 +40,6 @@ import { useUser } from "@clerk/nextjs";
 import Avatar from "boring-avatars";
 import { useMutation, useQuery } from "convex/react";
 import { Loader2, MoreHorizontal, Trash2 } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
 import { z } from "zod";
 
 type RawFile = z.infer<typeof RawFileSchema> & {
@@ -51,8 +50,6 @@ export default function RawfileList() {
   const rawFiles = useQuery(api.rawFiles.getAll, {});
   const remove = useMutation(api.rawFiles.remove);
   const { user } = useUser();
-  const router = useRouter();
-  const pathname = usePathname();
 
   const columns: ColumnDef<RawFile>[] = [
     {
