@@ -118,6 +118,7 @@ export const getAll = zQuery({
     const analyses = await db
       .query("analyses")
       .withIndex("user", (q) => q.eq("user", user))
+      .order("desc")
       .collect();
 
     return await Promise.all(
