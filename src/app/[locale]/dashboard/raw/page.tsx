@@ -37,7 +37,6 @@ import {
   TableRow,
 } from "@/src/components/ui/table";
 import { useUser } from "@clerk/nextjs";
-import { EnterIcon } from "@radix-ui/react-icons";
 import Avatar from "boring-avatars";
 import { useMutation, useQuery } from "convex/react";
 import { Loader2, MoreHorizontal, Trash2 } from "lucide-react";
@@ -57,17 +56,21 @@ export default function RawfileList() {
 
   const columns: ColumnDef<RawFile>[] = [
     {
-      accessorKey: "_id",
-      header: "",
+      accessorKey: "name",
+      header: "Name",
       cell: ({ row }) => (
-        <Button
-          variant="ghost"
-          onClick={() => {
-            router.push(`${pathname}/${row.original._id}`);
-          }}
-        >
-          <EnterIcon className="stroke-[0.8px] w-4 h-4 stroke-muted-foreground opacity-75" />
-        </Button>
+        <div className="flex items-center justify-center gap-4 text-white">
+          <div>{row.original.name}</div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "desc",
+      header: "Description",
+      cell: ({ row }) => (
+        <div className="flex items-center justify-center gap-4 text-white">
+          <div>{row.original.desc}</div>
+        </div>
       ),
     },
     {
