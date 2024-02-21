@@ -121,9 +121,9 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     if (!fgRef.current) return;
 
     // @ts-ignore
-    fgRef.current.d3Force("charge").strength(-50).distanceMax(100);
+    fgRef.current.d3Force("charge").strength(-50).distanceMax(50);
     // @ts-ignore
-    fgRef.current.d3Force("link").distance(40);
+    fgRef.current.d3Force("link").distance(20);
   }, [oriGraphData]);
 
   const connectedComponents: string[][] = useMemo(() => {
@@ -174,19 +174,31 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const graphsWithoutPrototype = useMemo(() => {
     if (!oriGraphData) return;
 
-    const prototypeNodes = oriGraphData.nodes.filter((n) => n.isPrototype);
-    const connectedComponentsWithPrototype = connectedComponents.filter((cc) =>
-      cc.some((n) => prototypeNodes.some((p) => p.id === n))
-    );
-    const nodesToKeep = connectedComponentsWithPrototype.reduce((acc, curr) => {
-      return acc.concat(curr);
-    }, []);
-    const edgesToKeep = oriGraphData.edges.filter(
-      (e) => nodesToKeep.includes(e.id1) && nodesToKeep.includes(e.id2)
-    );
+    // loop through all the connected components in connectedComponents and check if there is any prototype compound
+    // then compile the rest of the connected components to a new graph with edges and nodes
+
+    const newNodes = [];
+    const newEdges = [];
+    for (const connectedComponent of connectedComponents) {
+      const subgraphNodes = oriGraphData.nodes.filter((node) =>
+        connectedComponent.includes(node.id)
+      );
+
+      const prototypeNode = subgraphNodes.find((node) => node.isPrototype);
+      if (!prototypeNode) {
+        newNodes.push(...subgraphNodes);
+        const subgraphEdges = oriGraphData.edges.filter(
+          (edge) =>
+            connectedComponent.includes(edge.id1) &&
+            connectedComponent.includes(edge.id2)
+        );
+        newEdges.push(...subgraphEdges);
+      }
+    }
+
     return {
-      nodes: oriGraphData.nodes.filter((n) => nodesToKeep.includes(n.id)),
-      edges: edgesToKeep,
+      nodes: newNodes,
+      edges: newEdges,
     };
   }, [oriGraphData]);
 
@@ -313,54 +325,57 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
               <TooltipTrigger>
                 <Badge className="flex items-center justify-center gap-2">
                   <FlaskConical className="h-4 w-4" />
-                  <span className="bg-secondary/50 rounded-full w-4 h-4">
-                    {analysis.config.bioSamples.length}
-                  </span>
-                  Bio Samples
+                  Experiments
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                <div className="flex flex-col gap-4">
-                  <div className="text-neutral-400 gap-4 flex flex-col items-center justify-center py-2">
-                    {analysis.config.bioSamples.map((e, i) => (
-                      <div
-                        key={i}
-                        className="w-full flex-col flex items-start max-w-[400px] gap-2"
-                      >
-                        <div className="font-bold text-lg">{e.name}</div>
-                        <div className="flex items-center justify-center gap-4">
-                          <div className="flex flex-col gap-2">
-                            <div>Blank Groups</div>
-                            <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                              {e.blank.map((g, j) => (
-                                <Badge key={j}>{g}</Badge>
-                              ))}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex flex-col gap-2">
+                    <div>Bio Samples</div>
+                    <div className="text-neutral-400 gap-4 flex flex-col items-center justify-center py-2">
+                      {analysis.config.bioSamples.map((e, i) => (
+                        <div
+                          key={i}
+                          className="w-full flex-col flex items-start max-w-[400px] gap-2"
+                        >
+                          <div className="font-bold text-lg">{e.name}</div>
+                          <div className="flex items-center justify-center gap-4">
+                            <div className="flex flex-col gap-2">
+                              <div>Blank Groups</div>
+                              <div className="text-neutral-500 gap-2 flex items-center justify-center">
+                                {e.blank.map((g, j) => (
+                                  <Badge key={j}>{g}</Badge>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            <div>Sample Groups</div>
-                            <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                              {e.sample.map((g, j) => (
-                                <Badge key={j}>{g}</Badge>
-                              ))}
+                            <div className="flex flex-col gap-2">
+                              <div>Sample Groups</div>
+                              <div className="text-neutral-500 gap-2 flex items-center justify-center">
+                                {e.sample.map((g, j) => (
+                                  <Badge key={j}>{g}</Badge>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                   {analysis.config.drugSample && (
                     <div className="flex flex-col gap-2">
-                      <div className="font-bold text-lg">
-                        {analysis.config.drugSample.name}
-                      </div>
-                      <div className="flex items-center justify-center gap-4">
-                        <div className="flex flex-col gap-2">
-                          <div>Drug Groups</div>
-                          <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                            {analysis.config.drugSample.groups.map((g, j) => (
-                              <Badge key={j}>{g}</Badge>
-                            ))}
+                      <div>Drug Sample</div>
+                      <div className="text-neutral-400 flex flex-col gap-2">
+                        <div className="font-bold text-lg">
+                          {analysis.config.drugSample.name}
+                        </div>
+                        <div className="flex items-center justify-center gap-4">
+                          <div className="flex flex-col gap-2">
+                            <div>Drug Groups</div>
+                            <div className="text-neutral-500 gap-2 flex items-center justify-center">
+                              {analysis.config.drugSample.groups.map((g, j) => (
+                                <Badge key={j}>{g}</Badge>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -684,6 +699,16 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           links: graphData?.edges || [],
                           nodes: graphData?.nodes || [],
                         }}
+                        // click to smoothly zoom in the subgraph associated with that node
+                        onNodeClick={(node) => {
+                          if (!fgRef.current) return;
+                          // @ts-ignore
+                          fgRef.current.zoomToFit(1000, 100, (n) =>
+                            connectedComponents
+                              .find((cc) => cc.includes(node.id))
+                              ?.includes(n.id)
+                          );
+                        }}
                         nodeId="id"
                         linkSource="id1"
                         linkTarget="id2"
@@ -737,6 +762,11 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                             ctx.strokeStyle = "#ADD8E6";
                             ctx.fill();
                             ctx.lineWidth = 2; // Adjust border width as needed
+                            ctx.stroke();
+                          }
+
+                          if (node.isPrototype) {
+                            ctx.strokeStyle = "yellow";
                             ctx.stroke();
                           }
 
@@ -818,28 +848,43 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           );
                         }}
                       />
-                      {/* legend for ratios */}
-                      {ratioModeEnabled && (
-                        <div className="flex items-center justify-center gap-2 w-18 flex-col left-[30px] top-[40px] absolute">
-                          {analysis.config.bioSamples.map((e, i) => (
+                      <div className="flex flex-col gap-4 absolute left-[30px] top-[60px] items-start justify-center">
+                        {/* legend for prototype */}
+                        <div className="flex items-center justify-center gap-2 w-18 flex-col  ">
+                          <div className="flex items-center justify-center gap-2 w-full text-sm">
                             <div
-                              key={i}
-                              className="flex items-center justify-center gap-2 w-full text-sm"
-                            >
-                              <div
-                                className="w-4 h-4"
-                                style={{
-                                  backgroundColor: `hsl(${
-                                    (i * 360) /
-                                    analysis.config.bioSamples.length
-                                  }, 100%, 50%)`,
-                                }}
-                              />
-                              <span>{e.name}</span>
-                            </div>
-                          ))}
+                              className="w-4 h-4"
+                              style={{
+                                backgroundColor: "white",
+                                border: "2px solid yellow",
+                              }}
+                            />
+                            <span>Prototype</span>
+                          </div>
                         </div>
-                      )}
+                        {/* legend for ratios */}
+                        {ratioModeEnabled && (
+                          <div className="flex items-center justify-center gap-2 w-18 flex-col">
+                            {analysis.config.bioSamples.map((e, i) => (
+                              <div
+                                key={i}
+                                className="flex items-center justify-center gap-2 w-full text-sm"
+                              >
+                                <div
+                                  className="w-4 h-4"
+                                  style={{
+                                    backgroundColor: `hsl(${
+                                      (i * 360) /
+                                      analysis.config.bioSamples.length
+                                    }, 100%, 50%)`,
+                                  }}
+                                />
+                                <span>{e.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
