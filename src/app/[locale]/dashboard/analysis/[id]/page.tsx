@@ -570,7 +570,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     <div className="flex flex-col gap-6 items-start">
                       <div className="flex items-center justify-center gap-2">
                         <Label>Hide prototype compounds</Label>
-                        <HelperTooltip text="Opt not to show prototype compounds" />
+                        <HelperTooltip text="Opt not to show subgraphs that contains at least one prototype compound" />
                       </div>
                       <Switch
                         checked={hidePrototypeCompounds}
