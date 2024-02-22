@@ -273,6 +273,7 @@ export function ReactionDbCreationDialog({
     const { id } = await createReactionDatabase({
       name: values.name,
       reactions: values.reactions,
+      ionMode: values.ionMode,
     });
 
     onCreate(id);
@@ -424,10 +425,10 @@ export function ReactionDbCreationDialog({
                 name="ionMode"
                 render={({ field }) => {
                   return (
-                    <Tabs>
+                    <Tabs value={field.value} onValueChange={field.onChange}>
                       <TabsList>
-                        <TabsTrigger value="positive">+ Positive</TabsTrigger>
-                        <TabsTrigger value="negative">- Negative</TabsTrigger>
+                        <TabsTrigger value="pos">+ Positive</TabsTrigger>
+                        <TabsTrigger value="neg">- Negative</TabsTrigger>
                       </TabsList>
                     </Tabs>
                   );
