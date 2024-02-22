@@ -563,8 +563,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center justify-center gap-4 text-xs max-w-[200px]">
-                      <TimerIcon size={16} />
+                    <div className="flex items-center justify-center gap-4 text-xs max-w-[250px]">
+                      <TimerIcon size={16} className="shrink-0" />
                       {
                         new Date(analysis._creationTime)
                           .toString()
