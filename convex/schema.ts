@@ -36,7 +36,11 @@ export const AnalysisConfigSchema = z.object({
 
 export const AnalysisCreationInputSchema = z.object({
   rawFile: zid("rawFiles"),
-  reactionDb: z.union([zid("reactionDatabases"), z.literal("default")]),
+  reactionDb: z.union([
+    zid("reactionDatabases"),
+    z.literal("default-pos"),
+    z.literal("default-neg"),
+  ]),
   config: AnalysisConfigSchema,
 });
 
@@ -101,6 +105,7 @@ export const ReactionDatabaseSchema = z.object({
   user: z.string(),
   name: z.string(),
   reactions: z.array(ReactionSchema),
+  ionMode: z.enum(["pos", "neg"]),
 });
 
 export const RawFileCreationInputSchema = z.object({

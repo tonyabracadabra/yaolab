@@ -33,6 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
+import { Tabs, TabsList, TabsTrigger } from "../../ui/tabs";
 
 type ReactionDatabaseInput = z.infer<typeof ReactionDatabaseSchema>;
 type Reaction = z.infer<typeof ReactionSchema>;
@@ -413,6 +414,24 @@ export function ReactionDbCreationDialog({
                   }
                 }}
                 type="file"
+              />
+            </FormItem>
+            <FormItem>
+              <FormLabelWithTooltip tooltip="Choose from positive / negative ion mode to alleviate the false positive rate">
+                Ion Mode
+              </FormLabelWithTooltip>
+              <FormField
+                name="ionMode"
+                render={({ field }) => {
+                  return (
+                    <Tabs>
+                      <TabsList>
+                        <TabsTrigger value="positive">+ Positive</TabsTrigger>
+                        <TabsTrigger value="negative">- Negative</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  );
+                }}
               />
             </FormItem>
             <ReactionsFieldsArray control={form.control} />
