@@ -425,7 +425,11 @@ export function ReactionDbCreationDialog({
                 name="ionMode"
                 render={({ field }) => {
                   return (
-                    <Tabs value={field.value} onValueChange={field.onChange}>
+                    <Tabs
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      className="py-2"
+                    >
                       <TabsList>
                         <TabsTrigger value="pos">+ Positive</TabsTrigger>
                         <TabsTrigger value="neg">- Negative</TabsTrigger>
