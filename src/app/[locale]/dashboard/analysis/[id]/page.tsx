@@ -802,8 +802,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   {/* legend for redundant */}
                   {highlightRedundant && (
                     <div className="flex items-center justify-start gap-2">
-                      {/* a thin red line */}
-                      <div className="w-4 h-[2px] bg-red-500" />
+                      {/* a thin red dashed line */}
+                      <div className="border-t border-dashed border-red-500 w-4" />
                       <span>Redundant</span>
                     </div>
                   )}
@@ -978,6 +978,10 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           ctx.strokeStyle = theme === "dark" ? "white" : "#000"; // Line color
                           if (highlightRedundant && link.redundantData) {
                             ctx.strokeStyle = "red";
+                            // make this line dashed
+                            ctx.setLineDash([5, 5]);
+                          } else {
+                            ctx.setLineDash([]);
                           }
 
                           ctx.stroke();
