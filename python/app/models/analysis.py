@@ -60,11 +60,12 @@ class Reaction(BaseModel):
     formulaChange: str
     description: str
     mzDiff: float
-    
+
 
 class IonMode(str, Enum):
     POS = "pos"
     NEG = "neg"
+
 
 class ReactionDatabase(BaseModel):
     name: str

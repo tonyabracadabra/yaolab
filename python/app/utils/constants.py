@@ -50,7 +50,7 @@ class MDialColumn(str, Enum):
 
 
 # load default reaction dataframe of 119 reactions from local file
-    
+
 
 def _load_default_reactions():
     folder = Path(__file__).parents[2] / "asset"
@@ -65,6 +65,9 @@ def _load_default_reactions():
     pos_adduct_df = pd.read_csv(folder / "pos-adduct-ions.csv")[reaction_cols]
     neg_adduct_df = pd.read_csv(folder / "neg-adduct-ions.csv")[reaction_cols]
 
-    return pd.concat([default_reaction_df, pos_adduct_df]), pd.concat([default_reaction_df, neg_adduct_df])
+    return pd.concat([default_reaction_df, pos_adduct_df]), pd.concat(
+        [default_reaction_df, neg_adduct_df]
+    )
+
 
 DEFAULT_POS_DF, DEFAULT_NEG_DF = _load_default_reactions()
