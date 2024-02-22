@@ -221,7 +221,9 @@ const ReactionsFieldsArray = ({
           variant="secondary"
           className="flex items-center gap-2"
           onClick={async () => {
-            const { csv } = await downloadDefaultReactions();
+            const { csv } = await downloadDefaultReactions({
+              mode: control._formValues.ionMode,
+            });
             const blob = new Blob([csv], { type: "text/csv" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");

@@ -107,7 +107,9 @@ export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
           variant="secondary"
           className="flex items-center gap-2"
           onClick={async () => {
-            const { csv } = await downloadDefaultReactions();
+            const { csv } = await downloadDefaultReactions({
+              mode: form.watch("reactionDb").split("-")[1] as "pos" | "neg",
+            });
             const blob = new Blob([csv], { type: "text/csv" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
