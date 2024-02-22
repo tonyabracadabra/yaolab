@@ -1,5 +1,9 @@
 import { api } from "@/convex/_generated/api";
-import { AnalysisCreationInputSchema } from "@/convex/schema";
+import {
+  AnalysisCreationInputSchema,
+  EdgeSchema,
+  NodeSchema,
+} from "@/convex/schema";
 import { clsx, type ClassValue } from "clsx";
 import { useAction } from "convex/react";
 import { useState } from "react";
@@ -105,3 +109,51 @@ export function getRandomInt(min: number, max: number): number {
 export type AnalysisCreationInputType = z.infer<
   typeof AnalysisCreationInputSchema
 >;
+
+export type Edge = z.infer<typeof EdgeSchema>;
+export type Node = z.infer<typeof NodeSchema>;
+
+export type GraphData = {
+  nodes: Node[];
+  edges: Edge[];
+};
+
+// Function to generate GraphML string from graph data
+export const generateGraphML = (graphData: GraphData) => {
+  // Start of the GraphML document
+  let graphml = `<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns
+     http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <graph id="G" edgedefault="undirected">\n`;
+
+  // Adding node elements with their attributes
+  graphData.nodes.forEach((node) => {
+    graphml += `    <node id="${node.id}">\n`;
+    for (const [key, value] of Object.entries(node)) {
+      if (key !== "id") {
+        // Exclude the id from attributes
+        graphml += `      <data key="${key}">${value}</data>\n`;
+      }
+    }
+    graphml += `    </node>\n`;
+  });
+
+  // Adding edge elements with their attributes
+  graphData.edges.forEach((edge, index) => {
+    graphml += `    <edge id="e${index}" source="${edge.id1}" target="${edge.id2}">\n`;
+    for (const [key, value] of Object.entries(edge)) {
+      if (key !== "id1" && key !== "id2") {
+        // Exclude the source and target ids from attributes
+        graphml += `      <data key="${key}">${value}</data>\n`;
+      }
+    }
+    graphml += `    </edge>\n`;
+  });
+
+  // End of the GraphML document
+  graphml += `  </graph>\n</graphml>`;
+
+  return graphml;
+};

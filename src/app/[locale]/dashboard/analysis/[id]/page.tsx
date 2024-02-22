@@ -2,8 +2,8 @@
 
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { AnalysisResultSchema, EdgeSchema, NodeSchema } from "@/convex/schema";
-import { cn } from "@/lib/utils";
+import { AnalysisResultSchema } from "@/convex/schema";
+import { Edge, GraphData, Node, cn, generateGraphML } from "@/lib/utils";
 import AnalysisResult from "@/src/components/analysis-result/task-result";
 import { Workflow } from "@/src/components/analysis-result/workflow";
 import { MagicCard } from "@/src/components/magicui/magic-card";
@@ -56,9 +56,6 @@ import Papa from "papaparse";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
-type Edge = z.infer<typeof EdgeSchema>;
-type Node = z.infer<typeof NodeSchema>;
-
 type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
 const kAvailableNodes = [
@@ -104,11 +101,6 @@ const kAvailableEdges = [
     label: "Modified Cosine Similarity",
   },
 ];
-
-type GraphData = {
-  nodes: Node[];
-  edges: Edge[];
-};
 
 const colorSchemes = [
   {
@@ -687,6 +679,18 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       </SelectContent>
                     </Select>
                   </div>
+                  {analysis.config.drugSample && (
+                    <div className="flex flex-col gap-6 items-start">
+                      <div className="flex items-center justify-center gap-2">
+                        <Label>Hide endogenous subgraphs</Label>
+                        <HelperTooltip text="Only show subgraphs that contains at least one prototype compound" />
+                      </div>
+                      <Switch
+                        checked={hideEndogenousSubgraphs}
+                        onCheckedChange={setHideEndogenousSubgraphs}
+                      />
+                    </div>
+                  )}
                   <div className="flex flex-col gap-6 items-start ml-2">
                     <div className="flex items-center justify-center gap-2">
                       <Label>Compound response Mode</Label>
@@ -707,18 +711,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       onCheckedChange={setHighlightRedundant}
                     />
                   </div>
-                  {analysis.config.drugSample && (
-                    <div className="flex flex-col gap-6 items-start">
-                      <div className="flex items-center justify-center gap-2">
-                        <Label>Hide endogenous subgraphs</Label>
-                        <HelperTooltip text="Only show subgraphs that contains at least one prototype compound" />
-                      </div>
-                      <Switch
-                        checked={hideEndogenousSubgraphs}
-                        onCheckedChange={setHideEndogenousSubgraphs}
-                      />
-                    </div>
-                  )}
                 </div>
               </div>
               <MagicCard className="h-[68vh] relative">
@@ -744,27 +736,9 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       onClick={() => {
                         if (!graphData) return;
                         setDownloading(true);
-                        // Download graphml file, given the nodes and edges
-                        const graphml = `
-                      <graphml>
-                        <graph id="G" edgedefault="undirected">
-                          ${(graphData?.nodes || [])
-                            .map(
-                              (n) =>
-                                `<node id="${n.id}"><data key="mz">${n.mz}</data></node>`
-                            )
-                            .join("\n")}
-                          ${(graphData.edges || [])
-                            .map(
-                              (e, i) =>
-                                `<edge id="${i}" source="${e.id1}" target="${e.id2}"><data key="mzDiff">${e.mzDiff}</data></edge>`
-                            )
-                            .join("\n")}
-                        </graph>
-                      </graphml>
-                      `;
 
-                        const blob = new Blob([graphml], {
+                        const graphMLString = generateGraphML(graphData);
+                        const blob = new Blob([graphMLString], {
                           type: "application/xml",
                         });
                         const url = URL.createObjectURL(blob);
