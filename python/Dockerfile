@@ -1,4 +1,4 @@
-FROM python:3.11.6-slim-bullseye as base
+FROM python:3.11.8-alpine as base
 
 # Configure Poetry
 ENV POETRY_VERSION=1.3.2 \

@@ -115,6 +115,7 @@ export const RawFileCreationInputSchema = z.object({
   desc: z.optional(z.string()),
   tool: MSTool,
   mgf: z.string(),
+
   targetedIons: z.string(),
   sampleCols: z.array(z.string()),
 });

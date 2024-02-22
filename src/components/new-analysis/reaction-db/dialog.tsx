@@ -252,6 +252,7 @@ export function ReactionDbCreationDialog({
     defaultValues: {
       // random name with date
       name: `My Reaction Database ${new Date().toLocaleDateString()}`,
+      ionMode: "pos",
     },
   });
   const t = useTranslations("New");
