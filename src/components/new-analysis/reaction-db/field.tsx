@@ -71,10 +71,10 @@ export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
                     </SelectItem>
                   ))}
                   <SelectItem key="default-pos" value="default-pos">
-                    Default 119 Reactions + Positive Ions
+                    Default 116 Reactions + Positive Ions
                   </SelectItem>
                   <SelectItem key="default-neg" value="default-neg">
-                    Default 119 Reactions + Negative Ions
+                    Default 116 Reactions + Negative Ions
                   </SelectItem>
                   {allReactionDatabases?.length === 0 && (
                     <SelectItem key={"none"} disabled value="none">

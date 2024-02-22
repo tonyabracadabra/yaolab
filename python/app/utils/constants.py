@@ -49,7 +49,7 @@ class MDialColumn(str, Enum):
     MSMS_ASSIGNED = "MS/MS assigned"
 
 
-# load default reaction dataframe of 119 reactions from local file
+# load default reaction dataframe of 116 reactions from local file
 
 
 def _load_default_reactions():
