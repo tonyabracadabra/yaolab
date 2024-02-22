@@ -46,6 +46,8 @@ export const AnalysisCreationInputSchema = z.object({
 
 export const AnalysisStatus = z.enum(["running", "complete", "failed"]);
 
+export const IonMode = z.enum(["pos", "neg"]);
+
 export const AnalysisStep = z.enum([
   "load_data",
   "create_ion_interaction_matrix",
@@ -105,7 +107,7 @@ export const ReactionDatabaseSchema = z.object({
   user: z.string(),
   name: z.string(),
   reactions: z.array(ReactionSchema),
-  ionMode: z.enum(["pos", "neg"]),
+  ionMode: IonMode,
 });
 
 export const RawFileCreationInputSchema = z.object({

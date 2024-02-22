@@ -1,17 +1,19 @@
 import { z } from "zod";
-import { ReactionSchema } from "./schema";
+import { IonMode, ReactionSchema } from "./schema";
 import { zMutation, zQuery } from "./utils";
 
 export const create = zMutation({
   args: {
     name: z.string(),
     reactions: z.array(ReactionSchema),
+    ionMode: IonMode,
   },
-  handler: async ({ db, user }, { reactions, name }) => {
+  handler: async ({ db, user }, { reactions, name, ionMode }) => {
     const id = await db.insert("reactionDatabases", {
       user,
       name,
       reactions,
+      ionMode,
     });
 
     return { id };

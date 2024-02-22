@@ -132,7 +132,7 @@ export const getAll = zQuery({
               reactions: z.infer<typeof ReactionSchema>[];
             } = "default-pos";
         if (
-          analysis.reactionDb !== "default-pos" ||
+          analysis.reactionDb !== "default-pos" &&
           analysis.reactionDb !== "default-neg"
         ) {
           const reactionDb = await db.get(analysis.reactionDb);
