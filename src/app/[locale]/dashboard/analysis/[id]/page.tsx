@@ -6,7 +6,6 @@ import { AnalysisResultSchema } from "@/convex/schema";
 import { Edge, GraphData, Node, cn, generateGraphML } from "@/lib/utils";
 import AnalysisResult from "@/src/components/analysis-result/task-result";
 import { Workflow } from "@/src/components/analysis-result/workflow";
-import { MagicCard } from "@/src/components/magicui/magic-card";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -23,6 +22,7 @@ import { ForceGraph2D } from "react-force-graph";
 
 import { HelperTooltip } from "@/src/components/help-tooltip";
 import { Switch } from "@/src/components/switch";
+import { Card } from "@/src/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -619,7 +619,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             </div>
           )}
           {analysis.status === "complete" && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 h-full">
               <div className="flex items-start justify-between gap-4 w-full p-4 bg-primary-foreground rounded-lg">
                 <div className="flex items-start justify-center gap-4">
                   <div className="flex flex-col gap-4 items-start">
@@ -713,7 +713,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   </div>
                 </div>
               </div>
-              <MagicCard className="h-[68vh] relative">
+              <Card className="relative h-full">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -852,11 +852,11 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   )}
                 </div>
                 {graphData === undefined ? (
-                  <div className="flex items-center h-[60%] justify-center gap-2">
+                  <div className="flex items-center h-full justify-center gap-2">
                     Loading graph now <Loader2 className="animate-spin" />
                   </div>
                 ) : (
-                  <div className="overflow-hidden w-[75vw] h-[65vh]">
+                  <div className="overflow-hidden w-full h-[calc(100vh-300px)]">
                     {graphData.edges?.length === 0 &&
                     graphData.nodes?.length === 0 ? (
                       <span>No data to display</span>
@@ -1019,7 +1019,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     )}
                   </div>
                 )}
-              </MagicCard>
+              </Card>
             </div>
           )}
         </div>
