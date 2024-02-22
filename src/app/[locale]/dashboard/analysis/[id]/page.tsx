@@ -836,7 +836,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           {colorSchemes.find((c) => c.value === colorScheme)
                             ?.label || "Color Scheme"}
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[20000]">
                           {colorSchemes.map((scheme, i) => (
                             <SelectItem
                               key={i}
@@ -856,7 +856,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     Loading graph now <Loader2 className="animate-spin" />
                   </div>
                 ) : (
-                  <div className="overflow-hidden w-full h-[calc(100vh-300px)]">
+                  <div className="overflow-hidden w-[calc(100vw-250px)] h-[calc(100vh-300px)]">
                     {graphData.edges?.length === 0 &&
                     graphData.nodes?.length === 0 ? (
                       <span>No data to display</span>
