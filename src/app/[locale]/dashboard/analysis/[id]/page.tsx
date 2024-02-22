@@ -95,6 +95,14 @@ const kAvailableEdges = [
     col: "matchedDescription",
     label: "Matched Reaction Description",
   },
+  {
+    col: "correlation",
+    label: "Sample Correlation",
+  },
+  {
+    col: "modCos",
+    label: "Modified Cosine Similarity",
+  },
 ];
 
 type GraphData = {
