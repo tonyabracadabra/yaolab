@@ -16,7 +16,7 @@ WORKDIR /code
 
 # Install dependencies
 COPY poetry.lock pyproject.toml ./
-RUN poetry install --no-root --no-dev --parallel
+RUN poetry install --no-root --no-dev
 
 # Run your app
 COPY . /code
