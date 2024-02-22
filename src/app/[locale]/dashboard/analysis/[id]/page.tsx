@@ -144,7 +144,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const [nodeSize, setNodeSize] = useState(kAvailableNodes[1].col);
   const [ratioModeEnabled, setRatioModeEnabled] = useState(false);
   const [highlightRedundant, setHighlightRedundant] = useState(false);
-  const [hidePrototypeCompounds, setHidePrototypeCompounds] = useState(false);
+  const [hideEndogenousSubgraphs, setHideEndogenousSubgraphs] = useState(true);
   const { theme } = useTheme();
   const fgRef = useRef();
   const { getToken } = useAuth();
@@ -205,7 +205,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     return connectedComponents;
   }, [oriGraphData]);
 
-  const graphsWithoutPrototype = useMemo(() => {
+  const graphsWithPrototype = useMemo(() => {
     if (!oriGraphData) return;
 
     // loop through all the connected components in connectedComponents and check if there is any prototype compound
@@ -219,7 +219,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
       );
 
       const prototypeNode = subgraphNodes.find((node) => node.isPrototype);
-      if (!prototypeNode) {
+      if (prototypeNode) {
         newNodes.push(...subgraphNodes);
         const subgraphEdges = oriGraphData.edges.filter(
           (edge) =>
@@ -301,15 +301,15 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
 
   useEffect(() => {
     if (oriGraphData) {
-      if (hidePrototypeCompounds) {
-        setGraphData(graphsWithoutPrototype);
+      if (hideEndogenousSubgraphs) {
+        setGraphData(graphsWithPrototype);
       } else {
         setGraphData(oriGraphData);
       }
     }
   }, [
     setGraphData,
-    hidePrototypeCompounds,
+    hideEndogenousSubgraphs,
     oriGraphData,
     graphData,
     setOriGraphData,
@@ -702,12 +702,12 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   {analysis.config.drugSample && (
                     <div className="flex flex-col gap-6 items-start">
                       <div className="flex items-center justify-center gap-2">
-                        <Label>Hide prototype subgraphs</Label>
-                        <HelperTooltip text="Opt not to show subgraphs that contains at least one prototype compound" />
+                        <Label>Hide endogenous subgraphs</Label>
+                        <HelperTooltip text="Only show subgraphs that contains at least one prototype compound" />
                       </div>
                       <Switch
-                        checked={hidePrototypeCompounds}
-                        onCheckedChange={setHidePrototypeCompounds}
+                        checked={hideEndogenousSubgraphs}
+                        onCheckedChange={setHideEndogenousSubgraphs}
                       />
                     </div>
                   )}
