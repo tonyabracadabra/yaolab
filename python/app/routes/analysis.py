@@ -3,8 +3,14 @@ import logging
 import pyteomics.mass
 from app.core.analysis import AnalysisWorker
 from app.core.preprocess import preprocess_targeted_ions_file
-from app.models.analysis import Analysis, AnalysisStatus, AnalysisTriggerInput, MSTool
-from app.utils.constants import DEFAULT_REACTION_DF
+from app.models.analysis import (
+    Analysis,
+    AnalysisStatus,
+    AnalysisTriggerInput,
+    IonMode,
+    MSTool,
+)
+from app.utils.constants import DEFAULT_NEG_DF, DEFAULT_POS_DF
 from app.utils.convex import get_convex, load_binary, upload_parquet
 from app.utils.logger import logger
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
@@ -71,8 +77,10 @@ async def mass(input: MassInput) -> dict[str, list[float]]:
 
 
 @router.get("/defaultReactions")
-async def download_default_reactions() -> dict[str, str]:
-    return {"csv": DEFAULT_REACTION_DF.to_csv(index=False)}
+async def download_default_reactions(mode: IonMode) -> dict[str, str]:
+    default_reactions_df = DEFAULT_POS_DF if mode is IonMode.POS else DEFAULT_NEG_DF
+
+    return {"csv": default_reactions_df.to_csv(index=False)}
 
 
 class PreprocessIonsInput(BaseModel):

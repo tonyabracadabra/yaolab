@@ -20,7 +20,65 @@ import { GlobeIcon, InputIcon } from "@radix-ui/react-icons";
 
 import { cn } from "@/lib/utils";
 import Meteors from "@/src/components/magicui/meteors";
-import { ContactIcon, ScatterChartIcon } from "lucide-react";
+import { ContactIcon, GraduationCap, ScatterChartIcon } from "lucide-react";
+
+const papers = [
+  {
+    title:
+      "Zhu Haodong#, He Liangliang #, Wu Wenyong #, Duan Huifang, Chen Jiali, Xiao Qiang, Lin Pei, Qin Zifei, Dai Yi, Wu Wanying*, Hu Liufang*, Yao Zhihong*. A compounds annotation strategy using targeted molecular networking for offline two-dimensional liquid chromatography-mass spectrometry analysis: Yupingfeng as a case study [J]. Journal of Chromatography A, 2023: 464045. (IF: 4.601)",
+    href: "https://pubmed.ncbi.nlm.nih.gov/37236139/",
+  },
+  {
+    title:
+      "Liangliang He, Heng Sun, Qingmei Mo, Qiang Xiao, Kefeng Yang, Xintong Chen, Haodong Zhu, Xupeng Tong, Xinsheng Yao, Jiaxu Chen*, Zhihong Yao*. A multi-module structure labelled molecular network orients the chemical profiles of traditional Chinese medicine prescriptions: Xiaoyao San, as an example [J]. Journal of Chromatography A, 2024, 1715(25), 464613. (IF: 4.601)",
+    href: "https://pubmed.ncbi.nlm.nih.gov/38184988/",
+  },
+  {
+    title:
+      "He, Liangliang1; Duan, Huifang1; Chen, Xintong; Chen, Yuanshan; Mo, Qingmei; Huang, Junqing; Zhao, Huinan; Yao, Xinsheng; Chen, Jiaxu*; Yao, Zhihong*. Quality assessment of commercial dried ginger (Zingiber officinale Roscoe) based on targeted and non-targeted chemical profiles and anti-inflammatory activity. Food Research International, 2023, 112589. (IF: 8.1)",
+    href: "https://pubmed.ncbi.nlm.nih.gov/36914321/",
+  },
+  {
+    title:
+      "Ma, Xiaohui1; Wang, Qi1; Liu, Chunyu1; Liu, Jianghanzi; Luo, Ganqing; He, Liangliang*; Yuan, Tianhui*; He, Rong-Rong*; Yao, Zhihong*. Regulation of phospholipid peroxidation signaling by a traditional Chinese medicine formula for coronary heart disease. Phytomedicine, 2023, 114: 154749. (IF: 7.9)",
+    href: "https://pubmed.ncbi.nlm.nih.gov/36931097/",
+  },
+  {
+    title:
+      "Lin, Pei1; Hu, Liufang1; Huang, Qiaoting; Zhang, Yezi; Qin, Zifei; Chen, Jiaxu; Yao, Xinsheng; Wu, Huanlin; Yao, Zhihong*; Xu, Danping*. Pharmacokinetics integrated with network pharmacology to clarify effective components and mechanism of Wendan decoction for the intervention of coronary heart disease. Journal of Ethnopharmacology, 2023, 314: 116669. (IF: 5.4)",
+    href: "https://pubmed.ncbi.nlm.nih.gov/37217155/",
+  },
+  {
+    title:
+      "Hu, Liufang1; Chen, Jiali1; Duan, Huifang; Du, Jing*; Zou, Zhenyu; Qiu, Yuan; Chen, Jiaxu; Yao, Xinsheng; Kiyohara, Hiroaki; Nagai, Takayuki*; Yao, Zhihong*. A screening strategy for bioactive components of Bu-Zhong-Yi-Qi-Tang regulating spleen-qi deficiency based on endobiotics-targets-xenobiotics association network. Journal of Ethnopharmacology, 2023, 314: 116605. (IF: 5.4)",
+    href: "https://pubmed.ncbi.nlm.nih.gov/37178982/",
+  },
+  {
+    title:
+      "Lin, Pei1; Wang, Qi1; Chen, Jiayun; Zhao, Huinan; Huang, Haimeng; Xiao, Qiang; Qin, Zifei; Chen, Jiaxu; Yao, Xinsheng*; Yao, Zhihong*. Kinetic features of Gualou-Xiebai-Banxia decoction, a classical traditional Chinese medicine formula, in rat plasma and intestine content based on its metabolic profile. Arabian Journal of Chemistry, 2023, 16(1), 104417. (IF: 6.0)",
+    href: "https://www.sciencedirect.com/science/article/pii/S187853522200733X",
+  },
+  {
+    title:
+      "Chen, Chanjuan1; Chen, Xintong1; Mo, Qingmei; Liu, Jie; Yao, Xinsheng; Di, Xin; Qin, Zifei*; He, Liangliang*; Yao, Zhihong*. Cytochrome P450 metabolism studies of [6]-gingerol,[8]-gingerol, and [10]-gingerol by liver microsomes of humans and different species combined with expressed CYP enzymes. RSC Advances, 2023, 13(9): 5804-5812. (IF: 3.9)",
+    href: "https://pubs.rsc.org/en/content/articlelanding/2023/ra/d2ra06184h",
+  },
+  {
+    title:
+      "Wang, Qi1; Chen, Jiayun1; Zhang, Yezi; Xu, Danping; Wu, Huanlin; Lin, Pei*; He, Liangliang; Qin, Zifei; Yao Zhihong*. Metabolic profile and potential mechanisms of Wendan decoction on coronary heart disease by ultra‐high‐performance quadrupole time of flight‐mass spectrometry combined with network pharmacology analysis. Journal of Separation Science, 2023, 46(1): 2200456. (IF: 3.1)",
+    href: "https://pubmed.ncbi.nlm.nih.gov/36300722/",
+  },
+  {
+    title:
+      "He Liangliang1, Liu Yuehe1, Yang Kefeng, Zou Zhenyu, Fan Cailian, Yao Zhihong*, Yi Dai*, Keshen Li, Jiaxu Chen, Xinsheng Yao. The discovery of Q-markers of Qiliqiangxin Capsule, a traditional Chinese medicine prescription in the treatment of chronic heart failure, based on a novel strategy of multi-dimensional “radar chart” mode evaluation [J], Phytomedicine,2021, 82: 153443. (IF: 7.9)",
+    href: "https://pubmed.ncbi.nlm.nih.gov/33429210/",
+  },
+  {
+    title:
+      "Wang Qi1, Chen Guotao1, Chen Xintong, Liu Yuehe, Qin Zifei, Lin Pei*, Shang Hongcai, Ye Min, He liangliang*, Yao Zhinghong*, Development of a three-step-based novel strategy integrating DMPK with network pharmacology and bioactivity evaluation for the discovery of Q-markers of traditional Chinese medicine prescriptions: Danlou tablet as an example, Phytomedicine, 2023, 108: 154511. (IF: 7.9)",
+    href: "https://pubmed.ncbi.nlm.nih.gov/36334388/",
+  },
+];
 
 const features = [
   {
@@ -132,6 +190,7 @@ const features = [
     description: "More on our mission and team",
     className: "col-span-3 lg:col-span-1",
     href: "/aboutus",
+    hrefText: "Learn More",
     background: (
       <div
         style={{
@@ -139,6 +198,36 @@ const features = [
         }}
         className="-z-24 absolute bg-gradient-overlay rounded-lg w-full h-full bg-cover opacity-20 bg-[url('/jnu.png')]"
       />
+    ),
+  },
+  {
+    Icon: GraduationCap,
+    name: "Research",
+    description: "Our latest research and publications",
+    href: "research",
+    hrefText: "Stay Tuned",
+    className: "col-span-3 lg:col-span-3",
+    background: (
+      <Marquee
+        pauseOnHover
+        className="absolute top-10 [--duration:60s] [mask-image:linear-gradient(to_top,transparent_40%,#000_100%)] "
+      >
+        {papers.map((paper, index) => (
+          <a
+            key={index}
+            className={cn(
+              "inline-block mr-4 cursor-pointer overflow-hidden rounded-xl border p-4",
+              "border-gray-950/[.1] bg-gray-950/[.01] hover:bg-gray-950/[.05]",
+              "dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]",
+              "transition-all duration-300 ease-out text-sm w-[250px]"
+            )}
+            href={paper.href}
+            target="_blank"
+          >
+            {paper.title}
+          </a>
+        ))}
+      </Marquee>
     ),
   },
 ];

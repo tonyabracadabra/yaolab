@@ -33,6 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
+import { Tabs, TabsList, TabsTrigger } from "../../ui/tabs";
 
 type ReactionDatabaseInput = z.infer<typeof ReactionDatabaseSchema>;
 type Reaction = z.infer<typeof ReactionSchema>;
@@ -127,9 +128,6 @@ const ReactionsFieldsArray = ({
     name: "reactions",
   });
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const downloadDefaultReactions = useAction(
-    api.actions.downloadDefaultReactions
-  );
 
   return (
     <div className="flex flex-col overflow-scroll gap-2 max-h-[200px] w-[450px]">
@@ -187,6 +185,14 @@ const ReactionsFieldsArray = ({
               </div>
             </TableHead>
           </TableRow>
+          {(!control._formValues.reactions ||
+            control._formValues.reactions.length === 0) && (
+            <TableRow>
+              <TableCell colSpan={4} className="h-18 text-center">
+                No Custom Reactions
+              </TableCell>
+            </TableRow>
+          )}
         </TableHeader>
         <TableBody>
           {/* fields map to table rows then table cells */}
@@ -211,31 +217,6 @@ const ReactionsFieldsArray = ({
           ))}
         </TableBody>
       </Table>
-      <DialogDescription className="flex items-center justify-start flex-wrap gap-2 pt-4 text-sm">
-        <Atom size={18} />
-        By default, the reaction database contains{" "}
-        <Button
-          size="xs"
-          type="button"
-          variant="secondary"
-          className="flex items-center gap-2"
-          onClick={async () => {
-            const { csv } = await downloadDefaultReactions();
-            const blob = new Blob([csv], { type: "text/csv" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "default-reactions.csv"; // Sets the filename for the download
-            document.body.appendChild(a); // Append the link to the document
-            a.click(); // Trigger the download
-            document.body.removeChild(a); // Clean up and remove the link
-            URL.revokeObjectURL(url);
-          }}
-        >
-          <div>119 reactions</div>
-          <DownloadCloud size={12} />
-        </Button>
-      </DialogDescription>
     </div>
   );
 };
@@ -251,6 +232,7 @@ export function ReactionDbCreationDialog({
     defaultValues: {
       // random name with date
       name: `My Reaction Database ${new Date().toLocaleDateString()}`,
+      ionMode: "pos",
     },
   });
   const t = useTranslations("New");
@@ -258,6 +240,9 @@ export function ReactionDbCreationDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const calculateMass = useAction(api.actions.calculateMass);
   const createReactionDatabase = useMutation(api.reactions.create);
+  const downloadDefaultReactions = useAction(
+    api.actions.downloadDefaultReactions
+  );
 
   const onClose = () => {
     form.reset();
@@ -272,6 +257,7 @@ export function ReactionDbCreationDialog({
     const { id } = await createReactionDatabase({
       name: values.name,
       reactions: values.reactions,
+      ionMode: values.ionMode,
     });
 
     onCreate(id);
@@ -415,8 +401,63 @@ export function ReactionDbCreationDialog({
                 type="file"
               />
             </FormItem>
+            <FormItem>
+              <FormLabelWithTooltip tooltip="Choose from positive / negative ion mode to alleviate the false positive rate">
+                Ion Mode
+              </FormLabelWithTooltip>
+              <FormField
+                name="ionMode"
+                render={({ field }) => {
+                  return (
+                    <Tabs
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      className="py-2"
+                    >
+                      <TabsList>
+                        <TabsTrigger value="pos">+ Positive</TabsTrigger>
+                        <TabsTrigger value="neg">- Negative</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  );
+                }}
+              />
+            </FormItem>
             <ReactionsFieldsArray control={form.control} />
-            <DialogFooter>
+            <DialogFooter className="flex items-center justify-between pt-2 px-2">
+              <DialogDescription className="flex items-center justify-start flex-wrap gap-2 text-xs w-full">
+                <Atom size={16} />
+                By default, the reaction database contains{" "}
+                <Button
+                  size="xs"
+                  type="button"
+                  variant="secondary"
+                  className="flex items-center gap-2 text-xs"
+                  onClick={async () => {
+                    const { csv } = await downloadDefaultReactions({
+                      mode: form.getValues().ionMode,
+                    });
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "default-reactions.csv"; // Sets the filename for the download
+                    document.body.appendChild(a); // Append the link to the document
+                    a.click(); // Trigger the download
+                    document.body.removeChild(a); // Clean up and remove the link
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  <div>116 reactions</div>
+                  <Plus size={12} />
+                  <div>
+                    {form.getValues().ionMode === "pos"
+                      ? "4 positive ion metalome"
+                      : "3 negative ion metalone"}
+                  </div>
+                  <DownloadCloud size={12} />
+                </Button>
+              </DialogDescription>
               <Button type="button" onClick={onSubmit}>
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">

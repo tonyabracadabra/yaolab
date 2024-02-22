@@ -49,13 +49,25 @@ class MDialColumn(str, Enum):
     MSMS_ASSIGNED = "MS/MS assigned"
 
 
-# load default reaction dataframe of 119 reactions from local file
-DEFAULT_REACTION_DF = pd.read_csv(
-    Path(__file__).parents[2] / "asset" / "default-reactions.csv"
-)[
-    [
+# load default reaction dataframe of 116 reactions from local file
+
+
+def _load_default_reactions():
+    folder = Path(__file__).parents[2] / "asset"
+    reaction_cols = [
         ReactionColumn.MZ_DIFF,
         ReactionColumn.FORMULA_CHANGE,
         ReactionColumn.REACTION_DESCRIPTION,
     ]
-]
+    default_reaction_df = pd.read_csv(folder / "default-common-reactions.csv")[
+        reaction_cols
+    ]
+    pos_adduct_df = pd.read_csv(folder / "pos-adduct-ions.csv")[reaction_cols]
+    neg_adduct_df = pd.read_csv(folder / "neg-adduct-ions.csv")[reaction_cols]
+
+    return pd.concat([default_reaction_df, pos_adduct_df]), pd.concat(
+        [default_reaction_df, neg_adduct_df]
+    )
+
+
+DEFAULT_POS_DF, DEFAULT_NEG_DF = _load_default_reactions()

@@ -34,7 +34,7 @@ export default function AnalysisCreation({
     resolver: zodResolver(AnalysisCreationInputSchema),
     defaultValues: {
       rawFile: defaultAnalysis?.rawFile || "",
-      reactionDb: defaultAnalysis?.reactionDb || "default",
+      reactionDb: defaultAnalysis?.reactionDb || "default-pos",
       config: {
         bioSamples: defaultAnalysis?.config.bioSamples || [
           {

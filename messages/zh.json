@@ -17,7 +17,7 @@
     "min-signal-threshold": "最小信号阈值",
     "signal-enrichment-factor": "信号富集因子",
     "create": "创建",
-    "default-reactions-label": "默认反应数据库（119个反应）",
+    "default-reactions-label": "默认反应数据库（116个反应）",
     "no-custom-reactions-created": "未创建自定义反应数据库",
     "experiment-groups": "配置实验组",
     "download-default-reactions": "下载默认反应",

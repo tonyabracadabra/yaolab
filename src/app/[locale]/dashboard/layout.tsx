@@ -15,7 +15,7 @@ export default function DashboardLayout({
 
   return (
     <div className="w-full flex h-full">
-      <div className="pl-16 pt-8 flex items-center justify-center gap-6 border-r-[1px] h-full">
+      <div className="pl-8 pt-4 flex items-center justify-center gap-6 border-r-[1px] h-full">
         <DashboardNav
           items={[
             {

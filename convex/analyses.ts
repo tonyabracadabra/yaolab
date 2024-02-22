@@ -102,7 +102,8 @@ export const AnalysisOutputSchema = z.object({
     sampleCols: z.array(z.string()),
   }),
   reactionDb: z.union([
-    z.literal("default"),
+    z.literal("default-pos"),
+    z.literal("default-neg"),
     z.object({
       name: z.string(),
       reactions: z.array(ReactionSchema),
@@ -124,12 +125,16 @@ export const getAll = zQuery({
     return await Promise.all(
       analyses.map(async (analysis) => {
         let finalReactionDb:
-          | "default"
+          | "default-pos"
+          | "default-neg"
           | {
               name: string;
               reactions: z.infer<typeof ReactionSchema>[];
-            } = "default";
-        if (analysis.reactionDb !== "default") {
+            } = "default-pos";
+        if (
+          analysis.reactionDb !== "default-pos" &&
+          analysis.reactionDb !== "default-neg"
+        ) {
           const reactionDb = await db.get(analysis.reactionDb);
           if (!reactionDb) {
             throw new Error("Reaction DB not found");

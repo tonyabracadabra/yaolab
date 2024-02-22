@@ -36,11 +36,17 @@ export const AnalysisConfigSchema = z.object({
 
 export const AnalysisCreationInputSchema = z.object({
   rawFile: zid("rawFiles"),
-  reactionDb: z.union([zid("reactionDatabases"), z.literal("default")]),
+  reactionDb: z.union([
+    zid("reactionDatabases"),
+    z.literal("default-pos"),
+    z.literal("default-neg"),
+  ]),
   config: AnalysisConfigSchema,
 });
 
 export const AnalysisStatus = z.enum(["running", "complete", "failed"]);
+
+export const IonMode = z.enum(["pos", "neg"]);
 
 export const AnalysisStep = z.enum([
   "load_data",
@@ -101,6 +107,7 @@ export const ReactionDatabaseSchema = z.object({
   user: z.string(),
   name: z.string(),
   reactions: z.array(ReactionSchema),
+  ionMode: IonMode,
 });
 
 export const RawFileCreationInputSchema = z.object({
@@ -108,6 +115,7 @@ export const RawFileCreationInputSchema = z.object({
   desc: z.optional(z.string()),
   tool: MSTool,
   mgf: z.string(),
+
   targetedIons: z.string(),
   sampleCols: z.array(z.string()),
 });

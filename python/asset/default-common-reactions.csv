@@ -1,0 +1,116 @@
+mzDiff,formulaChange,description
+63.9797,(+O4),4*oxidation
+26.015,(+C2H2)/ (+C2H2O-O),Acetylation and  loss of OH
+70.0055,(-CO-C2H2O),Acetylation and addition of CO
+39.9949,(+C2H2O-H2),Acetylation and dehydrogenation
+44.0263,(+H2+ C2H2O),Acetylation and hydrogenation
+24,(C2H2O-H2O),Acetylation and loss of H2O
+121.9674,(+C2H2O+SO3),Acetylation and sulfate conjugation
+42.0106,(+C2H2O),Acetylation/Deacetylation
+25.9792,(+CO-H2),addition of CO and dehydrogenation
+12,(CO-O/CH2-H2),addition of CO and dehydroxylation /Methylation and dehydrogenation
+15.0109,(+NH),addition of NH
+44.9851,(+NO2-H),addition of nitro
+79.9663,(+HPO3),addition of Phosphate
+97.9769,(+H3PO4),addition of Phosphate and H2O
+108.0324,(+C5H4N2O),addition of Thymine
+239.899,(+H3P3O9),addition of tri-phosphate
+70.0419,(+C4H6O),butyrylation
+68.0262,(+C4H4O),crotonylation
+119.0041,(C3H5NO2S),Cysteine conjugation
+103.0092,(+C3H5NOS),Cysteine conjugation 
+117.0249,(+CH2+C3H5NOS),Cysteine conjugation  and  Methylation
+98.0343,(-C5H6O2),Deangelica ester group
+43.9898,(-CO2),Decarboxylation/Carboxylation
+146.0579,(-C6H10O5+O),Deglycosylation -Hydroxylation
+176.0685,(-C6H10O5-CH2),Deglycosylation+Demethylation
+13.9793,(H2+O),dehydrogenation and gain  of oxygen
+20.0263,(+H2+ H2O),Dehydrogenation and Hydrolyzation
+2.0157,(H2),dehydrogenation/hydrogenation
+68.0626,(-C5H8),Deisopentenylation
+84.0575,(-C5H8O),Deisopentenyloxy
+48.0212,(-H2O-OCH2),demethylation  and loss of H2O
+1.9793,(-CH2+O),Demethylation -Hydroxylation
+22.0055,(-CH2+2H2O),Demethylation+Dihydrolyzation
+29.9742,(+O2-H2),deoxidation and hydrogenation
+84.0212,(+C2H2O+C2H2O),di-Acetylation
+4.0313,(-2H2),Dihydrogenation
+31.9898,(+2O),Dihydroxylation
+60.0211,(OCH2+OCH2),di-methoxylation
+159.9136,(+SO3+SO3),Di-sulfate conjugation 
+176.0321,(+C6H8O6),Glucuronidation
+114.0317,(+C5H6O3),glutaryllation
+57.0215,(+C2H3NO),glycine conjugation
+30.047,(+H2+C2H4),hydrogenation and addition of C2H4
+16.0314,(+H2+CH2),hydrogenation and Methylation
+32.0263,(+H2+ OCH2)/(-CH2-H2O),hydrogenation and Methylation
+46.0055,(O+OCH2),Hydrogenation and Methylation/Add. Ions ([M+FA-H)
+36.0212,(2*H2O),Hydrogenation+Oxydrolysis/Ester hydrolysis on furan ring
+50.0004,(+H2+3O),Hydrogenation+Trihydroxylation
+9.9843,(CO-H2O),Hydrolyzation and addition of CO
+3.9949,(H2O-CH2),Hydrolyzation and Demethylation
+18.0106,(+H2O),Hydrolyzation/loss of H2O
+30.0106,(+O+CH2),Hydroxylation+methylation/Demethoxylation
+95.9517,(+O+SO3),Hydroxylation+sulfatation
+157.0528,(+C10H7NO),indole acetylation
+91.0548,(+C7H7-H),loss /addition of benzyl
+75.032,(C2H5NO2),loss of  glycine
+117.0439,(C5H5N5-H2O),loss of Adenine
+56.0626,(C4H8),loss of butyl
+126.1045,(C8H14O),loss of CH3(CH2)6CO2 and gain  of OH
+305.0413,(C9H12N3O7P),loss of CMP and gain  of H2O
+87.9796,(-CO2-CO2),loss of Dicarboxylation
+74.0368,(C3H6O2),loss of Glycerol and gain  of H2O
+155.0109,(C3H8O5P),loss of Glycerophosphoricacid and gain  of OH
+100.0524,(-C5H8O2),Loss of hydrogenatedc angelica ester group
+156.0773,(C6H10N3O2),loss of L-Citrulline and gain of H2O
+74.0004,(-OCH2-CO2),loss of OCH2 and CO2
+74.0521,(C7H6+O),loss of phenmethyl and gain  of O
+165.0555,(C5H12NO3P),loss of Phosphocholine and gain  of H2O
+42.047,(3*CH2),loss of propylgroup
+206.0579,(C11H10O4),loss of sinapicacid and gain  of H2O
+170.015,(C6H6N2O2S),loss of Thiourocanic acid
+324.1057,(C12H20O10),loss/addition di-hexose
+249.0862,(C10H11N5O3),loss/addition of Adenosine
+28.0313,(+C2H4),loss/addition of C2H4
+143.0946,(+C7H13NO2),loss/addition of Carnitine
+85.0891,(+C5NH11),loss/addition of choline
+27.9949,(+CO)/(+OCH2-H2),loss/addition of CO
+129.0429,(C5H7NO3),loss/addition of cysteine
+225.075,(C9H11N3O4),loss/addition of Cytidine
+93.0327,(C4H3N3),loss/addition of Cytosine
+55.9898,(-CO-CO),loss/addition of di-CO
+159.9327,(+H2P2O6),loss/addition of di-phosphate
+132.0423,(C5H8O4),loss/addition of D-ribose
+242.0192,(C6H11O8P),loss/addition of Glucose-phosphate
+289.0732,(C10H15N3O5S),loss/addition of Glutathione
+133.0388,(+C5H3N5),loss/addition of Guanine
+265.0811,(C10H11N5O4),loss/addition of Guanosine
+162.0528,(C6H10O5),loss/addition of Hexose/Deglucosylation
+238.2297,(C16H30O),loss/addition of Palmitic acid
+76.0313,(+C6H5-H),loss/addition of phenyl
+305.0682,(C10H15N3O6S),loss/addition of S-Glutathione
+224.0797,(C10H12N2O4),loss/addition of Thymidine
+82.0419,(+C5H6O),loss/addition of tiglyl
+486.1585,(C18H30O15),loss/addition of trihexose
+94.0167,(C4H2N2O),loss/addition of Uracil
+226.059,(C9H10N2O5),loss/addition of Uridine
+86.0004,(+C3H2O3),malonylation
+14.0157,(+CH2),Methylation/Demethylation
+58.0055,(+CH2+CO2),Methylation+Carboxylation
+93.9725,(+CH2+SO3),Methylation+sulfatation
+145.0198,(+C5H7NO2S),N-Acetylcysteine
+161.0146,(+C5H7NO3S),N-Acetylcysteine
+159.0355,(+CH2+C5H7NO2S),N-Acetylcysteine conjugation and Methylation
+15.9949,(O),oxidation/hydroxylation
+192.027,(+O+C6H8O6),Oxidation-glucuronidation
+0.984,(-NH2+OH),oxidativedeamination
+34.0055,(+O+H2O),Oxydrolysis/Hydrogenation+Dihydroxylation
+63.9714,(+HPO2),phosphorylation and  loss of O
+56.0263,(+CH2+C2H2O),propionylation
+100.016,(+C4H4O3),succinylation
+79.9568,(+SO3),sulfate conjugation
+255.9889,(+SO3+C6H8O6),sulfate conjugation and Glucuronidation
+107.0041,(+C2H5NO2S),Taurine conjugation
+121.0198,(+CH2+C2H5NO2S),Taurine conjugation and  Methylation
+47.9847,(+O3),Trihydroxylation/Thiol to Sulfonic acid

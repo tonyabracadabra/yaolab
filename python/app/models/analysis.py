@@ -62,9 +62,15 @@ class Reaction(BaseModel):
     mzDiff: float
 
 
+class IonMode(str, Enum):
+    POS = "pos"
+    NEG = "neg"
+
+
 class ReactionDatabase(BaseModel):
     name: str
     reactions: list[Reaction]
+    ionMode: IonMode
 
     class Config:
         arbitrary_types_allowed = True
@@ -82,7 +88,7 @@ class RawFile(BaseModel):
 
 
 class Analysis(BaseModel):
-    reactionDb: ReactionDatabase | Literal["default"]
+    reactionDb: ReactionDatabase | Literal["default-pos"] | Literal["default-neg"]
     rawFile: RawFile
     config: AnalysisConfig
 

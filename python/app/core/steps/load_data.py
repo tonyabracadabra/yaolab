@@ -2,8 +2,14 @@ import asyncio
 from typing import Literal
 
 import pandas as pd
-from app.models.analysis import Analysis, BioSample, DrugSample, ReactionDatabase
-from app.utils.constants import DEFAULT_REACTION_DF, TargetIonsColumn
+from app.models.analysis import (
+    Analysis,
+    BioSample,
+    DrugSample,
+    IonMode,
+    ReactionDatabase,
+)
+from app.utils.constants import DEFAULT_NEG_DF, DEFAULT_POS_DF, TargetIonsColumn
 from app.utils.convex import load_mgf, load_parquet
 from app.utils.logger import log
 from matchms.Spectrum import Spectrum
@@ -12,14 +18,26 @@ from convex import ConvexClient
 
 
 async def _load_reaction_db(
-    reaction_db: ReactionDatabase | Literal["default"],
+    reaction_db: ReactionDatabase | Literal["default-pos"] | Literal["default-neg"],
 ) -> pd.DataFrame:
-    if reaction_db == "default":
-        return DEFAULT_REACTION_DF
+    if reaction_db.startswith("default"):
+        if reaction_db == "default-pos":
+            return DEFAULT_POS_DF
+        elif reaction_db == "default-neg":
+            return DEFAULT_NEG_DF
+        else:
+            raise ValueError(f"Unknown reaction database: {reaction_db}")
     else:
+        if reaction_db.ionMode is IonMode.POS:
+            default_reaction_df = DEFAULT_POS_DF
+        elif reaction_db.ionMode is IonMode.NEG:
+            default_reaction_df = DEFAULT_NEG_DF
+        else:
+            raise ValueError(f"Unknown ion mode: {reaction_db.ionMode}")
+
         reaction_df = pd.concat(
             [
-                DEFAULT_REACTION_DF,
+                default_reaction_df,
                 pd.DataFrame([reaction.dict() for reaction in reaction_db.reactions]),
             ]
         )
