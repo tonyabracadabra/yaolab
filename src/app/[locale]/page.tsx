@@ -264,7 +264,7 @@ export default function Home() {
               </div>
             </DialogTrigger>
 
-            <DialogContent className="w-[40vw] h-[50vh] flex items-center gap-4 flex-col py-4 justify-around">
+            <DialogContent className="w-[70vw] h-[45vh] flex items-center gap-4 flex-col p-8 justify-around">
               <Button
                 onClick={() => {
                   // download a zip of files in folder /public/demo
@@ -273,6 +273,7 @@ export default function Home() {
                   a.download = "demo.zip";
                   a.click();
                 }}
+                size="sm"
                 variant="outline"
               >
                 <DownloadCloud className="w-4 h-4 mr-3 my-4" />
