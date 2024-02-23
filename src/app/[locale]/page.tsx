@@ -20,7 +20,18 @@ import { GlobeIcon, InputIcon } from "@radix-ui/react-icons";
 
 import { cn } from "@/lib/utils";
 import Meteors from "@/src/components/magicui/meteors";
-import { ContactIcon, GraduationCap, ScatterChartIcon } from "lucide-react";
+import TextShimmer from "@/src/components/magicui/text-shimmer";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/src/components/ui/dialog";
+import {
+  ArrowRightIcon,
+  ContactIcon,
+  GraduationCap,
+  ScatterChartIcon,
+} from "lucide-react";
 
 const papers = [
   {
@@ -235,7 +246,38 @@ const features = [
 export default function Home() {
   return (
     <div className="p-8 px-8 h-full w-full sm:px-16 xl:px-32 font-sans">
-      <BentoGrid>
+      <BentoGrid className="relative">
+        <div className="z-10 flex items-start w-full justify-start pb-4 absolute left-6 top-6">
+          <Dialog>
+            <DialogTrigger asChild>
+              <div
+                className={cn(
+                  "group rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+                )}
+              >
+                <TextShimmer className="inline-flex items-center justify-center px-4 py-1 text-sm">
+                  <span>✨ See Demo</span>
+                  <ArrowRightIcon className="w-4 h-4 ml-1 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
+                </TextShimmer>
+              </div>
+            </DialogTrigger>
+
+            <DialogContent>
+              <iframe
+                src="https://demo.arcade.software/wPDjQJyqvgEjdLCS8cUC?embed&show_copy_link=true"
+                title="YaoLab@JNU"
+                loading="lazy"
+                allowFullScreen
+                allow="clipboard-write"
+                style={{
+                  width: "30vw",
+                  height: "40vh",
+                  colorScheme: "light",
+                }}
+              ></iframe>
+            </DialogContent>
+          </Dialog>
+        </div>
         {features.map((feature, idx) => (
           <BentoCard key={idx} {...feature} />
         ))}
