@@ -7,6 +7,7 @@
     "new-analysis": "新建分析",
     "all-analysis": "所有分析",
     "all-rawfiles": "原始文件",
+    "all-reaction-dbs": "反应数据库",
     "choose-raw-file": "选择原始文件",
     "choose-reaction-db": "选择反应数据库",
     "ms2-similarity-threshold": "MS2相似性过滤阈值",

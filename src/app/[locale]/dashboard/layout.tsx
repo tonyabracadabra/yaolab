@@ -2,7 +2,7 @@
 
 import { DashboardNav } from "@/src/components/nav";
 import { useConvexAuth } from "convex/react";
-import { File, ListPlus, Loader2, Waypoints } from "lucide-react";
+import { Atom, File, ListPlus, Loader2, Waypoints } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export default function DashboardLayout({
@@ -35,6 +35,12 @@ export default function DashboardLayout({
               icon: File,
               href: "/dashboard/raw",
               regex: /\/dashboard\/raw(\/.*)?$/,
+            },
+            {
+              title: t("all-reaction-dbs"),
+              icon: Atom,
+              href: "/dashboard/reactions",
+              regex: /\/dashboard\/reactions(\/.*)?$/,
             },
           ]}
         />

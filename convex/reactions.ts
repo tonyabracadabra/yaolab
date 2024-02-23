@@ -1,3 +1,4 @@
+import { zid } from "convex-helpers/server/zod";
 import { z } from "zod";
 import { IonMode, ReactionSchema } from "./schema";
 import { zMutation, zQuery } from "./utils";
@@ -20,11 +21,18 @@ export const create = zMutation({
   },
 });
 
-export const getAllReactionDatabases = zQuery({
+export const getAll = zQuery({
   handler: async ({ db, user }) => {
     return await db
       .query("reactionDatabases")
       .withIndex("user", (q) => q.eq("user", user))
       .collect();
+  },
+});
+
+export const remove = zMutation({
+  args: { id: zid("reactionDatabases") },
+  handler: async ({ db }, { id }) => {
+    await db.delete(id);
   },
 });

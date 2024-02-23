@@ -30,10 +30,7 @@ interface RawFileFormFieldInterface {
 
 export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
   const t = useTranslations("New");
-  const allReactionDatabases = useQuery(
-    api.reactions.getAllReactionDatabases,
-    {}
-  );
+  const allReactionDatabases = useQuery(api.reactions.getAll, {});
   const downloadDefaultReactions = useAction(
     api.actions.downloadDefaultReactions
   );
