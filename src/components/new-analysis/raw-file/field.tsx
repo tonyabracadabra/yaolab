@@ -102,6 +102,9 @@ export function RawFileFormField({ form }: RawFileFormFieldInterface) {
                       variant="outline"
                       size="xs"
                       className="font-bold text-primary"
+                      onClick={() => {
+                        router.push("/dashboard/raw");
+                      }}
                     >
                       <span>❌ {t("delete")}</span>
                     </Button>
