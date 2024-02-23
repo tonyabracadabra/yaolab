@@ -50,6 +50,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { z } from "zod";
 
 type AnalysisOutput = z.infer<typeof AnalysisOutputSchema>;
@@ -192,6 +193,7 @@ export default function AnalysisList() {
                       className="bg-destructive hover:bg-destructive text-white"
                       onClick={async () => {
                         await remove({ id: row.original.id });
+                        toast.success("Analysis deleted successfully");
                       }}
                     >
                       Delete

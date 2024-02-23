@@ -40,6 +40,7 @@ import { useUser } from "@clerk/nextjs";
 import Avatar from "boring-avatars";
 import { useAction, useQuery } from "convex/react";
 import { Loader2, MoreHorizontal, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { z } from "zod";
 
 type RawFile = z.infer<typeof RawFileSchema> & {
@@ -118,6 +119,7 @@ export default function RawfileList() {
                       className="bg-destructive hover:bg-destructive text-white"
                       onClick={async () => {
                         await remove({ id: row.original._id });
+                        toast.success("Raw file deleted successfully");
                       }}
                     >
                       Delete
