@@ -94,7 +94,7 @@ export function RawFileFormField({ form }: RawFileFormFieldInterface) {
             </Select>
           </FormControl>
           <FormDescription>
-            {allRawFiles?.length || 0 >= 10
+            {(allRawFiles?.length || 0) >= 10
               ? t.rich("raw-files-limit-exceed", {
                   delete: () => (
                     <Button
