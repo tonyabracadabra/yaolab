@@ -190,8 +190,8 @@ export default function AnalysisList() {
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       className="bg-destructive hover:bg-destructive text-white"
-                      onClick={() => {
-                        remove({ id: row.original.id });
+                      onClick={async () => {
+                        await remove({ id: row.original.id });
                       }}
                     >
                       Delete

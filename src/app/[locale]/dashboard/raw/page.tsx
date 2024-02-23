@@ -116,8 +116,8 @@ export default function RawfileList() {
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       className="bg-destructive hover:bg-destructive text-white"
-                      onClick={() => {
-                        remove({ id: row.original._id });
+                      onClick={async () => {
+                        await remove({ id: row.original._id });
                       }}
                     >
                       Delete
