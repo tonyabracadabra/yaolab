@@ -114,11 +114,12 @@ export const AnalysisOutputSchema = z.object({
 });
 
 export const getAll = zQuery({
-  args: {},
-  handler: async ({ db, user }) => {
+  args: { rawFile: z.optional(zid("rawFiles")) },
+  handler: async ({ db, user }, { rawFile }) => {
     const analyses = await db
       .query("analyses")
       .withIndex("user", (q) => q.eq("user", user))
+      .filter((q) => (rawFile ? q.eq(q.field("rawFile"), rawFile) : true))
       .order("desc")
       .collect();
 

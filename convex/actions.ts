@@ -222,6 +222,9 @@ export const removeRawFile = zAction({
       throw new Error("Raw file not found");
     }
 
+    // get all analysis that use this raw file
+    const analyses = await runQuery(api.analyses.getAll, { rawFile: id });
+
     await Promise.all([
       runAction(api.actions.removeFile, {
         storageId: rawFile.mgf,
@@ -229,6 +232,11 @@ export const removeRawFile = zAction({
       runAction(api.actions.removeFile, {
         storageId: rawFile.targetedIons,
       }),
+      [
+        ...analyses.map((analysis) =>
+          runAction(api.actions.removeAnalysis, { id: analysis.id })
+        ),
+      ],
     ]);
 
     await runMutation(api.rawFiles.remove, { id });

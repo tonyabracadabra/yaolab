@@ -106,11 +106,13 @@ export default function RawfileList() {
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>
-                      Are you sure you want to delete the analysis?
+                      Are you sure you want to delete the raw File?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete
-                      your account and remove your data from our servers.
+                      All the analyses that depend on this raw file will be
+                      affected. This action cannot be undone. This will
+                      permanently delete your account and remove your data from
+                      our servers.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
