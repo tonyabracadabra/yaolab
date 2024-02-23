@@ -21,6 +21,7 @@ import { GlobeIcon, InputIcon } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
 import Meteors from "@/src/components/magicui/meteors";
 import TextShimmer from "@/src/components/magicui/text-shimmer";
+import { Button } from "@/src/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,7 @@ import {
 import {
   ArrowRightIcon,
   ContactIcon,
+  DownloadCloud,
   GraduationCap,
   ScatterChartIcon,
 } from "lucide-react";
@@ -262,16 +264,28 @@ export default function Home() {
               </div>
             </DialogTrigger>
 
-            <DialogContent>
+            <DialogContent className="w-[40vw] h-[50vh] flex items-center gap-4 flex-col py-4 justify-around">
+              <Button
+                onClick={() => {
+                  // download a zip of files in folder /public/demo
+                  const a = document.createElement("a");
+                  a.href = "/demo.zip";
+                  a.download = "demo.zip";
+                  a.click();
+                }}
+                variant="outline"
+              >
+                <DownloadCloud className="w-4 h-4 mr-3 my-4" />
+                Download Demo Data
+              </Button>
               <iframe
                 src="https://demo.arcade.software/wPDjQJyqvgEjdLCS8cUC?embed&show_copy_link=true"
                 title="YaoLab@JNU"
                 loading="lazy"
                 allowFullScreen
                 allow="clipboard-write"
+                className="w-full h-full"
                 style={{
-                  width: "30vw",
-                  height: "40vh",
                   colorScheme: "light",
                 }}
               ></iframe>
