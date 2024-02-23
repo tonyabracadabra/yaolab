@@ -12,7 +12,6 @@ import { Button } from "@/src/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
 import { useAuth } from "@clerk/nextjs";
@@ -417,171 +416,164 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
               : analysis.reactionDb}
           </span>
         </Badge>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <Badge className="flex items-center justify-center gap-2">
-                <FlaskConical className="h-4 w-4" />
-                Experiments
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <div className="flex items-start justify-between gap-4 p-2">
-                <div className="flex flex-col gap-2">
-                  <div>Bio Samples</div>
-                  <div className="text-neutral-400 gap-4 flex flex-col items-center justify-center py-2">
-                    {analysis.config.bioSamples.map((e, i) => (
-                      <div
-                        key={i}
-                        className="w-full flex-col flex items-start max-w-[400px] gap-2"
-                      >
-                        <div className="font-bold text-lg">{e.name}</div>
-                        <div className="flex items-center justify-center gap-4">
-                          <div className="flex flex-col gap-2">
-                            <div>Blank Groups</div>
-                            <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                              {e.blank.map((g, j) => (
-                                <Badge key={j}>{g}</Badge>
-                              ))}
-                            </div>
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            <div>Sample Groups</div>
-                            <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                              {e.sample.map((g, j) => (
-                                <Badge key={j}>{g}</Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                {analysis.config.drugSample && (
-                  <div className="flex flex-col gap-2">
-                    <div>Drug Sample</div>
-                    <div className="text-neutral-400 flex flex-col gap-2">
-                      <div className="font-bold text-lg">
-                        {analysis.config.drugSample.name}
-                      </div>
+        <Tooltip>
+          <TooltipTrigger>
+            <Badge className="flex items-center justify-center gap-2">
+              <FlaskConical className="h-4 w-4" />
+              Experiments
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            <div className="flex items-start justify-between gap-4 p-2">
+              <div className="flex flex-col gap-2">
+                <div>Bio Samples</div>
+                <div className="text-neutral-400 gap-4 flex flex-col items-center justify-center py-2">
+                  {analysis.config.bioSamples.map((e, i) => (
+                    <div
+                      key={i}
+                      className="w-full flex-col flex items-start max-w-[400px] gap-2"
+                    >
+                      <div className="font-bold text-lg">{e.name}</div>
                       <div className="flex items-center justify-center gap-4">
                         <div className="flex flex-col gap-2">
-                          <div>Drug Groups</div>
+                          <div>Blank Groups</div>
                           <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                            {analysis.config.drugSample.groups.map((g, j) => (
+                            {e.blank.map((g, j) => (
+                              <Badge key={j}>{g}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <div>Sample Groups</div>
+                          <div className="text-neutral-500 gap-2 flex items-center justify-center">
+                            {e.sample.map((g, j) => (
                               <Badge key={j}>{g}</Badge>
                             ))}
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
-            </TooltipContent>
-          </Tooltip>
+              {analysis.config.drugSample && (
+                <div className="flex flex-col gap-2">
+                  <div>Drug Sample</div>
+                  <div className="text-neutral-400 flex flex-col gap-2">
+                    <div className="font-bold text-lg">
+                      {analysis.config.drugSample.name}
+                    </div>
+                    <div className="flex items-center justify-center gap-4">
+                      <div className="flex flex-col gap-2">
+                        <div>Drug Groups</div>
+                        <div className="text-neutral-500 gap-2 flex items-center justify-center">
+                          {analysis.config.drugSample.groups.map((g, j) => (
+                            <Badge key={j}>{g}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
+            <Badge>
+              <Settings2 className="h-4 w-4 mr-2" />
+              Configs
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            <div className="flex items-center justify-center gap-2 flex-wrap max-w-[400px] h-fit p-2 text-xs">
+              <div className="flex items-center justify-center gap-4">
+                <div className="flex flex-col gap-2">
+                  <div>Correlation Threshold</div>
+                  <div className="text-neutral-500">
+                    {analysis.config.correlationThreshold}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div>MS2 Similarity Threshold</div>
+                  <div className="text-neutral-500">
+                    {analysis.config.ms2SimilarityThreshold}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div>m/z Error Threshold</div>
+                  <div className="text-neutral-500">
+                    {analysis.config.mzErrorThreshold}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div>Retention Time Window</div>
+                  <div className="text-neutral-500">
+                    {analysis.config.rtTimeWindow}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div>Signal Enrichment Factor</div>
+                  <div className="text-neutral-500">
+                    {analysis.config.signalEnrichmentFactor}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div>Minimum Signal Threshold</div>
+                  <div className="text-neutral-500">
+                    {analysis.config.minSignalThreshold}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+        <div className="w-full flex justify-end gap-4">
           <Tooltip>
             <TooltipTrigger>
-              <Badge>
-                <Settings2 className="h-4 w-4 mr-2" />
-                Configs
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <div className="flex items-center justify-center gap-2 flex-wrap max-w-[400px] h-fit p-2 text-xs">
-                <div className="flex items-center justify-center gap-4">
-                  <div className="flex flex-col gap-2">
-                    <div>Correlation Threshold</div>
-                    <div className="text-neutral-500">
-                      {analysis.config.correlationThreshold}
-                    </div>
+              <div className="flex flex-col items-start justify-center gap-1">
+                <div className="flex items-center justify-center gap-24">
+                  <div className={cn("flex items-center justify-center gap-2")}>
+                    <LucideWorkflow size={16} />
+                    {analysis.status === "running" ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="animate-spin" size={14} />
+                        {
+                          analysis.progress.find((p) => p.status === "running")
+                            ?.step
+                        }
+                      </div>
+                    ) : analysis.status === "failed" ? (
+                      <Badge className="flex items-center justify-center gap-2 bg-destructive text-red-50 hover:bg-destructive/80">
+                        <XIcon size={12} />
+                        Failed
+                      </Badge>
+                    ) : (
+                      <Badge className="flex items-center justify-center gap-2 text-green-50 bg-green-400 hover:opacity-80 hover:bg-green-400">
+                        <BadgeCheck size={12} />
+                        Completed
+                      </Badge>
+                    )}
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <div>MS2 Similarity Threshold</div>
-                    <div className="text-neutral-500">
-                      {analysis.config.ms2SimilarityThreshold}
-                    </div>
+                  <div className="flex items-center justify-center gap-4 text-xs max-w-[200px]">
+                    <TimerIcon size={16} />
+                    {
+                      new Date(analysis._creationTime)
+                        .toString()
+                        .split("GMT")[0]
+                    }
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <div>m/z Error Threshold</div>
-                    <div className="text-neutral-500">
-                      {analysis.config.mzErrorThreshold}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <div>Retention Time Window</div>
-                    <div className="text-neutral-500">
-                      {analysis.config.rtTimeWindow}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <div>Signal Enrichment Factor</div>
-                    <div className="text-neutral-500">
-                      {analysis.config.signalEnrichmentFactor}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <div>Minimum Signal Threshold</div>
-                    <div className="text-neutral-500">
-                      {analysis.config.minSignalThreshold}
-                    </div>
-                  </div>
+                </div>
+                <div className="text-muted-foreground text-xs">
+                  * Hover to view the workflow
                 </div>
               </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="-left-12">
+              <Workflow progress={analysis.progress} log={analysis.log} />
             </TooltipContent>
           </Tooltip>
-        </TooltipProvider>
-        <div className="w-full flex justify-end gap-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <div className="flex flex-col items-start justify-center gap-1">
-                  <div className="flex items-center justify-center gap-24">
-                    <div
-                      className={cn("flex items-center justify-center gap-2")}
-                    >
-                      <LucideWorkflow size={16} />
-                      {analysis.status === "running" ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <Loader2 className="animate-spin" size={14} />
-                          {
-                            analysis.progress.find(
-                              (p) => p.status === "running"
-                            )?.step
-                          }
-                        </div>
-                      ) : analysis.status === "failed" ? (
-                        <Badge className="flex items-center justify-center gap-2 bg-destructive text-red-50 hover:bg-destructive/80">
-                          <XIcon size={12} />
-                          Failed
-                        </Badge>
-                      ) : (
-                        <Badge className="flex items-center justify-center gap-2 text-green-50 bg-green-400 hover:opacity-80 hover:bg-green-400">
-                          <BadgeCheck size={12} />
-                          Completed
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-center gap-4 text-xs max-w-[200px]">
-                      <TimerIcon size={16} />
-                      {
-                        new Date(analysis._creationTime)
-                          .toString()
-                          .split("GMT")[0]
-                      }
-                    </div>
-                  </div>
-                  <div className="text-muted-foreground text-xs">
-                    * Hover to view the workflow
-                  </div>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="-left-12">
-                <Workflow progress={analysis.progress} log={analysis.log} />
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
       </div>
       <div className="flex flex-col gap-2 items-center justify-center w-full h-full">

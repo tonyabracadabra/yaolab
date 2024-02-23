@@ -7,6 +7,7 @@ import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
 import { Inter, Urbanist } from "next/font/google";
 
+import { TooltipProvider } from "@/src/components/ui/tooltip";
 import { NextIntlClientProvider, useMessages } from "next-intl";
 import "./globals.css";
 import ConvexClerkClientProvider from "./provider";
@@ -42,7 +43,9 @@ export default function LocaleLayout({
               disableTransitionOnChange
             >
               <SiteHeader />
-              <main className="h-[88vh] overflow-auto">{children}</main>
+              <TooltipProvider>
+                <main className="h-[88vh] overflow-auto">{children}</main>
+              </TooltipProvider>
               <Toaster position="top-center" />
             </ThemeProvider>
             <Analytics />

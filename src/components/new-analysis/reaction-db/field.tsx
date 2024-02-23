@@ -21,12 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
 import { ReactionDbCreationDialog } from "./dialog";
 
 interface RawFileFormFieldInterface {
@@ -124,22 +119,20 @@ export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
             URL.revokeObjectURL(url);
           }}
         >
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <div className="w-full h-full">
-                  <DownloadCloud size={12} />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <div className="p-4 bg-white dark:bg-slate-900 rounded-lg shadow-lg">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {t("download-default-reactions")}
-                  </p>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <div className="w-full h-full">
+                <DownloadCloud size={12} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="p-4 bg-white dark:bg-slate-900 rounded-lg shadow-lg">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {t("download-default-reactions")}
+                </p>
+              </div>
+            </TooltipContent>
+          </Tooltip>
         </Button>
       )}
     </div>

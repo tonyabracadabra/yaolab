@@ -27,7 +27,7 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/src/components/ui/dialog";
-import { TooltipContent, TooltipProvider } from "@/src/components/ui/tooltip";
+import { Tooltip, TooltipContent } from "@/src/components/ui/tooltip";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
 import {
   ArrowRightIcon,
@@ -247,10 +247,10 @@ const features = [
     background: (
       <Marquee
         pauseOnHover
-        className="absolute top-10 [--duration:60s] [mask-image:linear-gradient(to_top,transparent_40%,#000_100%)] "
+        className="absolute top-6 [--duration:120s] [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] flex items-start justify-start"
       >
         {papers.map((paper, index) => (
-          <TooltipProvider>
+          <Tooltip>
             <TooltipTrigger>
               <a
                 key={index}
@@ -266,8 +266,8 @@ const features = [
                 {paper.title}
               </a>
             </TooltipTrigger>
-            <TooltipContent>{paper.title}</TooltipContent>
-          </TooltipProvider>
+            <TooltipContent className="z-[9999]">{paper.title}</TooltipContent>
+          </Tooltip>
         ))}
       </Marquee>
     ),
