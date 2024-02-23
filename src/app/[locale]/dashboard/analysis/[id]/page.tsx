@@ -149,7 +149,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const fgRef = useRef();
   const { getToken } = useAuth();
   const [downloading, setDownloading] = useState(false);
-  const [colorScheme, setColorScheme] = useState("schemeOrRd");
+  const [colorScheme, setColorScheme] = useState("rainbow");
 
   useEffect(() => {
     if (!fgRef.current) return;
@@ -822,7 +822,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                                 backgroundColor: col.color,
                               }}
                             />
-                            <span>{col.col}</span>
+                            <span>{`${col.col.split("_")[0]}%`}</span>
                           </div>
                         ))}
                       </div>
@@ -832,7 +832,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         onValueChange={(v) => setColorScheme(v)}
                       >
                         <SelectTrigger>
-                          <div className="w-4 h-4 rounded-full rainbow-conic-gradient" />
+                          <div className="w-4 h-4 rounded-full rainbow-conic-gradient mr-2" />
                           {colorSchemes.find((c) => c.value === colorScheme)
                             ?.label || "Color Scheme"}
                         </SelectTrigger>
