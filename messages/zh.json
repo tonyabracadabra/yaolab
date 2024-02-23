@@ -17,6 +17,7 @@
     "min-signal-threshold": "最小信号阈值",
     "signal-enrichment-factor": "信号富集因子",
     "create": "创建",
+    "delete": "删除",
     "default-reactions-label": "默认反应数据库（116个反应）",
     "no-custom-reactions-created": "未创建自定义反应数据库",
     "experiment-groups": "配置实验组",
@@ -31,6 +32,7 @@
     "select-or-create-reaction-db": "选择或<create></create>反应数据库",
     "select-or-create-raw": "选择或<create></create>原始文件",
     "select-columns": "选择列...",
-    "select-exp-or-create": "选择一个实验进行配置或<create></create>一个新的实验"
+    "select-exp-or-create": "选择一个实验进行配置或<create></create>一个新的实验",
+    "raw-files-limit-exceed": "最多只能添加10个原始文件。请使用现有文件或<delete></delete>删除文件以添加新文件。"
   }
 }

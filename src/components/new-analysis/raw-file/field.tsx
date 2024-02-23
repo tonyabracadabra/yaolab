@@ -94,15 +94,28 @@ export function RawFileFormField({ form }: RawFileFormFieldInterface) {
             </Select>
           </FormControl>
           <FormDescription>
-            {t.rich("select-or-create-raw", {
-              create: () => (
-                <RawFileCreationDialog
-                  onCreate={(id: Id<"rawFiles">) => {
-                    onChange(id);
-                  }}
-                />
-              ),
-            })}
+            {allRawFiles?.length || 0 >= 10
+              ? t.rich("raw-files-limit-exceed", {
+                  delete: () => (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      className="font-bold text-primary"
+                    >
+                      <span>❌ {t("delete")}</span>
+                    </Button>
+                  ),
+                })
+              : t.rich("select-or-create-raw", {
+                  create: () => (
+                    <RawFileCreationDialog
+                      onCreate={(id: Id<"rawFiles">) => {
+                        onChange(id);
+                      }}
+                    />
+                  ),
+                })}
           </FormDescription>
         </FormItem>
       )}
