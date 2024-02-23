@@ -9,11 +9,13 @@ import {
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Settings2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import { Badge } from "../../ui/badge";
+import { Button } from "../../ui/button";
 import {
   Select,
   SelectContent,
@@ -30,6 +32,7 @@ interface RawFileFormFieldInterface {
 export function RawFileFormField({ form }: RawFileFormFieldInterface) {
   const t = useTranslations("New");
   const allRawFiles = useQuery(api.rawFiles.getAll, {});
+  const router = useRouter();
 
   return (
     <FormField
@@ -57,7 +60,20 @@ export function RawFileFormField({ form }: RawFileFormFieldInterface) {
               <SelectTrigger>
                 <SelectValue placeholder={t("select-raw-file")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent
+                postViewportContent={
+                  <Button
+                    variant="ghost"
+                    className="px-8 gap-4 flex items-start justify-start"
+                    onClick={() => {
+                      router.push("/dashboard/raw");
+                    }}
+                  >
+                    <Settings2 size={16} />
+                    Manage
+                  </Button>
+                }
+              >
                 {allRawFiles?.map((rawFile) => {
                   return (
                     <SelectItem key={rawFile._id} value={rawFile?._id}>
