@@ -267,7 +267,7 @@ export default function Home() {
             <DialogContent className="w-[70vw] h-[45vh] flex items-center gap-4 flex-col p-8 justify-around">
               <Button
                 onClick={() => {
-                  // download a zip of files in folder /public/demo
+                  // download a zip of two files in folder /public/demo.zip
                   const a = document.createElement("a");
                   a.href = "/demo.zip";
                   a.download = "demo.zip";
