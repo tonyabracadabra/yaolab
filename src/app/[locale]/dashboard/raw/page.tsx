@@ -119,7 +119,9 @@ export default function RawfileList() {
                       className="bg-destructive hover:bg-destructive text-white"
                       onClick={async () => {
                         await remove({ id: row.original._id });
-                        toast.success("Raw file deleted successfully");
+                        toast.success(
+                          `Raw file ${row.original.name} deleted successfully`
+                        );
                       }}
                     >
                       Delete
