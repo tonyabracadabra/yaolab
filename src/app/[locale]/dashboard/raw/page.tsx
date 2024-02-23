@@ -38,7 +38,7 @@ import {
 } from "@/src/components/ui/table";
 import { useUser } from "@clerk/nextjs";
 import Avatar from "boring-avatars";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { Loader2, MoreHorizontal, Trash2 } from "lucide-react";
 import { z } from "zod";
 
@@ -48,7 +48,7 @@ type RawFile = z.infer<typeof RawFileSchema> & {
 
 export default function RawfileList() {
   const rawFiles = useQuery(api.rawFiles.getAll, {});
-  const remove = useMutation(api.rawFiles.remove);
+  const remove = useAction(api.actions.removeRawFile);
   const { user } = useUser();
 
   const columns: ColumnDef<RawFile>[] = [

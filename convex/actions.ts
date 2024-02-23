@@ -213,3 +213,24 @@ export const removeAnalysis = zAction({
     await runMutation(api.analyses.remove, { id });
   },
 });
+
+export const removeRawFile = zAction({
+  args: { id: zid("rawFiles") },
+  handler: async ({ runMutation, runQuery, runAction }, { id }) => {
+    const rawFile = await runQuery(api.rawFiles.get, { id });
+    if (!rawFile) {
+      throw new Error("Raw file not found");
+    }
+
+    await Promise.all([
+      runAction(api.actions.removeFile, {
+        storageId: rawFile.mgf,
+      }),
+      runAction(api.actions.removeFile, {
+        storageId: rawFile.targetedIons,
+      }),
+    ]);
+
+    await runMutation(api.rawFiles.remove, { id });
+  },
+});
