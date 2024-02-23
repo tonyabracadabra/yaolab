@@ -6,6 +6,7 @@ import { AnalysisResultSchema } from "@/convex/schema";
 import { Edge, GraphData, Node, cn, generateGraphML } from "@/lib/utils";
 import AnalysisResult from "@/src/components/analysis-result/task-result";
 import { Workflow } from "@/src/components/analysis-result/workflow";
+import { MagicCard } from "@/src/components/magicui/magic-card";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -22,7 +23,6 @@ import { ForceGraph2D } from "react-force-graph";
 
 import { HelperTooltip } from "@/src/components/help-tooltip";
 import { Switch } from "@/src/components/switch";
-import { Card } from "@/src/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -149,7 +149,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const fgRef = useRef();
   const { getToken } = useAuth();
   const [downloading, setDownloading] = useState(false);
-  const [colorScheme, setColorScheme] = useState("rainbow");
+  const [colorScheme, setColorScheme] = useState("schemeOrRd");
 
   useEffect(() => {
     if (!fgRef.current) return;
@@ -563,8 +563,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center justify-center gap-4 text-xs max-w-[250px]">
-                      <TimerIcon size={16} className="shrink-0" />
+                    <div className="flex items-center justify-center gap-4 text-xs max-w-[200px]">
+                      <TimerIcon size={16} />
                       {
                         new Date(analysis._creationTime)
                           .toString()
@@ -619,8 +619,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             </div>
           )}
           {analysis.status === "complete" && (
-            <div className="flex flex-col gap-4 h-full">
-              <div className="flex items-start justify-between gap-4 w-full p-4 bg-primary-foreground rounded-lg">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-start justify-between gap-4 w-full p-4 bg-primary-foreground rounded-lg z-[20000]">
                 <div className="flex items-start justify-center gap-4">
                   <div className="flex flex-col gap-4 items-start">
                     <Label>Node</Label>
@@ -713,7 +713,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   </div>
                 </div>
               </div>
-              <Card className="relative h-full">
+              <MagicCard className="h-[68vh] relative">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -802,8 +802,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   {/* legend for redundant */}
                   {highlightRedundant && (
                     <div className="flex items-center justify-start gap-2">
-                      {/* a thin red dashed line */}
-                      <div className="border-t border-dashed border-red-500 w-4" />
+                      {/* a thin red line */}
+                      <div className="w-4 h-[2px] bg-red-500" />
                       <span>Redundant</span>
                     </div>
                   )}
@@ -822,7 +822,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                                 backgroundColor: col.color,
                               }}
                             />
-                            <span>{`${col.col.split("_")[0]}%`}</span>
+                            <span>{col.col}</span>
                           </div>
                         ))}
                       </div>
@@ -832,11 +832,11 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         onValueChange={(v) => setColorScheme(v)}
                       >
                         <SelectTrigger>
-                          <div className="w-4 h-4 rounded-full rainbow-conic-gradient mr-2" />
+                          <div className="w-4 h-4 rounded-full rainbow-conic-gradient" />
                           {colorSchemes.find((c) => c.value === colorScheme)
                             ?.label || "Color Scheme"}
                         </SelectTrigger>
-                        <SelectContent className="z-[20000]">
+                        <SelectContent>
                           {colorSchemes.map((scheme, i) => (
                             <SelectItem
                               key={i}
@@ -852,11 +852,11 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   )}
                 </div>
                 {graphData === undefined ? (
-                  <div className="flex items-center h-full justify-center gap-2">
+                  <div className="flex items-center h-[60%] justify-center gap-2">
                     Loading graph now <Loader2 className="animate-spin" />
                   </div>
                 ) : (
-                  <div className="overflow-hidden w-[calc(100vw-250px)] h-[calc(100vh-300px)]">
+                  <div className="overflow-hidden w-[75vw] h-[65vh]">
                     {graphData.edges?.length === 0 &&
                     graphData.nodes?.length === 0 ? (
                       <span>No data to display</span>
@@ -978,10 +978,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           ctx.strokeStyle = theme === "dark" ? "white" : "#000"; // Line color
                           if (highlightRedundant && link.redundantData) {
                             ctx.strokeStyle = "red";
-                            // make this line dashed
-                            ctx.setLineDash([5, 5]);
-                          } else {
-                            ctx.setLineDash([]);
                           }
 
                           ctx.stroke();
@@ -1023,7 +1019,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     )}
                   </div>
                 )}
-              </Card>
+              </MagicCard>
             </div>
           )}
         </div>
