@@ -27,8 +27,6 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/src/components/ui/dialog";
-import { Tooltip, TooltipContent } from "@/src/components/ui/tooltip";
-import { TooltipTrigger } from "@radix-ui/react-tooltip";
 import {
   ArrowRightIcon,
   ContactIcon,
@@ -250,23 +248,19 @@ const features = [
         className="absolute top-6 [--duration:120s] [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] flex items-start justify-start"
       >
         {papers.map((paper, index) => (
-          <Tooltip>
-            <TooltipTrigger key={index}>
-              <a
-                className={cn(
-                  "inline-block mr-4 cursor-pointer overflow-hidden rounded-xl border p-4",
-                  "border-gray-950/[.1] bg-gray-950/[.01] hover:bg-gray-950/[.05]",
-                  "dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]",
-                  "transition-all duration-300 ease-out text-sm w-[250px]"
-                )}
-                href={paper.href}
-                target="_blank"
-              >
-                {paper.title}
-              </a>
-            </TooltipTrigger>
-            <TooltipContent className="z-[9999]">{paper.title}</TooltipContent>
-          </Tooltip>
+          <a
+            key={index}
+            className={cn(
+              "inline-block mr-4 cursor-pointer overflow-hidden rounded-xl border p-4",
+              "border-gray-950/[.1] bg-gray-950/[.01] hover:bg-gray-950/[.05]",
+              "dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]",
+              "transition-all duration-300 ease-out text-sm w-[250px]"
+            )}
+            href={paper.href}
+            target="_blank"
+          >
+            {paper.title}
+          </a>
         ))}
       </Marquee>
     ),
