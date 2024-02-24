@@ -53,7 +53,7 @@ export function MultiSelectCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] h-full justify-between"
+          className="min-w-[200px] h-full justify-between"
         >
           {selectedValues.length > 0 ? (
             <div className="flex items-center justify-center gap-[4px] flex-wrap">
@@ -108,6 +108,14 @@ export function MultiSelectCombobox({
                 </div>
               </CommandItem>
             ))}
+            {options.length === 0 && (
+              <CommandItem disabled>
+                <div className="text-slate-500">
+                  No columns found. You may want to remove columns from other
+                  fields.
+                </div>
+              </CommandItem>
+            )}
           </CommandGroup>
         </Command>
       </PopoverContent>

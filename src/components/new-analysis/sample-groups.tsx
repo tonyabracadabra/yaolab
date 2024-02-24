@@ -330,6 +330,10 @@ export function SampleGroups({
                       !form
                         .watch("config.bioSamples")
                         ?.flatMap((e) => e.sample)
+                        .includes(col) &&
+                      !form
+                        .watch("config.bioSamples")
+                        ?.flatMap((e) => e.blank)
                         .includes(col)
                   ) || []
                 }
