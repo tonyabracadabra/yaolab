@@ -251,9 +251,8 @@ const features = [
       >
         {papers.map((paper, index) => (
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger key={index}>
               <a
-                key={index}
                 className={cn(
                   "inline-block mr-4 cursor-pointer overflow-hidden rounded-xl border p-4",
                   "border-gray-950/[.1] bg-gray-950/[.01] hover:bg-gray-950/[.05]",
