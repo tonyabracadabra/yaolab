@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 import { UseFormReturn } from "react-hook-form";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
+
 import {
   Select,
   SelectContent,
@@ -93,44 +94,44 @@ export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
         )}
       />
       {form.watch("reactionDb").split("-")[0] === "default" && (
-        <Button
-          size="xs"
-          type="button"
-          variant="secondary"
-          className="flex items-center gap-2"
-          onClick={async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="xs"
+              type="button"
+              variant="secondary"
+              className="flex items-center gap-2"
+              onClick={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
 
-            const { csv } = await downloadDefaultReactions({
-              mode: form.watch("reactionDb").split("-")[1] as "pos" | "neg",
-            });
-            const blob = new Blob([csv], { type: "text/csv" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "default-reactions.csv"; // Sets the filename for the download
-            document.body.appendChild(a); // Append the link to the document
-            a.click(); // Trigger the download
-            document.body.removeChild(a); // Clean up and remove the link
-            URL.revokeObjectURL(url);
-          }}
-        >
-          <Tooltip>
-            <TooltipTrigger>
+                const { csv } = await downloadDefaultReactions({
+                  mode: form.watch("reactionDb").split("-")[1] as "pos" | "neg",
+                });
+                const blob = new Blob([csv], { type: "text/csv" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "default-reactions.csv"; // Sets the filename for the download
+                document.body.appendChild(a); // Append the link to the document
+                a.click(); // Trigger the download
+                document.body.removeChild(a); // Clean up and remove the link
+                URL.revokeObjectURL(url);
+              }}
+            >
               <div className="w-full h-full">
                 <DownloadCloud size={12} />
               </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="p-4 bg-white dark:bg-slate-900 rounded-lg shadow-lg">
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {t("download-default-reactions")}
-                </p>
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        </Button>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <div className="p-4 bg-white dark:bg-slate-900 rounded-lg shadow-lg">
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {t("download-default-reactions")}
+              </p>
+            </div>
+          </TooltipContent>
+        </Tooltip>
       )}
     </div>
   );
