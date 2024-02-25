@@ -294,7 +294,7 @@ export default function Home() {
           <BentoCard key={idx} {...feature} />
         ))}
       </BentoGrid>
-      <div className="demo relative w-full mt-4 p-2 rounded-lg flex items-center justify-center flex-col h-[90vh]">
+      <div className="demo relative w-full mt-4 p-2 rounded-lg flex items-center justify-center flex-col h-[85vh]">
         <Button
           onClick={() => {
             // download a zip of two files in folder /public/demo.zip
