@@ -9,12 +9,13 @@ import {
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useAction, useQuery } from "convex/react";
-import { DownloadCloud, Loader2 } from "lucide-react";
+import { DownloadCloud, Loader2, Settings2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { UseFormReturn } from "react-hook-form";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 
+import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -35,6 +36,7 @@ export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
   const downloadDefaultReactions = useAction(
     api.actions.downloadDefaultReactions
   );
+  const router = useRouter();
 
   return (
     <div className="flex items-center justify-center gap-2">
@@ -57,7 +59,20 @@ export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
                 <SelectTrigger>
                   <SelectValue placeholder="Raw File to be analyzed" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent
+                  postViewportContent={
+                    <Button
+                      variant="ghost"
+                      className="px-8 gap-4 flex items-start justify-start"
+                      onClick={() => {
+                        router.push("/dashboard/reactions");
+                      }}
+                    >
+                      <Settings2 size={16} />
+                      Manage
+                    </Button>
+                  }
+                >
                   {allReactionDatabases?.map((db) => (
                     <SelectItem key={db._id} value={db._id}>
                       {db.name}
