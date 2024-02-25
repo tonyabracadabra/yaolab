@@ -237,7 +237,7 @@ const features = [
     description: "Our latest research and publications",
     href: "research",
     hrefText: "Stay Tuned",
-    className: "col-span-1 lg:col-span-3",
+    className: "col-span-3 lg:col-span-3",
     background: (
       <Marquee
         pauseOnHover
