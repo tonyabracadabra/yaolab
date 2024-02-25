@@ -23,11 +23,6 @@ import Meteors from "@/src/components/magicui/meteors";
 import TextShimmer from "@/src/components/magicui/text-shimmer";
 import { Button } from "@/src/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/src/components/ui/dialog";
-import {
   ArrowRightIcon,
   ContactIcon,
   DownloadCloud,
@@ -241,7 +236,7 @@ const features = [
     description: "Our latest research and publications",
     href: "research",
     hrefText: "Stay Tuned",
-    className: "col-span-3 lg:col-span-3",
+    className: "col-span-1 lg:col-span-3",
     background: (
       <Marquee
         pauseOnHover
@@ -271,54 +266,61 @@ export default function Home() {
   return (
     <div className="p-8 px-8 h-full w-full sm:px-16 xl:px-32 font-sans">
       <BentoGrid className="relative">
-        <div className="z-10 flex items-start w-full justify-start pb-4 absolute left-6 top-6">
-          <Dialog>
-            <DialogTrigger asChild>
-              <div
-                className={cn(
-                  "group rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800"
-                )}
-              >
-                <TextShimmer className="inline-flex items-center justify-center px-4 py-1 text-sm">
-                  <span>✨ See Demo</span>
-                  <ArrowRightIcon className="w-4 h-4 ml-1 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
-                </TextShimmer>
-              </div>
-            </DialogTrigger>
+        <div
+          className="z-10 flex items-start w-full justify-start pb-4 absolute left-6 top-6"
+          onClick={() => {
+            // Find the element with the demo-section class name
+            const demoSection = document.querySelector(".demo");
 
-            <DialogContent className="w-[70vw] h-[45vh] flex items-center gap-4 flex-col p-8 justify-around">
-              <Button
-                onClick={() => {
-                  // download a zip of two files in folder /public/demo.zip
-                  const a = document.createElement("a");
-                  a.href = "/demo.zip";
-                  a.download = "demo.zip";
-                  a.click();
-                }}
-                size="sm"
-                variant="outline"
-              >
-                <DownloadCloud className="w-4 h-4 mr-3 my-4" />
-                Download Demo Data
-              </Button>
-              <iframe
-                src="https://demo.arcade.software/wPDjQJyqvgEjdLCS8cUC?embed&show_copy_link=true"
-                title="YaoLab@JNU"
-                loading="lazy"
-                allowFullScreen
-                allow="clipboard-write"
-                className="w-full h-full"
-                style={{
-                  colorScheme: "light",
-                }}
-              ></iframe>
-            </DialogContent>
-          </Dialog>
+            if (demoSection) {
+              // Scroll to the demo section with smooth scrolling
+              demoSection.scrollIntoView({ behavior: "smooth" });
+            }
+          }}
+        >
+          <div
+            className={cn(
+              "group rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+            )}
+          >
+            <TextShimmer className="inline-flex items-center justify-center px-4 py-1 text-sm">
+              <span>✨ See Demo</span>
+              <ArrowRightIcon className="w-4 h-4 ml-1 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
+            </TextShimmer>
+          </div>
         </div>
         {features.map((feature, idx) => (
           <BentoCard key={idx} {...feature} />
         ))}
       </BentoGrid>
+      <div className="demo w-full py-4 mt-4 rounded-lg relative flex items-center justify-center flex-col h-[90vh]">
+        <Button
+          onClick={() => {
+            // download a zip of two files in folder /public/demo.zip
+            const a = document.createElement("a");
+            a.href = "/demo.zip";
+            a.download = "demo.zip";
+            a.click();
+          }}
+          size="sm"
+          variant="outline"
+          className="absolute right-4 top-8"
+        >
+          <DownloadCloud className="w-4 h-4 mr-3 my-4" />
+          Download Demo Data
+        </Button>
+        <iframe
+          src="https://demo.arcade.software/wPDjQJyqvgEjdLCS8cUC?embed&show_copy_link=true"
+          title="YaoLab@JNU"
+          loading="lazy"
+          allowFullScreen
+          allow="clipboard-write"
+          className="w-full h-full"
+          style={{
+            colorScheme: "light",
+          }}
+        ></iframe>
+      </div>
     </div>
   );
 }
