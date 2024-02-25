@@ -36,9 +36,11 @@ export function AdvancedSetting({ form }: AdvancedSettingInterface) {
       <AccordionContent className="flex gap-4 px-1">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Target Ions Filtering</CardTitle>
+            <CardTitle className="text-lg">
+              {t("target-ion-filtering")}
+            </CardTitle>
             <CardDescription className="text-md">
-              Configure the parameters for filtering target ions
+              {t("target-ion-filtering-desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -91,10 +93,10 @@ export function AdvancedSetting({ form }: AdvancedSettingInterface) {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              Molecular Network Construction
+              {t("molecular-network-construction")}
             </CardTitle>
             <CardDescription className="text-md">
-              Configure the parameters for molecular network construction
+              {t("molecular-network-construction-desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -147,9 +149,11 @@ export function AdvancedSetting({ form }: AdvancedSettingInterface) {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Redundancy Identification</CardTitle>
+            <CardTitle className="text-lg">
+              {t("redundancy-identification")}
+            </CardTitle>
             <CardDescription className="text-md">
-              Configure the parameters for redundancy identification
+              {t("redundancy-identification-desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">

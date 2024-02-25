@@ -163,9 +163,9 @@ export function SampleGroups({
           <CardHeader className="flex">
             <div className="flex justify-between items-start gap-4">
               <div>
-                <CardTitle className="text-lg">Biological samples</CardTitle>
+                <CardTitle className="text-lg">{t("bio-samples")}</CardTitle>
                 <CardDescription className="text-md">
-                  Configure the biological samples and blank groups
+                  {t("bio-samples-desc")}
                 </CardDescription>
               </div>
               <div className="flex w-[250px] flex-col gap-4 h-full justify-between">
@@ -285,10 +285,9 @@ export function SampleGroups({
           <CardHeader className="relative">
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-col">
-                <CardTitle className="text-lg">Drug Sample</CardTitle>
+                <CardTitle className="text-lg">{t("drug-samples")}</CardTitle>
                 <CardDescription className="text-md">
-                  Optionally configure Drug sample data can help in further
-                  filtering the endogenous metabolites
+                  {t("drug-samples-desc")}
                 </CardDescription>
               </div>
               <div>
