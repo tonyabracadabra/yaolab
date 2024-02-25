@@ -112,6 +112,11 @@ module.exports = {
             opacity: 0,
           },
         },
+        "border-beam": {
+          "100%": {
+            "offset-distance": "100%",
+          },
+        },
         slide: {
           to: {
             transform: "translate(calc(100cqw - 100%), 0)",
@@ -127,6 +132,7 @@ module.exports = {
         "spin-around": "spin-around calc(var(--speed) * 2) infinite linear",
         slide: "slide var(--speed) ease-in-out infinite alternate",
         ripple: "ripple 3400ms ease infinite",
+        "border-beam": "border-beam calc(var(--duration)*1s) infinite linear",
       },
     },
   },

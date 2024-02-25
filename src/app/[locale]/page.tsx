@@ -19,6 +19,7 @@ import Lottie from "lottie-react";
 import { GlobeIcon, InputIcon } from "@radix-ui/react-icons";
 
 import { cn } from "@/lib/utils";
+import { BorderBeam } from "@/src/components/magicui/border-beam";
 import Meteors from "@/src/components/magicui/meteors";
 import TextShimmer from "@/src/components/magicui/text-shimmer";
 import { Button } from "@/src/components/ui/button";
@@ -293,7 +294,7 @@ export default function Home() {
           <BentoCard key={idx} {...feature} />
         ))}
       </BentoGrid>
-      <div className="demo w-full py-4 mt-4 rounded-lg relative flex items-center justify-center flex-col h-[90vh]">
+      <div className="demo relative w-full mt-4 p-2 rounded-lg flex items-center justify-center flex-col h-[90vh]">
         <Button
           onClick={() => {
             // download a zip of two files in folder /public/demo.zip
@@ -320,6 +321,7 @@ export default function Home() {
             colorScheme: "light",
           }}
         ></iframe>
+        <BorderBeam size={250} duration={12} delay={9} />
       </div>
     </div>
   );
