@@ -316,7 +316,7 @@ export default function Home() {
           loading="lazy"
           allowFullScreen
           allow="clipboard-write"
-          className="w-full h-full"
+          className="w-full h-full z-[20000]"
           style={{
             colorScheme: "light",
           }}
