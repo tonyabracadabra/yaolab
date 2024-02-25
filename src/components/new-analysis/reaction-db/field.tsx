@@ -119,9 +119,7 @@ export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
                 URL.revokeObjectURL(url);
               }}
             >
-              <div className="w-full h-full">
-                <DownloadCloud size={12} />
-              </div>
+              <DownloadCloud size={12} />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
