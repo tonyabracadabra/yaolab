@@ -18,8 +18,23 @@ export function cn(...inputs: ClassValue[]) {
 export function useFileUpload() {
   const generateUploadUrl = useAction(api.actions.generateUploadUrl);
 
-  const handleUpload = async (file: File) => {
+  const handleUpload = async ({
+    file,
+    maxFileSize = 50,
+    completeMsg,
+  }: {
+    file: File;
+    // max file size in MB
+    maxFileSize?: number;
+    completeMsg?: string;
+  }) => {
     const mimeType = file.type || "text/plain";
+    // if file exeeds size of 100MB, return error
+    if (file.size > maxFileSize * 1024 * 1024) {
+      toast.error("File size exceeds 10MB");
+      throw new Error("File size exceeds 10MB");
+    }
+
     const { signedUrl, storageId } = await generateUploadUrl({
       fileName: file.name,
       mimeType,
@@ -33,7 +48,7 @@ export function useFileUpload() {
       });
 
       if (res.ok) {
-        toast.success("Successfully uploaded file");
+        toast.success(completeMsg || `Successfully uploaded file ${file.name}`);
         return { storageId };
       } else {
         toast.error("Failed to upload file");

@@ -85,8 +85,16 @@ export function RawFileCreationDialog({ onCreate }: RawFileCreationInterface) {
     try {
       const [{ storageId: mgfId }, { storageId: targetedIonsId }] =
         await Promise.all([
-          handleUpload(values.mgf),
-          handleUpload(values.targetedIons),
+          handleUpload({
+            file: values.mgf,
+            maxFileSize: 50,
+            completeMsg: "MGF file uploaded successfully",
+          }),
+          handleUpload({
+            file: values.targetedIons,
+            maxFileSize: 10,
+            completeMsg: "Targeted Ions file uploaded successfully",
+          }),
         ]);
 
       const token = await getToken({ template: "convex", skipCache: true });
