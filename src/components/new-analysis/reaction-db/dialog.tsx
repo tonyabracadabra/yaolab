@@ -3,7 +3,15 @@ import { Id } from "@/convex/_generated/dataModel";
 import { ReactionDatabaseSchema, ReactionSchema } from "@/convex/schema";
 import { readFirstKLines } from "@/lib/utils";
 import { useAction, useMutation } from "convex/react";
-import { Atom, DownloadCloud, Loader2, Minus, Plus } from "lucide-react";
+import {
+  Atom,
+  DownloadCloud,
+  Loader2,
+  Minus,
+  MinusCircle,
+  Plus,
+  PlusCircle,
+} from "lucide-react";
 import Papa from "papaparse";
 import { useState } from "react";
 import { Control, useFieldArray, useForm } from "react-hook-form";
@@ -415,8 +423,12 @@ export function ReactionDbCreationDialog({
                       className="py-2"
                     >
                       <TabsList>
-                        <TabsTrigger value="pos">+ Positive</TabsTrigger>
-                        <TabsTrigger value="neg">- Negative</TabsTrigger>
+                        <TabsTrigger value="pos">
+                          <PlusCircle className="w-4 h-4 mr-2" /> Positive
+                        </TabsTrigger>
+                        <TabsTrigger value="neg">
+                          <MinusCircle className="w-4 h-4 mr-2" /> Negative
+                        </TabsTrigger>
                       </TabsList>
                     </Tabs>
                   );

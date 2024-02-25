@@ -39,7 +39,13 @@ import {
 import { useUser } from "@clerk/nextjs";
 import Avatar from "boring-avatars";
 import { useMutation, useQuery } from "convex/react";
-import { Loader2, MoreHorizontal, Trash2 } from "lucide-react";
+import {
+  Loader2,
+  MinusCircle,
+  MoreHorizontal,
+  PlusCircle,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -77,7 +83,19 @@ export default function ReactionDBList() {
       header: "Ion Mode",
       cell: ({ row }) => (
         <div className="flex items-center justify-center gap-4 text-white">
-          <div>{row.original.ionMode}</div>
+          <div className="flex items-center justify-center gap-4">
+            {row.original.ionMode === "neg" ? (
+              <>
+                <MinusCircle size={14} />
+                Negative
+              </>
+            ) : (
+              <>
+                <PlusCircle size={14} />
+                Positive
+              </>
+            )}
+          </div>
         </div>
       ),
     },
