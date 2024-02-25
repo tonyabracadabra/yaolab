@@ -305,7 +305,7 @@ export default function Home() {
           }}
           size="sm"
           variant="outline"
-          className="absolute right-4 top-8"
+          className="absolute right-4 top-4 z-[30000]"
         >
           <DownloadCloud className="w-4 h-4 mr-3 my-4" />
           Download Demo Data
