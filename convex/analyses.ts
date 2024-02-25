@@ -29,10 +29,14 @@ export const create = zInternalMutation({
 
 export const get = zQuery({
   args: { id: zid("analyses") },
-  handler: async ({ db }, { id }) => {
+  handler: async ({ db, user }, { id }) => {
     const analysis = await db.get(id);
     if (!analysis) {
       throw new Error("Analysis not found");
+    }
+
+    if (analysis.user !== user) {
+      throw new Error("Unauthorized");
     }
 
     const rawFile = await db.get(analysis.rawFile);

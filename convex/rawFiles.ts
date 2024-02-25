@@ -40,7 +40,17 @@ export const remove = zMutation({
 
 export const get = zQuery({
   args: { id: zid("rawFiles") },
-  handler: async ({ db }, { id }) => {
-    return await db.get(id);
+  handler: async ({ user, db }, { id }) => {
+    const rawFile = await db.get(id);
+
+    if (!rawFile) {
+      throw new Error("Raw File Not found");
+    }
+
+    if (rawFile.user !== user) {
+      throw new Error("Unauthorized");
+    }
+
+    return rawFile;
   },
 });
