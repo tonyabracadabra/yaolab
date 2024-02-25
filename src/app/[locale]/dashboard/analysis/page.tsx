@@ -45,6 +45,7 @@ import {
   Copy,
   Loader2,
   MoreHorizontal,
+  Plus,
   RefreshCcw,
   Trash2,
   XIcon,
@@ -130,7 +131,17 @@ export default function AnalysisList() {
     },
     {
       accessorKey: "_id",
-      header: "",
+      header: () => (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            router.push("/dashboard/new");
+          }}
+        >
+          <Plus size={16} strokeWidth={3} />
+        </Button>
+      ),
       cell: ({ row }) => (
         <div>
           <DropdownMenu>
