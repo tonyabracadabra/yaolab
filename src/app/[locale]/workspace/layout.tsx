@@ -1,11 +1,11 @@
 "use client";
 
-import { DashboardNav } from "@/src/components/nav";
+import { WorkspaceNav } from "@/src/components/nav";
 import { useConvexAuth } from "convex/react";
 import { Atom, FileArchive, ListPlus, Loader2, Waypoints } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-export default function DashboardLayout({
+export default function WorkspaceLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -16,31 +16,31 @@ export default function DashboardLayout({
   return (
     <div className="w-full flex h-full">
       <div className="pl-8 pt-4 flex items-center justify-center gap-6 border-r-[1px] h-full">
-        <DashboardNav
+        <WorkspaceNav
           items={[
             {
               title: t("new-analysis"),
               icon: ListPlus,
-              href: "/dashboard/new",
-              regex: /\/dashboard(\/new)?$/,
+              href: "/workspace/new",
+              regex: /\/workspace(\/new)?$/,
             },
             {
               title: t("all-analysis"),
               icon: Waypoints,
-              href: "/dashboard/analysis",
-              regex: /\/dashboard\/analysis(\/.*)?$/,
+              href: "/workspace/analysis",
+              regex: /\/workspace\/analysis(\/.*)?$/,
             },
             {
               title: t("all-rawfiles"),
               icon: FileArchive,
-              href: "/dashboard/raw",
-              regex: /\/dashboard\/raw(\/.*)?$/,
+              href: "/workspace/raw",
+              regex: /\/workspace\/raw(\/.*)?$/,
             },
             {
               title: t("all-reaction-dbs"),
               icon: Atom,
-              href: "/dashboard/reactions",
-              regex: /\/dashboard\/reactions(\/.*)?$/,
+              href: "/workspace/reactions",
+              regex: /\/workspace\/reactions(\/.*)?$/,
             },
           ]}
         />

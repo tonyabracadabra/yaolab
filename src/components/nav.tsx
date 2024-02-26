@@ -17,11 +17,11 @@ export type SidebarNavItem = {
   items?: never;
 };
 
-interface DashboardNavProps {
+interface WorkspaceNavProps {
   items: SidebarNavItem[];
 }
 
-export function DashboardNav({ items }: DashboardNavProps) {
+export function WorkspaceNav({ items }: WorkspaceNavProps) {
   const path = usePathname();
 
   if (!items?.length) {

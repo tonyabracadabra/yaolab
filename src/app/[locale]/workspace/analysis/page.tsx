@@ -136,7 +136,7 @@ export default function AnalysisList() {
           size="sm"
           variant="ghost"
           onClick={() => {
-            router.push("/dashboard/new");
+            router.push("/workspace/new");
           }}
         >
           <Plus size={16} strokeWidth={3} />
@@ -172,7 +172,7 @@ export default function AnalysisList() {
                 variant="ghost"
                 className="w-full flex items-center justify-between gap-2"
                 onClick={() => {
-                  router.push(`/dashboard/new?from=${row.original.id}`);
+                  router.push(`/workspace/new?from=${row.original.id}`);
                 }}
               >
                 <Copy className="stroke-[1.2px] w-4 h-4" />

@@ -41,7 +41,7 @@ export default function Analysis() {
   const from = searchParams.get("from");
 
   const handleSubmit = async (id: Id<"analyses">) => {
-    router.push(`/dashboard/analysis/${id}`);
+    router.push(`/workspace/analysis/${id}`);
   };
 
   return (

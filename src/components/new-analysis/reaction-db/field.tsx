@@ -65,7 +65,7 @@ export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
                       variant="ghost"
                       className="px-8 gap-4 flex items-start justify-start"
                       onClick={() => {
-                        router.push("/dashboard/reactions");
+                        router.push("/workspace/reactions");
                       }}
                     >
                       <Settings2 size={16} />

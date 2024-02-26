@@ -394,7 +394,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   return (
     <div className="flex flex-col gap-4 px-4 py-2 w-full">
       <div className="flex items-center justify-between gap-4 w-full">
-        <Link href="/dashboard/analysis">
+        <Link href="/workspace/analysis">
           <Button
             size="sm"
             variant="secondary"

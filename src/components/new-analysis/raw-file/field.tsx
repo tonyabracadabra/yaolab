@@ -66,7 +66,7 @@ export function RawFileFormField({ form }: RawFileFormFieldInterface) {
                     variant="ghost"
                     className="px-8 gap-4 flex items-start justify-start"
                     onClick={() => {
-                      router.push("/dashboard/raw");
+                      router.push("/workspace/raw");
                     }}
                   >
                     <Settings2 size={16} />
@@ -103,7 +103,7 @@ export function RawFileFormField({ form }: RawFileFormFieldInterface) {
                       size="xs"
                       className="font-bold text-primary"
                       onClick={() => {
-                        router.push("/dashboard/raw");
+                        router.push("/workspace/raw");
                       }}
                     >
                       <span>❌ {t("delete")}</span>

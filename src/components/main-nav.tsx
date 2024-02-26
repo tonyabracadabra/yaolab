@@ -22,17 +22,17 @@ export function MainNav() {
         </div>
       </Link>
       <Link
-        href="/dashboard"
+        href="/workspace"
         className="flex items-center font-urban mr-6 space-x-2 group"
       >
         <div className="flex flex-col gap-[1.5px] items-center justify-center">
           <div className="relative w-full text-md flex items-center justify-center group-hover:opacity-60">
-            {t("dashboard")}
+            {t("workspace")}
           </div>
           <div
             className={cn(
               "w-full h-[1px] bg-primary group-hover:opacity-100",
-              pathname.startsWith("/dashboard") ? "opacity-100" : "opacity-0"
+              pathname.startsWith("/workspace") ? "opacity-100" : "opacity-0"
             )}
           />
         </div>

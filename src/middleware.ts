@@ -21,9 +21,9 @@ export default authMiddleware({
 
     // Extract the locale and path from the requested URL
     const pathParts = req.nextUrl.pathname.split("/").filter(Boolean);
-    if (pathParts.length == 2 && pathParts[1] === "dashboard") {
+    if (pathParts.length == 2 && pathParts[1] === "workspace") {
       // Construct new URL with locale and new path
-      const newUrl = `/${pathParts[0]}/dashboard/new`;
+      const newUrl = `/${pathParts[0]}/workspace/new`;
       return NextResponse.rewrite(new URL(newUrl, req.url));
     }
   },
