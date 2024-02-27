@@ -31,7 +31,6 @@ export function useFileUpload() {
     const mimeType = file.type || "text/plain";
     // if file exeeds size of 100MB, return error
     if (file.size > maxFileSize * 1024 * 1024) {
-      toast.error("File size exceeds 10MB");
       throw new Error("File size exceeds 10MB");
     }
 
@@ -51,7 +50,6 @@ export function useFileUpload() {
         toast.success(completeMsg || `Successfully uploaded file ${file.name}`);
         return { storageId };
       } else {
-        toast.error("Failed to upload file");
         throw new Error("Failed to upload file");
       }
     } catch (error) {

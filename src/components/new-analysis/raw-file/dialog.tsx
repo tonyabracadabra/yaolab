@@ -92,7 +92,7 @@ export function RawFileCreationDialog({ onCreate }: RawFileCreationInterface) {
           }),
           handleUpload({
             file: values.targetedIons,
-            maxFileSize: 10,
+            maxFileSize: 50,
             completeMsg: "Targeted Ions file uploaded successfully",
           }),
         ]);
@@ -122,9 +122,11 @@ export function RawFileCreationDialog({ onCreate }: RawFileCreationInterface) {
       );
       onCreate(id);
       onClose();
-    } catch (error) {
-      console.log("error", error);
-      toast.error("Something went wrong while uploading your file, try again");
+    } catch (error: Error) {
+      toast.error(
+        error.message ||
+          "Something went wrong while uploading your file, try again"
+      );
     } finally {
       setStatus("idle");
     }
