@@ -13,7 +13,8 @@ export default authMiddleware({
     // @ts-ignore
     return intlMiddleware(req);
   },
-  publicRoutes: ["/", "/api/getAuthenticatedUserId"],
+  // Ensure that locale specific sign-in pages are public
+  publicRoutes: ["/:locale", "/:locale/sign-in"],
   afterAuth(auth, req) {
     if (!auth.userId && !auth.isPublicRoute) {
       return redirectToSignIn({ returnBackUrl: "/sign-in" });
