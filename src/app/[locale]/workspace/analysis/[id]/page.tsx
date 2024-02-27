@@ -43,7 +43,6 @@ import {
 import {
   Atom,
   BadgeCheck,
-  Brush,
   Download,
   File as FileIcon,
   FileWarning,
@@ -52,6 +51,7 @@ import {
   Loader2,
   LucideWorkflow,
   Settings2,
+  SlidersHorizontal,
   TimerIcon,
   XIcon,
 } from "lucide-react";
@@ -626,8 +626,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button size="sm" variant="outline">
-                      <Brush className="w-4 h-4 mr-2" />
-                      Config
+                      <SlidersHorizontal className="w-4 h-4" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-full flex flex-col gap-2 items-center justify-center">

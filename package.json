@@ -47,7 +47,7 @@
     "geist": "^1.1.0",
     "jszip": "^3.10.1",
     "lottie-react": "^2.4.0",
-    "lucide-react": "^0.310.0",
+    "lucide-react": "^0.341.0",
     "nanoid": "^5.0.5",
     "next": "14.0.1",
     "next-intl": "^3.7.0",
