@@ -629,8 +629,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                       <SlidersHorizontal className="w-4 h-4" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-full flex flex-col gap-2 items-center justify-center">
-                    <div className="flex items-start justify-center gap-4">
+                  <PopoverContent className="w-full flex flex-col gap-8 p-8 items-center justify-center">
+                    <div className="flex items-start justify-start gap-6 w-full">
                       <div className="flex flex-col gap-4 items-start">
                         <Label>Node</Label>
                         <Select
@@ -688,6 +688,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                           </SelectContent>
                         </Select>
                       </div>
+                    </div>
+                    <div className="flex gap-2 items-center justify-center">
                       {analysis.config.drugSample && (
                         <div className="flex flex-col gap-6 items-start">
                           <div className="flex items-center justify-center gap-2">
