@@ -44,7 +44,9 @@ export default function LocaleLayout({
             >
               <SiteHeader />
               <TooltipProvider>
-                <main className="h-[88vh] overflow-auto">{children}</main>
+                <main className="h-[calc(100vh-68px)] overflow-auto">
+                  {children}
+                </main>
               </TooltipProvider>
               <Toaster position="top-center" />
             </ThemeProvider>

@@ -15,7 +15,7 @@ export default function WorkspaceLayout({
 
   return (
     <div className="w-full flex h-full">
-      <div className="pl-8 pt-4 flex items-center justify-center gap-6 border-r-[1px] h-full">
+      <div className="pl-8 flex items-center justify-center gap-6 border-r-[1px] h-full py-4">
         <WorkspaceNav
           items={[
             {

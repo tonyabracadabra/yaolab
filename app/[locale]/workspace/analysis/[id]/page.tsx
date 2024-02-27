@@ -2,7 +2,6 @@
 
 import AnalysisResult from "@/components/analysis-result/task-result";
 import { Workflow } from "@/components/analysis-result/workflow";
-import { MagicCard } from "@/components/magicui/magic-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +21,7 @@ import { ForceGraph2D } from "react-force-graph";
 
 import { HelperTooltip } from "@/components/help-tooltip";
 import { Switch } from "@/components/switch";
+import { Card } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -621,7 +621,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             </div>
           )}
           {analysis.status === "complete" && (
-            <MagicCard className="relative">
+            <Card className="relative w-full h-full overflow-hidden">
               <div className="flex absolute right-[3%] top-[5%] items-center justify-center gap-4 z-[50000]">
                 <Popover>
                   <PopoverTrigger asChild>
@@ -866,170 +866,172 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   Loading graph now <Loader2 className="animate-spin" />
                 </div>
               ) : (
-                <div className="overflow-hidden w-[75vw] h-[65vh]">
+                <>
                   {graphData.edges?.length === 0 &&
                   graphData.nodes?.length === 0 ? (
                     <span>No data to display</span>
                   ) : (
-                    <ForceGraph2D
-                      ref={fgRef}
-                      graphData={{
-                        links: graphData?.edges || [],
-                        nodes: graphData?.nodes || [],
-                      }}
-                      // click to smoothly zoom in the subgraph associated with that node
-                      onNodeClick={(node) => {
-                        if (!fgRef.current) return;
-                        // @ts-ignore
-                        fgRef.current.zoomToFit(1000, 100, (n) =>
-                          connectedComponents
-                            .find((cc) => cc.includes(node.id))
-                            ?.includes(n.id)
-                        );
-                      }}
-                      nodeId="id"
-                      linkSource="id1"
-                      linkTarget="id2"
-                      linkWidth={8}
-                      nodeCanvasObject={(node, ctx, globalScale) => {
-                        if (!nodeIdtoSizes || !ratioColColors) return;
+                    <div className="w-[calc(100vw-400px)] h-[calc(100vh-200px)]">
+                      <ForceGraph2D
+                        ref={fgRef}
+                        graphData={{
+                          links: graphData?.edges || [],
+                          nodes: graphData?.nodes || [],
+                        }}
+                        // click to smoothly zoom in the subgraph associated with that node
+                        onNodeClick={(node) => {
+                          if (!fgRef.current) return;
+                          // @ts-ignore
+                          fgRef.current.zoomToFit(1000, 100, (n) =>
+                            connectedComponents
+                              .find((cc) => cc.includes(node.id))
+                              ?.includes(n.id)
+                          );
+                        }}
+                        nodeId="id"
+                        linkSource="id1"
+                        linkTarget="id2"
+                        linkWidth={8}
+                        nodeCanvasObject={(node, ctx, globalScale) => {
+                          if (!nodeIdtoSizes || !ratioColColors) return;
 
-                        const size = nodeIdtoSizes?.get(node.id as any) || 8;
-                        const ratio = ratioColColors?.map(
-                          (v) => node[v.col] || 0
-                        ) as number[];
-                        if (ratioModeEnabled) {
-                          const total = ratio.reduce((a, b) => a + b, 0);
-                          const startAngle = 0;
-                          const endAngle = Math.PI * 2;
-                          let lastAngle = startAngle;
+                          const size = nodeIdtoSizes?.get(node.id as any) || 8;
+                          const ratio = ratioColColors?.map(
+                            (v) => node[v.col] || 0
+                          ) as number[];
+                          if (ratioModeEnabled) {
+                            const total = ratio.reduce((a, b) => a + b, 0);
+                            const startAngle = 0;
+                            const endAngle = Math.PI * 2;
+                            let lastAngle = startAngle;
 
-                          for (let i = 0; i < ratio.length; i++) {
-                            const ratioValue = ratio[i];
-                            const angle = (ratioValue / total) * endAngle;
-                            ctx.beginPath();
-                            // @ts-ignore
-                            ctx.moveTo(node.x, node.y);
-                            ctx.arc(
+                            for (let i = 0; i < ratio.length; i++) {
+                              const ratioValue = ratio[i];
+                              const angle = (ratioValue / total) * endAngle;
+                              ctx.beginPath();
                               // @ts-ignore
-                              node.x,
-                              node.y,
-                              size,
-                              lastAngle,
-                              lastAngle + angle
-                            );
-                            ctx.fillStyle = ratioColColors[i].color;
-                            ctx.fill();
-                            lastAngle += angle;
+                              ctx.moveTo(node.x, node.y);
+                              ctx.arc(
+                                // @ts-ignore
+                                node.x,
+                                node.y,
+                                size,
+                                lastAngle,
+                                lastAngle + angle
+                              );
+                              ctx.fillStyle = ratioColColors[i].color;
+                              ctx.fill();
+                              lastAngle += angle;
+                            }
                           }
-                        }
 
-                        const curr = kAvailableNodes.find(
-                          (n) => n.key === nodeLabel
-                        );
+                          const curr = kAvailableNodes.find(
+                            (n) => n.key === nodeLabel
+                          );
 
-                        // Draw circle
-                        ctx.beginPath();
-                        const x = node.x as number;
-                        const y = node.y as number;
+                          // Draw circle
+                          ctx.beginPath();
+                          const x = node.x as number;
+                          const y = node.y as number;
 
-                        ctx.arc(x, y, size, 0, 2 * Math.PI, false); // Adjust the radius as needed
+                          ctx.arc(x, y, size, 0, 2 * Math.PI, false); // Adjust the radius as needed
 
-                        if (!ratioModeEnabled) {
-                          ctx.fillStyle = "white"; // Circle color
-                          ctx.strokeStyle = "#ADD8E6";
+                          if (!ratioModeEnabled) {
+                            ctx.fillStyle = "white"; // Circle color
+                            ctx.strokeStyle = "#ADD8E6";
+                            ctx.fill();
+                            ctx.lineWidth = 2; // Adjust border width as needed
+                            ctx.stroke();
+                          }
+
+                          if (node.isPrototype) {
+                            ctx.strokeStyle = "yellow";
+                            ctx.stroke();
+                          }
+
+                          // Draw label
+                          const label =
+                            typeof node[nodeLabel] === "number"
+                              ? node[nodeLabel].toFixed(2)
+                              : String(node[nodeLabel]);
+                          ctx.font = `4px Sans-Serif`;
+                          ctx.textAlign = "center";
+                          ctx.textBaseline = "middle";
+                          ctx.fillStyle = "black"; // Text color
+                          ctx.fillText(label, x, y); // Position the label on the circle
+                        }}
+                        nodePointerAreaPaint={(node, color, ctx) => {
+                          ctx.beginPath();
+                          const x = node.x as number;
+                          const y = node.y as number;
+                          ctx.arc(x, y, 5, 0, 2 * Math.PI, false); // Match the radius used in nodeCanvasObject
+                          ctx.fillStyle = color;
                           ctx.fill();
-                          ctx.lineWidth = 2; // Adjust border width as needed
+                        }}
+                        linkCanvasObject={(link, ctx, globalScale) => {
+                          if (!link.source || !link.target) return;
+
+                          // Draw line
+                          ctx.beginPath();
+                          ctx.moveTo(
+                            // @ts-ignore
+                            link.source.x as number,
+                            // @ts-ignore
+                            link.source.y as number
+                          );
+                          ctx.lineTo(
+                            // @ts-ignore
+                            link.target.x as number,
+                            // @ts-ignore
+                            link.target.y as number
+                          );
+
+                          ctx.strokeStyle = theme === "dark" ? "white" : "#000"; // Line color
+                          if (highlightRedundant && link.redundantData) {
+                            ctx.strokeStyle = "red";
+                          }
+
                           ctx.stroke();
-                        }
 
-                        if (node.isPrototype) {
-                          ctx.strokeStyle = "yellow";
-                          ctx.stroke();
-                        }
+                          // Draw label with precision 2
+                          const label =
+                            typeof link[edgeLabel] === "number"
+                              ? link[edgeLabel].toFixed(2)
+                              : String(link[edgeLabel]);
+                          ctx.font = `${3}px Sans-Serif`;
+                          ctx.textAlign = "center";
+                          ctx.textBaseline = "middle";
+                          ctx.fillStyle = theme === "dark" ? "white" : "#000"; // Text color
 
-                        // Draw label
-                        const label =
-                          typeof node[nodeLabel] === "number"
-                            ? node[nodeLabel].toFixed(2)
-                            : String(node[nodeLabel]);
-                        ctx.font = `4px Sans-Serif`;
-                        ctx.textAlign = "center";
-                        ctx.textBaseline = "middle";
-                        ctx.fillStyle = "black"; // Text color
-                        ctx.fillText(label, x, y); // Position the label on the circle
-                      }}
-                      nodePointerAreaPaint={(node, color, ctx) => {
-                        ctx.beginPath();
-                        const x = node.x as number;
-                        const y = node.y as number;
-                        ctx.arc(x, y, 5, 0, 2 * Math.PI, false); // Match the radius used in nodeCanvasObject
-                        ctx.fillStyle = color;
-                        ctx.fill();
-                      }}
-                      linkCanvasObject={(link, ctx, globalScale) => {
-                        if (!link.source || !link.target) return;
+                          // draw label with a realllllly thin and short box as background, just to make it more readable, nothing else!
+                          // make sure it won't take any spaces beyond the texts width and height
+                          const textWidth = ctx.measureText(label).width;
+                          ctx.fillStyle = theme === "dark" ? "black" : "white";
 
-                        // Draw line
-                        ctx.beginPath();
-                        ctx.moveTo(
-                          // @ts-ignore
-                          link.source.x as number,
-                          // @ts-ignore
-                          link.source.y as number
-                        );
-                        ctx.lineTo(
-                          // @ts-ignore
-                          link.target.x as number,
-                          // @ts-ignore
-                          link.target.y as number
-                        );
+                          ctx.fillRect(
+                            // @ts-ignore
+                            (link.source.x + link.target.x) / 2 - textWidth / 2,
+                            // @ts-ignore
+                            (link.source.y + link.target.y) / 2 - 2,
+                            textWidth,
+                            4
+                          );
+                          ctx.fillStyle = theme === "dark" ? "white" : "#000";
 
-                        ctx.strokeStyle = theme === "dark" ? "white" : "#000"; // Line color
-                        if (highlightRedundant && link.redundantData) {
-                          ctx.strokeStyle = "red";
-                        }
-
-                        ctx.stroke();
-
-                        // Draw label with precision 2
-                        const label =
-                          typeof link[edgeLabel] === "number"
-                            ? link[edgeLabel].toFixed(2)
-                            : String(link[edgeLabel]);
-                        ctx.font = `${3}px Sans-Serif`;
-                        ctx.textAlign = "center";
-                        ctx.textBaseline = "middle";
-                        ctx.fillStyle = theme === "dark" ? "white" : "#000"; // Text color
-
-                        // draw label with a realllllly thin and short box as background, just to make it more readable, nothing else!
-                        // make sure it won't take any spaces beyond the texts width and height
-                        const textWidth = ctx.measureText(label).width;
-                        ctx.fillStyle = theme === "dark" ? "black" : "white";
-
-                        ctx.fillRect(
-                          // @ts-ignore
-                          (link.source.x + link.target.x) / 2 - textWidth / 2,
-                          // @ts-ignore
-                          (link.source.y + link.target.y) / 2 - 2,
-                          textWidth,
-                          4
-                        );
-                        ctx.fillStyle = theme === "dark" ? "white" : "#000";
-
-                        ctx.fillText(
-                          label,
-                          // @ts-ignore
-                          (link.source.x + link.target.x) / 2,
-                          // @ts-ignore
-                          (link.source.y + link.target.y) / 2
-                        );
-                      }}
-                    />
+                          ctx.fillText(
+                            label,
+                            // @ts-ignore
+                            (link.source.x + link.target.x) / 2,
+                            // @ts-ignore
+                            (link.source.y + link.target.y) / 2
+                          );
+                        }}
+                      />
+                    </div>
                   )}
-                </div>
+                </>
               )}
-            </MagicCard>
+            </Card>
           )}
         </div>
       </div>
