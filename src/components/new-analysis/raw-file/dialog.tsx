@@ -122,9 +122,9 @@ export function RawFileCreationDialog({ onCreate }: RawFileCreationInterface) {
       );
       onCreate(id);
       onClose();
-    } catch (error: Error) {
+    } catch (error) {
       toast.error(
-        error.message ||
+        error?.message ||
           "Something went wrong while uploading your file, try again"
       );
     } finally {
