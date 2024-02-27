@@ -29,6 +29,11 @@ import {
 } from "@/src/components/ui/dropdown-menu";
 import { Label } from "@/src/components/ui/label";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/src/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -38,6 +43,7 @@ import {
 import {
   Atom,
   BadgeCheck,
+  Brush,
   Download,
   File as FileIcon,
   FileWarning,
@@ -233,7 +239,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
       nodes: newNodes,
       edges: newEdges,
     };
-  }, [oriGraphData]);
+  }, [connectedComponents, oriGraphData]);
 
   const nodeIdtoSizes = useMemo(() => {
     // normalize the node size based on the nodeSize column
@@ -312,6 +318,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     oriGraphData,
     graphData,
     setOriGraphData,
+    graphsWithPrototype,
   ]);
 
   useEffect(() => {
@@ -614,108 +621,114 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
             </div>
           )}
           {analysis.status === "complete" && (
-            <div className="flex flex-col gap-4">
-              <div className="flex items-start justify-between gap-4 w-full p-4 bg-primary-foreground rounded-lg z-[20000]">
-                <div className="flex items-start justify-center gap-4">
-                  <div className="flex flex-col gap-4 items-start">
-                    <Label>Node</Label>
-                    <Select
-                      value={nodeLabel}
-                      onValueChange={(value) => {
-                        setNodeLabel(value);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a node label" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {kAvailableNodes.map((v, i) => (
-                          <SelectItem key={i} value={v.key}>
-                            {v.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex flex-col gap-4 items-start">
-                    <Label>Edge</Label>
-                    <Select
-                      value={edgeLabel}
-                      onValueChange={(value) => setEdgeLabel(value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a edge label" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {kAvailableEdges.map((v, i) => (
-                          <SelectItem key={i} value={v.col}>
-                            {v.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {/* node size */}
-                  <div className="flex flex-col gap-4 items-start">
-                    <Label>Node Size</Label>
-                    <Select
-                      value={nodeSize}
-                      onValueChange={(value) => setNodeSize(value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a node column" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {kAvailableNodes.map((v, i) => (
-                          <SelectItem key={i} value={v.col}>
-                            {v.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {analysis.config.drugSample && (
-                    <div className="flex flex-col gap-6 items-start">
-                      <div className="flex items-center justify-center gap-2">
-                        <Label>Hide endogenous subgraphs</Label>
-                        <HelperTooltip text="Only show subgraphs that contains at least one prototype compound" />
+            <MagicCard className="relative">
+              <div className="flex absolute right-12 top-12 items-center justify-center gap-4 z-[50000]">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button size="sm" variant="outline">
+                      <Brush className="w-4 h-4 mr-2" />
+                      Config
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full flex flex-col gap-2 items-center justify-center">
+                    <div className="flex items-start justify-center gap-4">
+                      <div className="flex flex-col gap-4 items-start">
+                        <Label>Node</Label>
+                        <Select
+                          value={nodeLabel}
+                          onValueChange={(value) => {
+                            setNodeLabel(value);
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a node label" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {kAvailableNodes.map((v, i) => (
+                              <SelectItem key={i} value={v.key}>
+                                {v.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <Switch
-                        checked={hideEndogenousSubgraphs}
-                        onCheckedChange={setHideEndogenousSubgraphs}
-                      />
+                      <div className="flex flex-col gap-4 items-start">
+                        <Label>Edge</Label>
+                        <Select
+                          value={edgeLabel}
+                          onValueChange={(value) => setEdgeLabel(value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a edge label" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {kAvailableEdges.map((v, i) => (
+                              <SelectItem key={i} value={v.col}>
+                                {v.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {/* node size */}
+                      <div className="flex flex-col gap-4 items-start">
+                        <Label>Node Size</Label>
+                        <Select
+                          value={nodeSize}
+                          onValueChange={(value) => setNodeSize(value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a node column" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {kAvailableNodes.map((v, i) => (
+                              <SelectItem key={i} value={v.col}>
+                                {v.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {analysis.config.drugSample && (
+                        <div className="flex flex-col gap-6 items-start">
+                          <div className="flex items-center justify-center gap-2">
+                            <Label>Hide endogenous subgraphs</Label>
+                            <HelperTooltip text="Only show subgraphs that contains at least one prototype compound" />
+                          </div>
+                          <Switch
+                            checked={hideEndogenousSubgraphs}
+                            onCheckedChange={setHideEndogenousSubgraphs}
+                          />
+                        </div>
+                      )}
+                      <div className="flex flex-col gap-6 items-start ml-2">
+                        <div className="flex items-center justify-center gap-2">
+                          <Label>Compound response Mode</Label>
+                          <HelperTooltip text="Enable this to see the compound response mode" />
+                        </div>
+                        <Switch
+                          checked={ratioModeEnabled}
+                          onCheckedChange={(value) =>
+                            setRatioModeEnabled(value)
+                          }
+                        />
+                      </div>
+                      <div className="flex flex-col gap-6 items-start">
+                        <div className="flex items-center justify-center gap-2">
+                          <Label>Highlight Redundant Data</Label>
+                          <HelperTooltip text="Highlight edges that have redundant data" />
+                        </div>
+                        <Switch
+                          checked={highlightRedundant}
+                          onCheckedChange={setHighlightRedundant}
+                        />
+                      </div>
                     </div>
-                  )}
-                  <div className="flex flex-col gap-6 items-start ml-2">
-                    <div className="flex items-center justify-center gap-2">
-                      <Label>Compound response Mode</Label>
-                      <HelperTooltip text="Enable this to see the compound response mode" />
-                    </div>
-                    <Switch
-                      checked={ratioModeEnabled}
-                      onCheckedChange={(value) => setRatioModeEnabled(value)}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-6 items-start">
-                    <div className="flex items-center justify-center gap-2">
-                      <Label>Highlight Redundant Data</Label>
-                      <HelperTooltip text="Highlight edges that have redundant data" />
-                    </div>
-                    <Switch
-                      checked={highlightRedundant}
-                      onCheckedChange={setHighlightRedundant}
-                    />
-                  </div>
-                </div>
-              </div>
-              <MagicCard className="h-[68vh] relative">
+                  </PopoverContent>
+                </Popover>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="absolute right-12 top-12"
-                    >
+                    <Button variant="outline" size="sm">
                       {downloading ? (
                         <Loader2 className="animate-spin" />
                       ) : (
@@ -782,240 +795,240 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                     </Button>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <div className="flex flex-col gap-4 absolute left-12 top-12 items-start z-[10000]">
-                  {/* legend for prototype */}
-                  <div className="flex items-start justify-start gap-2 w-full text-sm">
-                    <div
-                      className="w-4 h-4"
-                      style={{
-                        backgroundColor: "white",
-                        border: "2px solid yellow",
-                      }}
-                    />
-                    <span>Prototype</span>
-                  </div>
-                  {/* legend for redundant */}
-                  {highlightRedundant && (
-                    <div className="flex items-center justify-start gap-2">
-                      {/* a thin red line */}
-                      <div className="w-4 h-[2px] bg-red-500" />
-                      <span>Redundant</span>
-                    </div>
-                  )}
-                  {/* legend for ratios */}
-                  {ratioModeEnabled && ratioColColors && (
-                    <div className="flex flex-col gap-4">
-                      <div className="flex items-start justify-start gap-2 w-18 flex-col">
-                        {ratioColColors.map((col, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center justify-start gap-2"
-                          >
-                            <div
-                              className="w-4 h-4"
-                              style={{
-                                backgroundColor: col.color,
-                              }}
-                            />
-                            <span>{col.col}</span>
-                          </div>
-                        ))}
-                      </div>
-                      {/* button that randomly swaps the color theme */}
-                      <Select
-                        value={colorScheme}
-                        onValueChange={(v) => setColorScheme(v)}
-                      >
-                        <SelectTrigger>
-                          <div className="w-4 h-4 rounded-full rainbow-conic-gradient" />
-                          {colorSchemes.find((c) => c.value === colorScheme)
-                            ?.label || "Color Scheme"}
-                        </SelectTrigger>
-                        <SelectContent>
-                          {colorSchemes.map((scheme, i) => (
-                            <SelectItem
-                              key={i}
-                              value={scheme.value}
-                              onClick={() => setColorScheme(scheme.value)}
-                            >
-                              {scheme.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
+              </div>
+              <div className="flex flex-col gap-4 absolute left-12 top-12 items-start z-[10000]">
+                {/* legend for prototype */}
+                <div className="flex items-start justify-start gap-2 w-full text-sm">
+                  <div
+                    className="w-4 h-4"
+                    style={{
+                      backgroundColor: "white",
+                      border: "2px solid yellow",
+                    }}
+                  />
+                  <span>Prototype</span>
                 </div>
-                {graphData === undefined ? (
-                  <div className="flex items-center h-[60%] justify-center gap-2">
-                    Loading graph now <Loader2 className="animate-spin" />
-                  </div>
-                ) : (
-                  <div className="overflow-hidden w-[75vw] h-[65vh]">
-                    {graphData.edges?.length === 0 &&
-                    graphData.nodes?.length === 0 ? (
-                      <span>No data to display</span>
-                    ) : (
-                      <ForceGraph2D
-                        ref={fgRef}
-                        graphData={{
-                          links: graphData?.edges || [],
-                          nodes: graphData?.nodes || [],
-                        }}
-                        // click to smoothly zoom in the subgraph associated with that node
-                        onNodeClick={(node) => {
-                          if (!fgRef.current) return;
-                          // @ts-ignore
-                          fgRef.current.zoomToFit(1000, 100, (n) =>
-                            connectedComponents
-                              .find((cc) => cc.includes(node.id))
-                              ?.includes(n.id)
-                          );
-                        }}
-                        nodeId="id"
-                        linkSource="id1"
-                        linkTarget="id2"
-                        linkWidth={8}
-                        nodeCanvasObject={(node, ctx, globalScale) => {
-                          if (!nodeIdtoSizes || !ratioColColors) return;
-
-                          const size = nodeIdtoSizes?.get(node.id as any) || 8;
-                          const ratio = ratioColColors?.map(
-                            (v) => node[v.col] || 0
-                          ) as number[];
-                          if (ratioModeEnabled) {
-                            const total = ratio.reduce((a, b) => a + b, 0);
-                            const startAngle = 0;
-                            const endAngle = Math.PI * 2;
-                            let lastAngle = startAngle;
-
-                            for (let i = 0; i < ratio.length; i++) {
-                              const ratioValue = ratio[i];
-                              const angle = (ratioValue / total) * endAngle;
-                              ctx.beginPath();
-                              // @ts-ignore
-                              ctx.moveTo(node.x, node.y);
-                              ctx.arc(
-                                // @ts-ignore
-                                node.x,
-                                node.y,
-                                size,
-                                lastAngle,
-                                lastAngle + angle
-                              );
-                              ctx.fillStyle = ratioColColors[i].color;
-                              ctx.fill();
-                              lastAngle += angle;
-                            }
-                          }
-
-                          const curr = kAvailableNodes.find(
-                            (n) => n.key === nodeLabel
-                          );
-
-                          // Draw circle
-                          ctx.beginPath();
-                          const x = node.x as number;
-                          const y = node.y as number;
-
-                          ctx.arc(x, y, size, 0, 2 * Math.PI, false); // Adjust the radius as needed
-
-                          if (!ratioModeEnabled) {
-                            ctx.fillStyle = "white"; // Circle color
-                            ctx.strokeStyle = "#ADD8E6";
-                            ctx.fill();
-                            ctx.lineWidth = 2; // Adjust border width as needed
-                            ctx.stroke();
-                          }
-
-                          if (node.isPrototype) {
-                            ctx.strokeStyle = "yellow";
-                            ctx.stroke();
-                          }
-
-                          // Draw label
-                          const label =
-                            typeof node[nodeLabel] === "number"
-                              ? node[nodeLabel].toFixed(2)
-                              : String(node[nodeLabel]);
-                          ctx.font = `4px Sans-Serif`;
-                          ctx.textAlign = "center";
-                          ctx.textBaseline = "middle";
-                          ctx.fillStyle = "black"; // Text color
-                          ctx.fillText(label, x, y); // Position the label on the circle
-                        }}
-                        nodePointerAreaPaint={(node, color, ctx) => {
-                          ctx.beginPath();
-                          const x = node.x as number;
-                          const y = node.y as number;
-                          ctx.arc(x, y, 5, 0, 2 * Math.PI, false); // Match the radius used in nodeCanvasObject
-                          ctx.fillStyle = color;
-                          ctx.fill();
-                        }}
-                        linkCanvasObject={(link, ctx, globalScale) => {
-                          if (!link.source || !link.target) return;
-
-                          // Draw line
-                          ctx.beginPath();
-                          ctx.moveTo(
-                            // @ts-ignore
-                            link.source.x as number,
-                            // @ts-ignore
-                            link.source.y as number
-                          );
-                          ctx.lineTo(
-                            // @ts-ignore
-                            link.target.x as number,
-                            // @ts-ignore
-                            link.target.y as number
-                          );
-
-                          ctx.strokeStyle = theme === "dark" ? "white" : "#000"; // Line color
-                          if (highlightRedundant && link.redundantData) {
-                            ctx.strokeStyle = "red";
-                          }
-
-                          ctx.stroke();
-
-                          // Draw label with precision 2
-                          const label =
-                            typeof link[edgeLabel] === "number"
-                              ? link[edgeLabel].toFixed(2)
-                              : String(link[edgeLabel]);
-                          ctx.font = `${3}px Sans-Serif`;
-                          ctx.textAlign = "center";
-                          ctx.textBaseline = "middle";
-                          ctx.fillStyle = theme === "dark" ? "white" : "#000"; // Text color
-
-                          // draw label with a realllllly thin and short box as background, just to make it more readable, nothing else!
-                          // make sure it won't take any spaces beyond the texts width and height
-                          const textWidth = ctx.measureText(label).width;
-                          ctx.fillStyle = theme === "dark" ? "black" : "white";
-
-                          ctx.fillRect(
-                            // @ts-ignore
-                            (link.source.x + link.target.x) / 2 - textWidth / 2,
-                            // @ts-ignore
-                            (link.source.y + link.target.y) / 2 - 2,
-                            textWidth,
-                            4
-                          );
-                          ctx.fillStyle = theme === "dark" ? "white" : "#000";
-
-                          ctx.fillText(
-                            label,
-                            // @ts-ignore
-                            (link.source.x + link.target.x) / 2,
-                            // @ts-ignore
-                            (link.source.y + link.target.y) / 2
-                          );
-                        }}
-                      />
-                    )}
+                {/* legend for redundant */}
+                {highlightRedundant && (
+                  <div className="flex items-center justify-start gap-2">
+                    {/* a thin red line */}
+                    <div className="w-4 h-[2px] bg-red-500" />
+                    <span>Redundant</span>
                   </div>
                 )}
-              </MagicCard>
-            </div>
+                {/* legend for ratios */}
+                {ratioModeEnabled && ratioColColors && (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-start justify-start gap-2 w-18 flex-col">
+                      {ratioColColors.map((col, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-start gap-2"
+                        >
+                          <div
+                            className="w-4 h-4"
+                            style={{
+                              backgroundColor: col.color,
+                            }}
+                          />
+                          <span>{col.col}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {/* button that randomly swaps the color theme */}
+                    <Select
+                      value={colorScheme}
+                      onValueChange={(v) => setColorScheme(v)}
+                    >
+                      <SelectTrigger>
+                        <div className="w-4 h-4 rounded-full rainbow-conic-gradient" />
+                        {colorSchemes.find((c) => c.value === colorScheme)
+                          ?.label || "Color Scheme"}
+                      </SelectTrigger>
+                      <SelectContent>
+                        {colorSchemes.map((scheme, i) => (
+                          <SelectItem
+                            key={i}
+                            value={scheme.value}
+                            onClick={() => setColorScheme(scheme.value)}
+                          >
+                            {scheme.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+              {graphData === undefined ? (
+                <div className="flex items-center h-[60%] justify-center gap-2">
+                  Loading graph now <Loader2 className="animate-spin" />
+                </div>
+              ) : (
+                <div className="overflow-hidden w-[75vw] h-[65vh]">
+                  {graphData.edges?.length === 0 &&
+                  graphData.nodes?.length === 0 ? (
+                    <span>No data to display</span>
+                  ) : (
+                    <ForceGraph2D
+                      ref={fgRef}
+                      graphData={{
+                        links: graphData?.edges || [],
+                        nodes: graphData?.nodes || [],
+                      }}
+                      // click to smoothly zoom in the subgraph associated with that node
+                      onNodeClick={(node) => {
+                        if (!fgRef.current) return;
+                        // @ts-ignore
+                        fgRef.current.zoomToFit(1000, 100, (n) =>
+                          connectedComponents
+                            .find((cc) => cc.includes(node.id))
+                            ?.includes(n.id)
+                        );
+                      }}
+                      nodeId="id"
+                      linkSource="id1"
+                      linkTarget="id2"
+                      linkWidth={8}
+                      nodeCanvasObject={(node, ctx, globalScale) => {
+                        if (!nodeIdtoSizes || !ratioColColors) return;
+
+                        const size = nodeIdtoSizes?.get(node.id as any) || 8;
+                        const ratio = ratioColColors?.map(
+                          (v) => node[v.col] || 0
+                        ) as number[];
+                        if (ratioModeEnabled) {
+                          const total = ratio.reduce((a, b) => a + b, 0);
+                          const startAngle = 0;
+                          const endAngle = Math.PI * 2;
+                          let lastAngle = startAngle;
+
+                          for (let i = 0; i < ratio.length; i++) {
+                            const ratioValue = ratio[i];
+                            const angle = (ratioValue / total) * endAngle;
+                            ctx.beginPath();
+                            // @ts-ignore
+                            ctx.moveTo(node.x, node.y);
+                            ctx.arc(
+                              // @ts-ignore
+                              node.x,
+                              node.y,
+                              size,
+                              lastAngle,
+                              lastAngle + angle
+                            );
+                            ctx.fillStyle = ratioColColors[i].color;
+                            ctx.fill();
+                            lastAngle += angle;
+                          }
+                        }
+
+                        const curr = kAvailableNodes.find(
+                          (n) => n.key === nodeLabel
+                        );
+
+                        // Draw circle
+                        ctx.beginPath();
+                        const x = node.x as number;
+                        const y = node.y as number;
+
+                        ctx.arc(x, y, size, 0, 2 * Math.PI, false); // Adjust the radius as needed
+
+                        if (!ratioModeEnabled) {
+                          ctx.fillStyle = "white"; // Circle color
+                          ctx.strokeStyle = "#ADD8E6";
+                          ctx.fill();
+                          ctx.lineWidth = 2; // Adjust border width as needed
+                          ctx.stroke();
+                        }
+
+                        if (node.isPrototype) {
+                          ctx.strokeStyle = "yellow";
+                          ctx.stroke();
+                        }
+
+                        // Draw label
+                        const label =
+                          typeof node[nodeLabel] === "number"
+                            ? node[nodeLabel].toFixed(2)
+                            : String(node[nodeLabel]);
+                        ctx.font = `4px Sans-Serif`;
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.fillStyle = "black"; // Text color
+                        ctx.fillText(label, x, y); // Position the label on the circle
+                      }}
+                      nodePointerAreaPaint={(node, color, ctx) => {
+                        ctx.beginPath();
+                        const x = node.x as number;
+                        const y = node.y as number;
+                        ctx.arc(x, y, 5, 0, 2 * Math.PI, false); // Match the radius used in nodeCanvasObject
+                        ctx.fillStyle = color;
+                        ctx.fill();
+                      }}
+                      linkCanvasObject={(link, ctx, globalScale) => {
+                        if (!link.source || !link.target) return;
+
+                        // Draw line
+                        ctx.beginPath();
+                        ctx.moveTo(
+                          // @ts-ignore
+                          link.source.x as number,
+                          // @ts-ignore
+                          link.source.y as number
+                        );
+                        ctx.lineTo(
+                          // @ts-ignore
+                          link.target.x as number,
+                          // @ts-ignore
+                          link.target.y as number
+                        );
+
+                        ctx.strokeStyle = theme === "dark" ? "white" : "#000"; // Line color
+                        if (highlightRedundant && link.redundantData) {
+                          ctx.strokeStyle = "red";
+                        }
+
+                        ctx.stroke();
+
+                        // Draw label with precision 2
+                        const label =
+                          typeof link[edgeLabel] === "number"
+                            ? link[edgeLabel].toFixed(2)
+                            : String(link[edgeLabel]);
+                        ctx.font = `${3}px Sans-Serif`;
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.fillStyle = theme === "dark" ? "white" : "#000"; // Text color
+
+                        // draw label with a realllllly thin and short box as background, just to make it more readable, nothing else!
+                        // make sure it won't take any spaces beyond the texts width and height
+                        const textWidth = ctx.measureText(label).width;
+                        ctx.fillStyle = theme === "dark" ? "black" : "white";
+
+                        ctx.fillRect(
+                          // @ts-ignore
+                          (link.source.x + link.target.x) / 2 - textWidth / 2,
+                          // @ts-ignore
+                          (link.source.y + link.target.y) / 2 - 2,
+                          textWidth,
+                          4
+                        );
+                        ctx.fillStyle = theme === "dark" ? "white" : "#000";
+
+                        ctx.fillText(
+                          label,
+                          // @ts-ignore
+                          (link.source.x + link.target.x) / 2,
+                          // @ts-ignore
+                          (link.source.y + link.target.y) / 2
+                        );
+                      }}
+                    />
+                  )}
+                </div>
+              )}
+            </MagicCard>
           )}
         </div>
       </div>
