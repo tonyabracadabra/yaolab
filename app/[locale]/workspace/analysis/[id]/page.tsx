@@ -622,7 +622,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
           )}
           {analysis.status === "complete" && (
             <MagicCard className="relative">
-              <div className="flex absolute right-[5%] top-[5%] items-center justify-center gap-4 z-[50000]">
+              <div className="flex absolute right-[3%] top-[5%] items-center justify-center gap-4 z-[50000]">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button size="sm" variant="outline">
@@ -797,7 +797,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <div className="flex flex-col gap-4 absolute left-[5%] top-[5%] items-start z-[10000]">
+              <div className="flex flex-col gap-4 absolute left-[3%] top-[5%] items-start z-[10000]">
                 {/* legend for prototype */}
                 <div className="flex items-start justify-start gap-2 w-full text-sm">
                   <div
