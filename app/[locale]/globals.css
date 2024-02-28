@@ -111,6 +111,14 @@
   @apply text-primary;
 }
 
+.cl-footerActionText {
+  @apply text-primary;
+}
+
+.cl-dividerLine {
+  @apply bg-primary;
+}
+
 .rainbow-conic-gradient {
   background-image: conic-gradient(
     red,
