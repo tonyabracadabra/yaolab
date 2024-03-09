@@ -14,7 +14,7 @@ export default authMiddleware({
     return intlMiddleware(req);
   },
   // Ensure that locale specific sign-in pages are public
-  publicRoutes: ["/:locale", "/:locale/sign-in"],
+  publicRoutes: ["/:locale", "/:locale/sign-in", "/:locale/aboutus"],
   afterAuth(auth, req) {
     if (!auth.userId && !auth.isPublicRoute) {
       return redirectToSignIn({ returnBackUrl: "/sign-in" });
