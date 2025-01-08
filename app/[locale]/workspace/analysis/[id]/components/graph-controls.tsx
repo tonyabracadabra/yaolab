@@ -82,8 +82,6 @@ export function GraphControls({
   setRatioModeEnabled,
   highlightRedundant,
   setHighlightRedundant,
-  colorScheme,
-  setColorScheme,
   graphData,
   hasDrugSample,
   downloading,

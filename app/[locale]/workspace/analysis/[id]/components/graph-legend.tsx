@@ -25,13 +25,6 @@ export function GraphLegend({
   return (
     <div className="absolute left-6 top-6 z-50">
       <div className="flex flex-col gap-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-lg p-3 shadow-lg ring-1 ring-border/50">
-        {/* Legend Title */}
-        <div className="flex items-center gap-2 pb-2 border-b border-border/50">
-          <span className="text-xs font-medium text-muted-foreground">
-            Legend
-          </span>
-        </div>
-
         {/* Legend Items */}
         <div className="flex flex-col gap-2.5">
           <div className="flex items-center gap-2.5">
