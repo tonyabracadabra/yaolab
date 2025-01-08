@@ -25,7 +25,7 @@ export function GraphLegend({
   setColorScheme,
 }: GraphLegendProps) {
   return (
-    <div className="absolute left-4 top-4 z-[100]">
+    <div className="absolute left-4 top-4 z-[20]">
       <div className="flex flex-col gap-3 p-3 bg-background/95 backdrop-blur-sm border rounded-lg shadow-sm">
         <div className="flex flex-col gap-2">
           {/* Basic Legend Items */}

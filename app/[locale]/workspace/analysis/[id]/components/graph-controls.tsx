@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
@@ -18,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Download, Loader2, SlidersHorizontal } from "lucide-react";
+import { Download, Loader2, Settings2 } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 import type { EdgeKey, GraphData, NodeKey, RatioColorScheme } from "../types";
 
@@ -91,20 +92,16 @@ export function GraphControls({
   onDownloadRawData,
 }: GraphControlsProps) {
   return (
-    <div className="absolute right-6 top-6 flex items-center gap-3 z-50">
-      <div className="flex items-center gap-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-lg p-2 shadow-lg border border-border">
+    <div className="absolute right-6 top-6 flex items-center gap-2 z-50">
+      <div className="flex items-center gap-2 bg-background/95 backdrop-blur-sm rounded-lg shadow-sm">
         <Popover>
           <PopoverTrigger asChild>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 px-3 shadow-sm hover:bg-accent"
-            >
-              <SlidersHorizontal className="w-4 h-4" />
+            <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+              <Settings2 className="w-4 h-4" />
             </Button>
           </PopoverTrigger>
           <PopoverContent
-            className="w-[600px] z-[60]"
+            className="w-[580px] z-[9999]"
             align="end"
             sideOffset={8}
             onInteractOutside={(e) => {
@@ -117,20 +114,36 @@ export function GraphControls({
               }
             }}
           >
-            <div className="space-y-6">
+            <div className="space-y-6 p-4">
+              <div className="space-y-1.5">
+                <h4 className="font-medium text-sm">Graph Visualization</h4>
+                <p className="text-xs text-muted-foreground">
+                  Configure how nodes and edges are displayed in the graph
+                </p>
+              </div>
+
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="nodeLabel">Node Label</Label>
+                  <Label
+                    htmlFor="nodeLabel"
+                    className="text-xs text-muted-foreground"
+                  >
+                    Node Label
+                  </Label>
                   <Select
                     value={nodeLabel}
                     onValueChange={(value: NodeKey) => setNodeLabel(value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 text-xs">
                       <SelectValue placeholder="Select a node label" />
                     </SelectTrigger>
                     <SelectContent>
                       {kAvailableNodes.map((v) => (
-                        <SelectItem key={v.key} value={v.key}>
+                        <SelectItem
+                          key={v.key}
+                          value={v.key}
+                          className="text-xs"
+                        >
                           {v.label}
                         </SelectItem>
                       ))}
@@ -138,17 +151,26 @@ export function GraphControls({
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edgeLabel">Edge Label</Label>
+                  <Label
+                    htmlFor="edgeLabel"
+                    className="text-xs text-muted-foreground"
+                  >
+                    Edge Label
+                  </Label>
                   <Select
                     value={edgeLabel}
                     onValueChange={(value: EdgeKey) => setEdgeLabel(value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 text-xs">
                       <SelectValue placeholder="Select an edge label" />
                     </SelectTrigger>
                     <SelectContent>
                       {kAvailableEdges.map((v) => (
-                        <SelectItem key={v.col} value={v.col}>
+                        <SelectItem
+                          key={v.col}
+                          value={v.col}
+                          className="text-xs"
+                        >
                           {v.label}
                         </SelectItem>
                       ))}
@@ -156,17 +178,26 @@ export function GraphControls({
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="nodeSize">Node Size</Label>
+                  <Label
+                    htmlFor="nodeSize"
+                    className="text-xs text-muted-foreground"
+                  >
+                    Node Size
+                  </Label>
                   <Select
                     value={nodeSize}
                     onValueChange={(value: NodeKey) => setNodeSize(value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 text-xs">
                       <SelectValue placeholder="Select a node size" />
                     </SelectTrigger>
                     <SelectContent>
                       {kAvailableNodes.map((v) => (
-                        <SelectItem key={v.col} value={v.key}>
+                        <SelectItem
+                          key={v.col}
+                          value={v.key}
+                          className="text-xs"
+                        >
                           {v.label}
                         </SelectItem>
                       ))}
@@ -175,48 +206,59 @@ export function GraphControls({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+              <div className="space-y-1.5">
+                <h4 className="font-medium text-sm">Display Options</h4>
+                <p className="text-xs text-muted-foreground">
+                  Adjust visibility and highlighting options
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 {hasDrugSample && (
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start space-x-4">
                     <Switch
                       checked={hideEndogenousSubgraphs}
                       onCheckedChange={setHideEndogenousSubgraphs}
                       className="mt-0.5"
                     />
                     <div className="space-y-1">
-                      <Label className="text-sm">
+                      <Label className="text-xs text-muted-foreground">
                         Hide endogenous subgraphs
                       </Label>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[11px] text-muted-foreground/80">
                         Only show subgraphs with prototype compounds
                       </p>
                     </div>
                   </div>
                 )}
 
-                <div className="flex items-start gap-4">
+                <div className="flex items-start space-x-4">
                   <Switch
                     checked={ratioModeEnabled}
                     onCheckedChange={setRatioModeEnabled}
                     className="mt-0.5"
                   />
                   <div className="space-y-1">
-                    <Label className="text-sm">Compound response Mode</Label>
-                    <p className="text-xs text-muted-foreground">
+                    <Label className="text-xs text-muted-foreground">
+                      Compound response Mode
+                    </Label>
+                    <p className="text-[11px] text-muted-foreground/80">
                       Enable compound response visualization
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
+                <div className="flex items-start space-x-4">
                   <Switch
                     checked={highlightRedundant}
                     onCheckedChange={setHighlightRedundant}
                     className="mt-0.5"
                   />
                   <div className="space-y-1">
-                    <Label className="text-sm">Highlight Redundant Data</Label>
-                    <p className="text-xs text-muted-foreground">
+                    <Label className="text-xs text-muted-foreground">
+                      Highlight Redundant Data
+                    </Label>
+                    <p className="text-[11px] text-muted-foreground/80">
                       Show edges with redundant information
                     </p>
                   </div>
@@ -231,7 +273,8 @@ export function GraphControls({
             <Button
               variant="outline"
               size="sm"
-              className="h-8 px-3 shadow-sm hover:bg-accent"
+              className="h-8 w-8 p-0"
+              disabled={downloading || !graphData}
             >
               {downloading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -240,23 +283,21 @@ export function GraphControls({
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="z-[60]" align="end" sideOffset={8}>
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
+          <DropdownMenuContent className="w-48" align="end" sideOffset={8}>
+            <DropdownMenuItem
               disabled={!graphData || downloading}
               onClick={onDownloadGraphML}
+              className="text-xs"
             >
-              GraphML
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
+              Download as GraphML
+            </DropdownMenuItem>
+            <DropdownMenuItem
               disabled={!graphData || downloading}
               onClick={onDownloadRawData}
+              className="text-xs"
             >
-              Raw (Nodes & Edges)
-            </Button>
+              Download Raw Data
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
