@@ -93,7 +93,7 @@ export function MS2Spectrum({ data, className }: MS2SpectrumProps) {
               value={[threshold]}
               onValueChange={([value]) => setThreshold(value)}
               min={0}
-              max={10}
+              max={20}
               step={0.1}
             />
           </div>

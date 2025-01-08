@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
 import _ from "lodash";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -146,7 +147,14 @@ export function MoleculeStructure({
   }
 
   return (
-    <div title={structure} style={{ minHeight: height }}>
+    <div
+      title={structure}
+      className={cn(
+        "relative flex items-center justify-center bg-transparent w-full",
+        className
+      )}
+      style={{ minHeight: height }}
+    >
       {svg ? (
         <div
           className="w-full h-full flex items-center justify-center"

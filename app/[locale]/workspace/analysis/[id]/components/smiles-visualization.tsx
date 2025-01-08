@@ -9,8 +9,8 @@ export function SmilesVisualization() {
   const [smiles, setSmiles] = useState<string>("");
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="shrink-0 mb-2 px-2">
+    <div className="flex flex-col h-full">
+      <div className="shrink-0 px-2 mb-2">
         <div className="relative">
           <Input
             value={smiles}
@@ -23,26 +23,26 @@ export function SmilesVisualization() {
           </div>
         </div>
       </div>
-      <div className="flex-1 min-h-0 bg-muted/30 rounded-lg p-4">
-        <div className="relative w-full h-full">
-          {smiles ? (
+      <div className="flex-1 min-h-0 relative bg-muted/20 rounded-lg">
+        {smiles ? (
+          <div className="absolute inset-0 p-4">
             <MoleculeStructure
               id="smiles-visualization"
               structure={smiles}
-              className="absolute inset-0"
+              className="h-full"
             />
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/50">
-              <Atom className="h-8 w-8 text-muted-foreground/50 mb-2" />
-              <div className="text-xs text-muted-foreground font-medium">
-                No Structure Available
-              </div>
-              <div className="text-[10px] text-muted-foreground/80 mt-1 text-center max-w-[180px]">
-                Enter a SMILES string above to visualize the molecular structure
-              </div>
+          </div>
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <Atom className="h-8 w-8 text-muted-foreground/50 mb-2" />
+            <div className="text-xs text-muted-foreground font-medium">
+              No Structure Available
             </div>
-          )}
-        </div>
+            <div className="text-[10px] text-muted-foreground/80 mt-1 text-center max-w-[180px]">
+              Enter a SMILES string above to visualize the molecular structure
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
