@@ -97,124 +97,133 @@ export function GraphVisualization({
   };
 
   return (
-    <div className="relative w-[calc(100vw-400px)] h-[calc(100vh-200px)] bg-background rounded-lg shadow-sm">
-      <ForceGraph2D
-        ref={fgRef}
-        graphData={processedGraphData}
-        onNodeClick={handleNodeClick}
-        nodeId="id"
-        linkSource="id1"
-        linkTarget="id2"
-        linkWidth={1.5}
-        backgroundColor="transparent"
-        nodeCanvasObject={(node: ForceGraphNode, ctx, globalScale) => {
-          if (!nodeIdtoSizes || !ratioColColors) return;
+    <div className="relative flex-1 min-h-0 bg-gradient-to-br from-background to-muted/20 rounded-lg border border-border shadow-sm">
+      <div className="absolute inset-0 w-full h-full">
+        <div className="absolute inset-0 bg-grid-slate-200/50 [mask-image:linear-gradient(0deg,transparent,black)] dark:bg-grid-slate-800/50" />
 
-          const size = nodeIdtoSizes?.get(node.id) || 8;
-          const x = node.x ?? 0;
-          const y = node.y ?? 0;
+        <ForceGraph2D
+          ref={fgRef}
+          graphData={processedGraphData}
+          onNodeClick={handleNodeClick}
+          nodeId="id"
+          linkSource="id1"
+          linkTarget="id2"
+          linkWidth={1.5}
+          backgroundColor="transparent"
+          nodeCanvasObject={(node: ForceGraphNode, ctx, globalScale) => {
+            if (!nodeIdtoSizes || !ratioColColors) return;
 
-          // Draw node
-          ctx.beginPath();
-          ctx.arc(x, y, size, 0, 2 * Math.PI);
+            const size = nodeIdtoSizes?.get(node.id) || 8;
+            const x = node.x ?? 0;
+            const y = node.y ?? 0;
 
-          if (!ratioModeEnabled) {
-            const isSelected = selectedNode?.id === node.id;
-            ctx.fillStyle = isSelected
-              ? "#4f46e5"
-              : theme === "dark"
-                ? "#ffffff"
-                : "#f8fafc";
-            ctx.strokeStyle = isSelected
-              ? "#818cf8"
-              : theme === "dark"
-                ? "#94a3b8"
-                : "#64748b";
-          }
+            // Draw node
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, 2 * Math.PI);
 
-          ctx.fill();
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
+            if (!ratioModeEnabled) {
+              const isSelected = selectedNode?.id === node.id;
+              ctx.fillStyle = isSelected
+                ? "#4f46e5"
+                : theme === "dark"
+                  ? "#ffffff"
+                  : "#f8fafc";
+              ctx.strokeStyle = isSelected
+                ? "#818cf8"
+                : theme === "dark"
+                  ? "#94a3b8"
+                  : "#64748b";
+            }
 
-          // Prototype indicator
-          if (node.isPrototype) {
-            ctx.strokeStyle = "#eab308";
-            ctx.lineWidth = 2;
+            ctx.fill();
+            ctx.lineWidth = 1.5;
             ctx.stroke();
-          }
 
-          // Node label with improved visibility
-          const label =
-            typeof node[nodeLabel] === "number"
-              ? node[nodeLabel].toFixed(2)
-              : String(node[nodeLabel]);
+            // Prototype indicator
+            if (node.isPrototype) {
+              ctx.strokeStyle = "#eab308";
+              ctx.lineWidth = 2;
+              ctx.stroke();
+            }
 
-          // Set font properties with larger size
-          const fontSize = Math.max(6, size * 0.7);
-          ctx.font = `${fontSize}px Inter, sans-serif`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
+            // Node label with improved visibility
+            const label =
+              typeof node[nodeLabel] === "number"
+                ? node[nodeLabel].toFixed(2)
+                : String(node[nodeLabel]);
 
-          // Draw label with contrasting outline for better visibility
-          ctx.strokeStyle = theme === "dark" ? "#000000" : "#ffffff";
-          ctx.lineWidth = 1.5;
-          ctx.strokeText(label, x, y);
-          ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
-          ctx.fillText(label, x, y);
-        }}
-        nodePointerAreaPaint={(node: ForceGraphNode, color, ctx) => {
-          const size = (nodeIdtoSizes?.get(node.id) || 8) + 2;
-          ctx.beginPath();
-          ctx.arc(node.x ?? 0, node.y ?? 0, size, 0, 2 * Math.PI);
-          ctx.fillStyle = color;
-          ctx.fill();
-        }}
-        linkCanvasObject={(link: ForceGraphEdge, ctx) => {
-          if (!link.source || !link.target) return;
+            // Set font properties with larger size
+            const fontSize = Math.max(6, size * 0.7);
+            ctx.font = `${fontSize}px Inter, sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
 
-          // Edge line
-          ctx.beginPath();
-          ctx.moveTo(link.source.x ?? 0, link.source.y ?? 0);
-          ctx.lineTo(link.target.x ?? 0, link.target.y ?? 0);
-          ctx.strokeStyle = getEdgeColor(!!link.redundantData);
-          ctx.lineWidth = 1;
-          ctx.stroke();
+            // Draw label with contrasting outline for better visibility
+            ctx.strokeStyle = theme === "dark" ? "#000000" : "#ffffff";
+            ctx.lineWidth = 1.5;
+            ctx.strokeText(label, x, y);
+            ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
+            ctx.fillText(label, x, y);
+          }}
+          nodePointerAreaPaint={(node: ForceGraphNode, color, ctx) => {
+            const size = (nodeIdtoSizes?.get(node.id) || 8) + 2;
+            ctx.beginPath();
+            ctx.arc(node.x ?? 0, node.y ?? 0, size, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+          }}
+          linkCanvasObject={(link: ForceGraphEdge, ctx) => {
+            if (!link.source || !link.target) return;
 
-          // Edge label
-          const label =
-            typeof link[edgeLabel] === "number"
-              ? link[edgeLabel].toFixed(2)
-              : String(link[edgeLabel]);
+            // Edge line
+            ctx.beginPath();
+            ctx.moveTo(link.source.x ?? 0, link.source.y ?? 0);
+            ctx.lineTo(link.target.x ?? 0, link.target.y ?? 0);
+            ctx.strokeStyle = getEdgeColor(!!link.redundantData);
+            ctx.lineWidth = 1;
+            ctx.stroke();
 
-          const midX = ((link.source.x ?? 0) + (link.target.x ?? 0)) / 2;
-          const midY = ((link.source.y ?? 0) + (link.target.y ?? 0)) / 2;
+            // Edge label
+            const label =
+              typeof link[edgeLabel] === "number"
+                ? link[edgeLabel].toFixed(2)
+                : String(link[edgeLabel]);
 
-          ctx.font = "3px Inter";
-          const metrics = ctx.measureText(label);
-          const padding = 2;
+            const midX = ((link.source.x ?? 0) + (link.target.x ?? 0)) / 2;
+            const midY = ((link.source.y ?? 0) + (link.target.y ?? 0)) / 2;
 
-          // Label background
-          ctx.fillStyle = getEdgeLabelBackground();
-          ctx.fillRect(
-            midX - (metrics.width + padding) / 2,
-            midY - (4 + padding) / 2,
-            metrics.width + padding,
-            4 + padding
-          );
+            ctx.font = "3px Inter";
+            const metrics = ctx.measureText(label);
+            const padding = 2;
 
-          // Label text
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
-          ctx.fillText(label, midX, midY);
-        }}
-      />
+            // Label background
+            ctx.fillStyle = getEdgeLabelBackground();
+            ctx.fillRect(
+              midX - (metrics.width + padding) / 2,
+              midY - (4 + padding) / 2,
+              metrics.width + padding,
+              4 + padding
+            );
+
+            // Label text
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
+            ctx.fillText(label, midX, midY);
+          }}
+        />
+      </div>
+
+      {/* Controls Overlay */}
+      <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-background/80 to-transparent backdrop-blur-sm" />
 
       {selectedNode && (
-        <NodeDetailsCard
-          node={selectedNode}
-          onClose={() => setSelectedNode(null)}
-        />
+        <div className="absolute bottom-4 left-4 z-30">
+          <NodeDetailsCard
+            node={selectedNode}
+            onClose={() => setSelectedNode(null)}
+          />
+        </div>
       )}
     </div>
   );
