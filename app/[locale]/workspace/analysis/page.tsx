@@ -35,7 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "@/convex/_generated/api";
-import { AnalysisOutputSchema } from "@/convex/analyses";
+import { Id } from "@/convex/_generated/dataModel";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { EnterIcon } from "@radix-ui/react-icons";
 import Avatar from "boring-avatars";
@@ -52,9 +52,22 @@ import {
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { z } from "zod";
 
-type AnalysisOutput = z.infer<typeof AnalysisOutputSchema>;
+type Analysis = {
+  id: Id<"analyses">;
+  user: string;
+  status: "running" | "complete" | "failed";
+  rawFile: {
+    name: string;
+    tool: "MZmine3" | "MDial";
+    mgf: string;
+    ions: string;
+    sampleCols: string[];
+  };
+  reactionDb: "default-pos" | { name: string; reactions: any[] };
+  config: any;
+  creationTime: number;
+};
 
 export default function AnalysisList() {
   const analyses = useQuery(api.analyses.getAll, {});
@@ -65,7 +78,7 @@ export default function AnalysisList() {
   const restart = useAction(api.actions.retryAnalysis);
   const pathname = usePathname();
 
-  const columns: ColumnDef<AnalysisOutput>[] = [
+  const columns: ColumnDef<Analysis>[] = [
     {
       accessorKey: "_id",
       header: "",
