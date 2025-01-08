@@ -3,7 +3,10 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { Palette } from "lucide-react";
 import type { RatioColorScheme } from "../types";
 
 interface GraphLegendProps {
@@ -22,54 +25,81 @@ export function GraphLegend({
   setColorScheme,
 }: GraphLegendProps) {
   return (
-    <div className="flex flex-col gap-4 absolute left-[3%] top-[5%] items-start z-[10000]">
-      <div className="flex items-start justify-start gap-2 w-full text-sm">
-        <div
-          className="w-4 h-4"
-          style={{
-            backgroundColor: "white",
-            border: "2px solid yellow",
-          }}
-        />
-        <span>Prototype</span>
-      </div>
-      {highlightRedundant && (
-        <div className="flex items-center justify-start gap-2">
-          <div className="w-4 h-[2px] bg-red-500" />
-          <span>Redundant</span>
-        </div>
-      )}
-      {ratioModeEnabled && ratioColColors && (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-start justify-start gap-2 w-18 flex-col">
-            {ratioColColors.map((col, i) => (
-              <div key={i} className="flex items-center justify-start gap-2">
-                <div
-                  className="w-4 h-4"
-                  style={{
-                    backgroundColor: col.color,
-                  }}
-                />
-                <span>{col.col}</span>
+    <div className="absolute left-4 top-4 z-[100]">
+      <div className="flex flex-col gap-3 p-3 bg-background/95 backdrop-blur-sm border rounded-lg shadow-sm">
+        <div className="flex flex-col gap-2">
+          {/* Basic Legend Items */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-xs">
+              <div className="w-3 h-3 border-2 border-yellow-400 bg-background rounded-sm" />
+              <span className="text-muted-foreground">Prototype</span>
+            </div>
+            {highlightRedundant && (
+              <div className="flex items-center gap-2 text-xs">
+                <div className="w-3 h-0.5 bg-destructive rounded-full" />
+                <span className="text-muted-foreground">Redundant</span>
               </div>
-            ))}
+            )}
           </div>
-          <Select value={colorScheme} onValueChange={setColorScheme}>
-            <SelectTrigger>
-              <div className="w-4 h-4 rounded-full rainbow-conic-gradient" />
-              {colorSchemes.find((c) => c.value === colorScheme)?.label ||
-                "Color Scheme"}
-            </SelectTrigger>
-            <SelectContent>
-              {colorSchemes.map((scheme) => (
-                <SelectItem key={scheme.value} value={scheme.value}>
-                  {scheme.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
+          {/* Ratio Colors */}
+          {ratioModeEnabled && ratioColColors && (
+            <div className="space-y-2">
+              <div className="h-px bg-border/50" /> {/* Separator */}
+              {/* Color Items */}
+              <div className="space-y-1.5">
+                {ratioColColors.map((col, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs">
+                    <div
+                      className="w-3 h-3 rounded-sm"
+                      style={{ backgroundColor: col.color }}
+                    />
+                    <span className="text-muted-foreground font-mono">
+                      {col.col}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {/* Color Scheme Selector */}
+              <div className="pt-1">
+                <Select value={colorScheme} onValueChange={setColorScheme}>
+                  <SelectTrigger className="h-7 w-[120px] text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <Palette className="h-3 w-3" />
+                      <SelectValue placeholder="Color Scheme" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {colorSchemes.map((scheme) => (
+                      <SelectItem
+                        key={scheme.value}
+                        value={scheme.value}
+                        className="text-xs"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={cn("w-2 h-2 rounded-full", {
+                              "bg-gradient-to-r from-blue-500 to-red-500":
+                                scheme.value === "rainbow",
+                              "bg-[#7fc97f]": scheme.value === "accent",
+                              "bg-[#4e79a7]": scheme.value === "tableau",
+                              "bg-purple-500": scheme.value === "purple",
+                              "bg-green-500": scheme.value === "green",
+                              "bg-orange-500": scheme.value === "orange",
+                              "bg-blue-500": scheme.value === "classic",
+                            })}
+                          />
+                          {scheme.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

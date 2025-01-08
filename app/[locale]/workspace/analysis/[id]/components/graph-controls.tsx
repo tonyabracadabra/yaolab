@@ -104,7 +104,7 @@ export function GraphControls({
             </Button>
           </PopoverTrigger>
           <PopoverContent
-            className="w-96 z-[60]"
+            className="w-[600px] z-[60]"
             align="end"
             sideOffset={8}
             onInteractOutside={(e) => {
@@ -117,9 +117,9 @@ export function GraphControls({
               }
             }}
           >
-            <div className="grid gap-6">
-              <div className="grid gap-4">
-                <div className="grid gap-2">
+            <div className="space-y-6">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
                   <Label htmlFor="nodeLabel">Node Label</Label>
                   <Select
                     value={nodeLabel}
@@ -137,8 +137,8 @@ export function GraphControls({
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edgeLabel">Edge</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="edgeLabel">Edge Label</Label>
                   <Select
                     value={edgeLabel}
                     onValueChange={(value: EdgeKey) => setEdgeLabel(value)}
@@ -155,7 +155,7 @@ export function GraphControls({
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="grid gap-2">
+                <div className="space-y-2">
                   <Label htmlFor="nodeSize">Node Size</Label>
                   <Select
                     value={nodeSize}
@@ -175,53 +175,51 @@ export function GraphControls({
                 </div>
               </div>
 
-              <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                 {hasDrugSample && (
-                  <div className="flex items-center justify-between space-x-2">
-                    <div className="flex flex-col gap-1.5">
-                      <Label className="text-sm font-medium">
-                        Hide endogenous subgraphs
-                      </Label>
-                      <span className="text-xs text-muted-foreground">
-                        Only show subgraphs that contains at least one prototype
-                        compound
-                      </span>
-                    </div>
+                  <div className="flex items-start gap-4">
                     <Switch
                       checked={hideEndogenousSubgraphs}
                       onCheckedChange={setHideEndogenousSubgraphs}
+                      className="mt-0.5"
                     />
+                    <div className="space-y-1">
+                      <Label className="text-sm">
+                        Hide endogenous subgraphs
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Only show subgraphs with prototype compounds
+                      </p>
+                    </div>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between space-x-2">
-                  <div className="flex flex-col gap-1.5">
-                    <Label className="text-sm font-medium">
-                      Compound response Mode
-                    </Label>
-                    <span className="text-xs text-muted-foreground">
-                      Enable this to see the compound response mode
-                    </span>
-                  </div>
+                <div className="flex items-start gap-4">
                   <Switch
                     checked={ratioModeEnabled}
                     onCheckedChange={setRatioModeEnabled}
+                    className="mt-0.5"
                   />
+                  <div className="space-y-1">
+                    <Label className="text-sm">Compound response Mode</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Enable compound response visualization
+                    </p>
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between space-x-2">
-                  <div className="flex flex-col gap-1.5">
-                    <Label className="text-sm font-medium">
-                      Highlight Redundant Data
-                    </Label>
-                    <span className="text-xs text-muted-foreground">
-                      Highlight edges that have redundant data
-                    </span>
-                  </div>
+                <div className="flex items-start gap-4">
                   <Switch
                     checked={highlightRedundant}
                     onCheckedChange={setHighlightRedundant}
+                    className="mt-0.5"
                   />
+                  <div className="space-y-1">
+                    <Label className="text-sm">Highlight Redundant Data</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Show edges with redundant information
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
