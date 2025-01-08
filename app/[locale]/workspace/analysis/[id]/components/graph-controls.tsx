@@ -82,6 +82,8 @@ export function GraphControls({
   setRatioModeEnabled,
   highlightRedundant,
   setHighlightRedundant,
+  colorScheme,
+  setColorScheme,
   graphData,
   hasDrugSample,
   downloading,
@@ -89,165 +91,177 @@ export function GraphControls({
   onDownloadRawData,
 }: GraphControlsProps) {
   return (
-    <div className="flex absolute right-[3%] top-[5%] items-center justify-center gap-4 z-50">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button size="sm" variant="outline" className="shadow-sm">
-            <SlidersHorizontal className="w-4 h-4" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-96 z-50"
-          onInteractOutside={(e) => {
-            if (
-              e.target instanceof Element &&
-              (e.target.closest('[role="combobox"]') ||
-                e.target.closest('[role="listbox"]'))
-            ) {
-              e.preventDefault();
-            }
-          }}
-        >
-          <div className="grid gap-6">
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="nodeLabel">Node Label</Label>
-                <Select
-                  value={nodeLabel}
-                  onValueChange={(value: NodeKey) => setNodeLabel(value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a node label" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {kAvailableNodes.map((v) => (
-                      <SelectItem key={v.key} value={v.key}>
-                        {v.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+    <div className="absolute right-6 top-6 flex items-center gap-3 z-50">
+      <div className="flex items-center gap-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-lg p-2 shadow-lg border border-border">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 px-3 shadow-sm hover:bg-accent"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="w-96 z-[60]"
+            align="end"
+            sideOffset={8}
+            onInteractOutside={(e) => {
+              if (
+                e.target instanceof Element &&
+                (e.target.closest('[role="combobox"]') ||
+                  e.target.closest('[role="listbox"]'))
+              ) {
+                e.preventDefault();
+              }
+            }}
+          >
+            <div className="grid gap-6">
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="nodeLabel">Node Label</Label>
+                  <Select
+                    value={nodeLabel}
+                    onValueChange={(value: NodeKey) => setNodeLabel(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a node label" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {kAvailableNodes.map((v) => (
+                        <SelectItem key={v.key} value={v.key}>
+                          {v.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edgeLabel">Edge</Label>
+                  <Select
+                    value={edgeLabel}
+                    onValueChange={(value: EdgeKey) => setEdgeLabel(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select an edge label" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {kAvailableEdges.map((v) => (
+                        <SelectItem key={v.col} value={v.col}>
+                          {v.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="nodeSize">Node Size</Label>
+                  <Select
+                    value={nodeSize}
+                    onValueChange={(value: NodeKey) => setNodeSize(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a node size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {kAvailableNodes.map((v) => (
+                        <SelectItem key={v.col} value={v.key}>
+                          {v.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="edgeLabel">Edge</Label>
-                <Select
-                  value={edgeLabel}
-                  onValueChange={(value: EdgeKey) => setEdgeLabel(value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an edge label" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {kAvailableEdges.map((v) => (
-                      <SelectItem key={v.col} value={v.col}>
-                        {v.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="nodeSize">Node Size</Label>
-                <Select
-                  value={nodeSize}
-                  onValueChange={(value: NodeKey) => setNodeSize(value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a node size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {kAvailableNodes.map((v) => (
-                      <SelectItem key={v.col} value={v.key}>
-                        {v.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
 
-            <div className="grid gap-4">
-              {hasDrugSample && (
+              <div className="grid gap-4">
+                {hasDrugSample && (
+                  <div className="flex items-center justify-between space-x-2">
+                    <div className="flex flex-col gap-1.5">
+                      <Label className="text-sm font-medium">
+                        Hide endogenous subgraphs
+                      </Label>
+                      <span className="text-xs text-muted-foreground">
+                        Only show subgraphs that contains at least one prototype
+                        compound
+                      </span>
+                    </div>
+                    <Switch
+                      checked={hideEndogenousSubgraphs}
+                      onCheckedChange={setHideEndogenousSubgraphs}
+                    />
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between space-x-2">
                   <div className="flex flex-col gap-1.5">
                     <Label className="text-sm font-medium">
-                      Hide endogenous subgraphs
+                      Compound response Mode
                     </Label>
                     <span className="text-xs text-muted-foreground">
-                      Only show subgraphs that contains at least one prototype
-                      compound
+                      Enable this to see the compound response mode
                     </span>
                   </div>
                   <Switch
-                    checked={hideEndogenousSubgraphs}
-                    onCheckedChange={setHideEndogenousSubgraphs}
+                    checked={ratioModeEnabled}
+                    onCheckedChange={setRatioModeEnabled}
                   />
                 </div>
-              )}
 
-              <div className="flex items-center justify-between space-x-2">
-                <div className="flex flex-col gap-1.5">
-                  <Label className="text-sm font-medium">
-                    Compound response Mode
-                  </Label>
-                  <span className="text-xs text-muted-foreground">
-                    Enable this to see the compound response mode
-                  </span>
+                <div className="flex items-center justify-between space-x-2">
+                  <div className="flex flex-col gap-1.5">
+                    <Label className="text-sm font-medium">
+                      Highlight Redundant Data
+                    </Label>
+                    <span className="text-xs text-muted-foreground">
+                      Highlight edges that have redundant data
+                    </span>
+                  </div>
+                  <Switch
+                    checked={highlightRedundant}
+                    onCheckedChange={setHighlightRedundant}
+                  />
                 </div>
-                <Switch
-                  checked={ratioModeEnabled}
-                  onCheckedChange={setRatioModeEnabled}
-                />
-              </div>
-
-              <div className="flex items-center justify-between space-x-2">
-                <div className="flex flex-col gap-1.5">
-                  <Label className="text-sm font-medium">
-                    Highlight Redundant Data
-                  </Label>
-                  <span className="text-xs text-muted-foreground">
-                    Highlight edges that have redundant data
-                  </span>
-                </div>
-                <Switch
-                  checked={highlightRedundant}
-                  onCheckedChange={setHighlightRedundant}
-                />
               </div>
             </div>
-          </div>
-        </PopoverContent>
-      </Popover>
+          </PopoverContent>
+        </Popover>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="shadow-sm">
-            {downloading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="h-4 w-4" />
-            )}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="flex flex-col items-center justify-center z-50">
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-            disabled={!graphData || downloading}
-            onClick={onDownloadGraphML}
-          >
-            GraphML
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-            disabled={!graphData || downloading}
-            onClick={onDownloadRawData}
-          >
-            Raw (Nodes & Edges)
-          </Button>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 shadow-sm hover:bg-accent"
+            >
+              {downloading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="z-[60]" align="end" sideOffset={8}>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              disabled={!graphData || downloading}
+              onClick={onDownloadGraphML}
+            >
+              GraphML
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              disabled={!graphData || downloading}
+              onClick={onDownloadRawData}
+            >
+              Raw (Nodes & Edges)
+            </Button>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }

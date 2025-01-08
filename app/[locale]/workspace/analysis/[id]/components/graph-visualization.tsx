@@ -97,10 +97,8 @@ export function GraphVisualization({
   };
 
   return (
-    <div className="relative flex-1 min-h-0 bg-gradient-to-br from-background to-muted/20 rounded-lg border border-border shadow-sm">
+    <div className="relative flex-1 min-h-0 bg-background/50 w-full h-full">
       <div className="absolute inset-0 w-full h-full">
-        <div className="absolute inset-0 bg-grid-slate-200/50 [mask-image:linear-gradient(0deg,transparent,black)] dark:bg-grid-slate-800/50" />
-
         <ForceGraph2D
           ref={fgRef}
           graphData={processedGraphData}
@@ -215,12 +213,10 @@ export function GraphVisualization({
       </div>
 
       {selectedNode && (
-        <div className="absolute bottom-4 left-4 z-30">
-          <NodeDetailsCard
-            node={selectedNode}
-            onClose={() => setSelectedNode(null)}
-          />
-        </div>
+        <NodeDetailsCard
+          node={selectedNode}
+          onClose={() => setSelectedNode(null)}
+        />
       )}
     </div>
   );
