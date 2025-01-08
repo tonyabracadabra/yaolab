@@ -179,7 +179,12 @@ export function GraphVisualization({
         }}
       />
 
-      {selectedNode && <NodeDetailsCard node={selectedNode} />}
+      {selectedNode && (
+        <NodeDetailsCard
+          node={selectedNode}
+          onClose={() => setSelectedNode(null)}
+        />
+      )}
     </div>
   );
 }

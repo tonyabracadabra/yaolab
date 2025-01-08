@@ -6,7 +6,7 @@ import { SmilesVisualization } from "./smiles-visualization";
 
 interface NodeDetailsCardProps {
   node: ForceGraphNode;
-  onClose?: () => void;
+  onClose: () => void;
 }
 
 const formatValue = (value: unknown): string => {
@@ -51,16 +51,15 @@ export function NodeDetailsCard({ node, onClose }: NodeDetailsCardProps) {
               </div>
             </div>
           </div>
-          {onClose && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 -mr-2"
-              onClick={onClose}
-            >
-              <Cross2Icon className="h-3 w-3" />
-            </Button>
-          )}
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 -mr-2"
+            onClick={onClose}
+          >
+            <Cross2Icon className="h-3 w-3" />
+          </Button>
         </div>
 
         {/* Visualizations */}
