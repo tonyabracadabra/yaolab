@@ -214,9 +214,6 @@ export function GraphVisualization({
         />
       </div>
 
-      {/* Controls Overlay */}
-      <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-background/80 to-transparent backdrop-blur-sm" />
-
       {selectedNode && (
         <div className="absolute bottom-4 left-4 z-30">
           <NodeDetailsCard
