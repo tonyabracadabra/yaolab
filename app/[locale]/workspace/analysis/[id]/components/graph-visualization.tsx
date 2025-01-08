@@ -1,3 +1,5 @@
+"use client";
+
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 import { ForceGraph2D } from "react-force-graph";
@@ -177,12 +179,7 @@ export function GraphVisualization({
         }}
       />
 
-      {selectedNode && (
-        <NodeDetailsCard
-          nodeId={selectedNode.id}
-          ms2Data={selectedNode.ms2Spectrum}
-        />
-      )}
+      {selectedNode && <NodeDetailsCard node={selectedNode} />}
     </div>
   );
 }

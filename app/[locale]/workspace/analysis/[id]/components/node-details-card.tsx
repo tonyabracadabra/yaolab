@@ -1,70 +1,70 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { X } from "lucide-react";
+import { Cross2Icon } from "@radix-ui/react-icons";
+import { ForceGraphNode } from "../types";
 import { SmilesVisualization } from "./smiles-visualization";
 
 interface NodeDetailsCardProps {
-  nodeId: string;
-  ms2Data?: any;
-  basicInfo?: Record<string, string | number>;
+  node: ForceGraphNode;
   onClose?: () => void;
 }
 
-export function NodeDetailsCard({
-  nodeId,
-  ms2Data,
-  basicInfo,
-  onClose,
-}: NodeDetailsCardProps) {
+const formatValue = (value: unknown): string => {
+  if (typeof value === "number") return value.toFixed(4);
+  if (value === null || value === undefined) return "-";
+  return String(value);
+};
+
+export function NodeDetailsCard({ node, onClose }: NodeDetailsCardProps) {
+  const priorityFields = ["mz", "rt", "intensity", "formula"];
+
+  const priorityInfo = Object.entries(node)
+    .filter(([key]) => priorityFields.includes(key))
+    .sort(
+      (a, b) => priorityFields.indexOf(a[0]) - priorityFields.indexOf(b[0])
+    );
+
   return (
     <Card className="absolute bottom-4 left-4 p-3 w-[680px] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-lg">
-      <div className="flex flex-col gap-3">
-        <div className="flex justify-between items-center border-b pb-2">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-sm font-semibold">Node Details: {nodeId}</h3>
-            <div className="flex gap-3">
-              {basicInfo &&
-                Object.entries(basicInfo)
-                  .slice(0, 3) // Show first 3 important properties
-                  .map(([key, value]) => (
-                    <div key={key} className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-muted-foreground capitalize">
-                        {key.replace(/_/g, " ")}:
-                      </span>
-                      <span className="text-xs font-medium">{value}</span>
-                    </div>
-                  ))}
+      <div className="flex flex-col gap-2">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold">Node {node.id}</h3>
+              <div className="flex gap-2">
+                {priorityInfo.map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="bg-muted px-2 py-0.5 rounded text-[10px] flex items-center gap-1"
+                  >
+                    <span className="text-muted-foreground capitalize">
+                      {key}:
+                    </span>
+                    <span className="font-medium">
+                      {typeof value === "number"
+                        ? value.toFixed(2)
+                        : formatValue(value)}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           {onClose && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 -mr-1"
+              className="h-7 w-7 -mr-2"
               onClick={onClose}
             >
-              <X className="h-4 w-4" />
+              <Cross2Icon className="h-3 w-3" />
             </Button>
           )}
         </div>
 
-        {basicInfo && Object.entries(basicInfo).length > 3 && (
-          <div className="grid grid-cols-3 gap-3 px-1 pb-2 border-b">
-            {Object.entries(basicInfo)
-              .slice(3) // Skip first 3 that are already shown
-              .map(([key, value]) => (
-                <div key={key} className="flex flex-col">
-                  <Label className="text-[10px] text-muted-foreground capitalize">
-                    {key.replace(/_/g, " ")}
-                  </Label>
-                  <span className="text-xs font-medium">{value}</span>
-                </div>
-              ))}
-          </div>
-        )}
-
-        <div className="flex gap-3">
+        {/* Visualizations */}
+        <div className="flex gap-3 mt-1">
           <div className="flex-1 min-w-[320px]">
             <h4 className="text-xs font-medium mb-1.5">Structure</h4>
             <div className="bg-muted/30 rounded-lg p-2 h-[260px]">
@@ -75,7 +75,7 @@ export function NodeDetailsCard({
           <div className="flex-1 min-w-[320px]">
             <h4 className="text-xs font-medium mb-1.5">MS2 Spectrum</h4>
             <div className="bg-muted/30 rounded-lg p-2 h-[260px]">
-              {ms2Data ? (
+              {node.ms2Spectrum ? (
                 <div>MS2 Graph Placeholder</div>
               ) : (
                 <div className="flex items-center justify-center h-full text-xs text-muted-foreground">

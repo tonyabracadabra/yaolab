@@ -6,19 +6,26 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { FileWarning, Loader2 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useEffect, useRef } from "react";
 
 import { AnalysisHeader } from "./components/analysis-header";
 import { AnalysisStatus } from "./components/analysis-status";
 import { GraphControls } from "./components/graph-controls";
 import { GraphLegend } from "./components/graph-legend";
-import { GraphVisualization } from "./components/graph-visualization";
 import { useDownloads } from "./hooks/use-downloads";
 import { useGraphData } from "./hooks/use-graph-data";
 import { useGraphState } from "./hooks/use-graph-state";
 import { useNodeSizes } from "./hooks/use-node-sizes";
 import { useRatioColors } from "./hooks/use-ratio-colors";
 import { useRetryAnalysis } from "./hooks/use-retry-analysis";
+const GraphVisualization = dynamic(
+  () =>
+    import("./components/graph-visualization").then(
+      (mod) => mod.GraphVisualization
+    ),
+  { ssr: false }
+);
 
 export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const analysis = useQuery(api.analyses.get, { id: params.id });

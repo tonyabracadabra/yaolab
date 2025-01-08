@@ -10,8 +10,21 @@ const nextConfig = {
         ...config.resolve.fallback,
         fs: false,
         path: false,
+        "fs-extra": false,
+        xmlhttprequest: false,
+        child_process: false,
+        crypto: false,
+        http: false,
+        https: false,
+        stream: false,
+        zlib: false,
       };
     }
+
+    if (isServer) {
+      config.externals = [...(config.externals || []), "aframe"];
+    }
+
     return config;
   },
 };
