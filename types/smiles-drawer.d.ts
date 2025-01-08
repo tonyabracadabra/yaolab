@@ -1,47 +1,23 @@
 declare module "smiles-drawer" {
-  namespace SmilesDrawer {
-    interface MoleculeTree {
-      [key: string]: any;
-    }
-
-    interface DrawerOptions {
-      width: number;
-      height: number;
-      bondThickness?: number;
-      bondLength?: number;
-      shortBondLength?: number;
-      bondSpacing?: number;
-      atomVisualization?: "default" | "balls";
-      isometric?: boolean;
-      terminalCarbons?: boolean;
-      explicitHydrogens?: boolean;
-      overlapSensitivity?: number;
-      compactDrawing?: boolean;
-      fontSizeLarge?: number;
-      fontSizeSmall?: number;
-      padding?: number;
-      debug?: boolean;
-    }
+  interface DrawerOptions {
+    width?: number;
+    height?: number;
+    bondThickness?: number;
+    fontSizeLarge?: number;
+    fontSizeSmall?: number;
+    padding?: number;
+    scale?: number;
   }
 
-  const SmilesDrawer: {
-    parse(
-      smiles: string,
-      successCallback: (tree: SmilesDrawer.MoleculeTree) => void,
-      errorCallback?: (error: Error) => void
-    ): void;
+  class Drawer {
+    constructor(options?: DrawerOptions);
+    draw(tree: any, canvas: HTMLCanvasElement, theme: "light" | "dark"): void;
+  }
 
-    Drawer: {
-      new (options: SmilesDrawer.DrawerOptions): {
-        draw(
-          tree: SmilesDrawer.MoleculeTree,
-          target: HTMLCanvasElement,
-          theme?: "light" | "dark",
-          clear?: boolean
-        ): void;
-      };
-    };
+  function parse(smiles: string, callback: (tree: any) => void): void;
+
+  export default {
+    Drawer,
+    parse,
   };
-
-  export = SmilesDrawer;
 }

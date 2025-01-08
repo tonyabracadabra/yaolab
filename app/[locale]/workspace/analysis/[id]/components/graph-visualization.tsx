@@ -19,7 +19,6 @@ interface GraphVisualizationProps {
   ratioColColors?: { col: string; color: string }[];
   highlightRedundant: boolean;
   onNodeClick: (nodeId: string) => void;
-  onSmilesUpdate: (nodeId: string, smiles: string) => void;
 }
 
 export function GraphVisualization({
@@ -31,7 +30,6 @@ export function GraphVisualization({
   ratioColColors,
   highlightRedundant,
   onNodeClick,
-  onSmilesUpdate,
 }: GraphVisualizationProps) {
   const { theme } = useTheme();
   const fgRef = useRef<any>();
@@ -181,10 +179,8 @@ export function GraphVisualization({
 
       {selectedNode && (
         <NodeDetailsCard
-          node={selectedNode}
-          onClose={() => setSelectedNode(null)}
-          onSmilesUpdate={onSmilesUpdate}
-          theme={theme}
+          nodeId={selectedNode.id}
+          ms2Data={selectedNode.ms2Spectrum}
         />
       )}
     </div>

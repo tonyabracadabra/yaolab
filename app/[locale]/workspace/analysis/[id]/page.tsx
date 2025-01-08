@@ -174,10 +174,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                         ?.includes(n.id)
                     );
                   }}
-                  onSmilesUpdate={(nodeId: string, smiles: string) => {
-                    // Implement SMILES update logic here
-                    console.log("SMILES updated:", nodeId, smiles);
-                  }}
                 />
               )}
             </Card>
