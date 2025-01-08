@@ -91,7 +91,7 @@ export function GraphControls({
   onDownloadRawData,
 }: GraphControlsProps) {
   return (
-    <div className="flex absolute right-[3%] top-[5%] items-center justify-center gap-4 z-50">
+    <div className="absolute right-4 top-4 flex items-center gap-2 z-50">
       <Popover>
         <PopoverTrigger asChild>
           <Button size="sm" variant="outline" className="shadow-sm">
