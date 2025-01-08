@@ -6,9 +6,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { localesLabels, routing } from "@/i18n";
 import { useLocale } from "next-intl";
 import { useTransition } from "react";
-import { locales, localesLabels } from "../config";
 import { usePathname, useRouter } from "../navigation";
 import { Button } from "./ui/button";
 
@@ -26,7 +26,7 @@ export function LangToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="font-sans">
-        {locales.map((locale) => (
+        {routing.locales.map((locale) => (
           <DropdownMenuItem
             disabled={locale === currLocale || isPending}
             key={locale}

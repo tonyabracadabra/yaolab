@@ -1,17 +1,36 @@
+import { createNavigation } from "next-intl/navigation";
+import { defineRouting, Pathnames } from "next-intl/routing";
 import { getRequestConfig } from "next-intl/server";
-import { notFound } from "next/navigation";
-import { locales } from "./config";
 
-export default getRequestConfig(async ({ locale }) => {
+export type Locale = "en" | "zh";
+
+export const localesLabels: Record<Locale, string> = {
+  en: "English",
+  zh: "中文",
+};
+
+export const routing = defineRouting({
+  locales: Object.keys(localesLabels) as Locale[],
+  defaultLocale: "en",
+});
+
+export const pathnames = {
+  "/": "/",
+} satisfies Pathnames<typeof routing.locales>;
+
+export const { Link, redirect, usePathname, useRouter } =
+  createNavigation(routing);
+
+export default getRequestConfig(async ({ requestLocale }) => {
+  let locale = await requestLocale;
   // Validate that the incoming `locale` parameter is valid
-  if (!locales.includes(locale as any)) notFound();
+  if (!routing.locales.includes(locale as any)) {
+    locale = routing.defaultLocale;
+  }
 
   return {
-    messages: (
-      await (locale === "en"
-        ? // When using Turbopack, this will enable HMR for `en`
-          import("./messages/en.json")
-        : import(`./messages/${locale}.json`))
-    ).default,
+    locale,
+    messages: (await import(`./messages/${locale}.json`)).default,
+    timeZone: "UTC",
   };
 });

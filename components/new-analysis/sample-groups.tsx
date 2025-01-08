@@ -2,42 +2,26 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { AnalysisCreationInputType } from "@/lib/utils";
 import { useQuery } from "convex/react";
-import { Trash } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import { toast } from "sonner";
 import { MultiSelectCombobox } from "../multiselect-combobox";
-import { Switch } from "../switch";
 import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
-import {
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import { Switch } from "../ui/switch";
+import { SampleInfoForm } from "./sample-info-form";
 
 interface SampleGroupFieldArrayProps {
   options: string[];
@@ -149,199 +133,145 @@ export function SampleGroups({
     control: form.control,
     name: "config.bioSamples",
   });
-  const [currBioSample, setCurrBioSample] = useState(0);
 
   return (
-    <AccordionItem value="experiment-groups" className="cursor-pointer">
-      <AccordionTrigger>
-        <div className="flex items-center justify-center gap-2">
-          <Badge variant="secondary">3</Badge> {t("experiment-groups")}
-        </div>
+    <AccordionItem value="sample-groups">
+      <AccordionTrigger className="hover:no-underline">
+        Sample Groups Configuration
       </AccordionTrigger>
-      <AccordionContent className="flex items-start gap-8">
-        <Card>
-          <CardHeader className="flex">
-            <div className="flex justify-between items-start gap-4">
-              <div>
-                <CardTitle className="text-lg">{t("bio-samples")}</CardTitle>
-                <CardDescription className="text-md">
-                  {t("bio-samples-desc")}
-                </CardDescription>
-              </div>
-              <div className="flex w-[250px] flex-col gap-4 h-full justify-between">
-                <div className="flex items-center gap-2 justify-center">
-                  <Select
-                    onValueChange={(v) => {
-                      if (!v) return;
-                      setCurrBioSample(+v);
-                    }}
-                    value={currBioSample.toString()}
+      <AccordionContent>
+        <div className="space-y-6">
+          {bioSampleFields.map((field, index) => (
+            <div key={field.id} className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium">
+                  Sample Group {index + 1}
+                </h3>
+                {index > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => removeBioSample(index)}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose raw file to be analyzed" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {bioSampleFields?.map((f, i) => {
-                        return (
-                          <SelectItem key={i} value={i.toString()}>
-                            {form.watch(`config.bioSamples.${i}.name`) ||
-                              `Sample ${i + 1}`}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <FormDescription>
-                  {t.rich("select-exp-or-create", {
-                    create: () => (
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          appendBioSample({
-                            name: `new sample ${bioSampleFields.length + 1}`,
-                            sample: [],
-                            blank: [],
-                          });
-                          setCurrBioSample(bioSampleFields.length);
-                          toast.success(
-                            "New experiment group added, please configure sample groups and blank groups"
-                          );
-                        }}
-                        variant="outline"
-                        size="xs"
-                        className="font-bold"
-                      >
-                        <span>✨ {t("create")} </span>
-                      </Button>
-                    ),
-                  })}
-                </FormDescription>
+                    Remove Group
+                  </Button>
+                )}
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4 w-full">
-              <div className="flex w-full relative flex-col gap-4 bg-slate-100 dark:bg-slate-900 p-6 rounded-md">
-                <Button
-                  type="button"
-                  className="absolute right-[8px] top-[8px] w-8 h-6 p-0 bg-red-50 border-0 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
-                  variant="outline"
-                  onClick={() => {
-                    if (bioSampleFields.length > 1) {
-                      setCurrBioSample(0);
-                      removeBioSample(currBioSample);
-                    } else {
-                      toast.error(
-                        "You need to have at least one experimentation group"
-                      );
-                    }
-                  }}
-                >
-                  <Trash className="stroke-red-400" size={12} />
-                </Button>
-                <div className="flex gap-8 items-center">
-                  <FormField
-                    key={`experiment-group-name-${currBioSample}`} // Adding a unique key
-                    control={form.control}
-                    name={`config.bioSamples.${currBioSample}.name`}
-                    render={({ field: { onChange, value } }) => {
-                      return (
-                        <FormItem>
-                          <FormLabel>{t("experiment-group-name")}</FormLabel>
-                          <div className="flex items-center gap-4 justify-center w-full">
-                            <FormControl>
-                              <Input value={value} onChange={onChange} />
-                            </FormControl>
-                          </div>
-                        </FormItem>
-                      );
-                    }}
-                  />
+
+              <FormField
+                control={form.control}
+                name={`config.bioSamples.${index}.name`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Group Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <SampleInfoForm form={form} index={index} />
+
+              <div className="flex items-center justify-between gap-4 mt-4">
+                <SampleGroupFieldArray
+                  options={samleCols}
+                  form={form}
+                  bioSampleIndex={index}
+                  type="sample"
+                />
+                <div className="flex h-full items-center justify-center">
+                  vs
                 </div>
-                {/* Sample Groups */}
-                <div className="flex items-center justify-between gap-4">
-                  <SampleGroupFieldArray
-                    options={samleCols}
-                    form={form}
-                    bioSampleIndex={currBioSample}
-                    type="sample"
-                  />
-                  <div className="flex h-full items-center justify-center mt-5">
-                    vs
-                  </div>
-                  <SampleGroupFieldArray
-                    options={samleCols}
-                    form={form}
-                    bioSampleIndex={currBioSample}
-                    type="blank"
-                  />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="relative">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex flex-col">
-                <CardTitle className="text-lg">{t("drug-samples")}</CardTitle>
-                <CardDescription className="text-md">
-                  {t("drug-samples-desc")}
-                </CardDescription>
-              </div>
-              <div>
-                <Switch
-                  checked={enableDrugSample}
-                  onCheckedChange={(value) => {
-                    setEnableDrugSample(value);
-                    if (!value) {
-                      form.setValue("config.drugSample", undefined);
-                    } else {
-                      form.setValue("config.drugSample", {
-                        name: "My drug sample",
-                        groups: [],
-                      });
-                    }
-                  }}
+                <SampleGroupFieldArray
+                  options={samleCols}
+                  form={form}
+                  bioSampleIndex={index}
+                  type="blank"
                 />
               </div>
             </div>
-          </CardHeader>
+          ))}
+
+          <div className="flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                appendBioSample({
+                  name: `new sample ${bioSampleFields.length + 1}`,
+                  sample: [],
+                  blank: [],
+                  metadata: {
+                    source: "",
+                    species: "",
+                    gender: "unknown",
+                    age: undefined,
+                    diseaseState: "",
+                    notes: "",
+                  },
+                });
+                toast.success(
+                  "New sample group added, please configure sample groups and blank groups"
+                );
+              }}
+            >
+              Add Sample Group
+            </Button>
+
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={enableDrugSample}
+                onCheckedChange={(value) => {
+                  setEnableDrugSample(value);
+                  if (!value) {
+                    form.setValue("config.drugSample", undefined);
+                  } else {
+                    form.setValue("config.drugSample", {
+                      name: "My drug sample",
+                      groups: [],
+                    });
+                  }
+                }}
+              />
+              <span className="text-sm">Enable Drug Sample</span>
+            </div>
+          </div>
+
           {enableDrugSample && (
-            <CardContent className="flex flex-col gap-6">
+            <div className="space-y-4 mt-6 p-4 border rounded-lg">
               <FormField
                 control={form.control}
                 name="config.drugSample.name"
-                render={({ field: { onChange, value } }) => (
+                render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("drug-sample-name")}</FormLabel>
+                    <FormLabel>Drug Sample Name</FormLabel>
                     <FormControl>
-                      <Input value={value} onChange={onChange} />
+                      <Input {...field} />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
               <SampleGroupFieldArray
-                options={
-                  samleCols.filter(
-                    (col) =>
-                      !form
-                        .watch("config.bioSamples")
-                        ?.flatMap((e) => e.sample)
-                        .includes(col) &&
-                      !form
-                        .watch("config.bioSamples")
-                        ?.flatMap((e) => e.blank)
-                        .includes(col)
-                  ) || []
-                }
+                options={samleCols.filter(
+                  (col) =>
+                    !form
+                      .watch("config.bioSamples")
+                      ?.flatMap((e) => e.sample)
+                      .includes(col) &&
+                    !form
+                      .watch("config.bioSamples")
+                      ?.flatMap((e) => e.blank)
+                      .includes(col)
+                )}
                 form={form}
                 type="drug"
               />
-            </CardContent>
+            </div>
           )}
-        </Card>
+        </div>
       </AccordionContent>
     </AccordionItem>
   );

@@ -6,7 +6,6 @@ import {
 } from "@/convex/schema";
 import { clsx, type ClassValue } from "clsx";
 import { useAction } from "convex/react";
-import { useState } from "react";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
@@ -59,15 +58,6 @@ export function useFileUpload() {
 
   return { handleUpload };
 }
-
-export const useDialog = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const openDialog = () => setIsOpen(true);
-  const closeDialog = () => setIsOpen(false);
-
-  return { isOpen, openDialog, closeDialog };
-};
 
 export const readFirstKLines = (file: File, k: number): Promise<string[]> => {
   return new Promise((resolve, reject) => {

@@ -6,6 +6,16 @@ export const BioSampleSchema = z.object({
   name: z.string(),
   sample: z.array(z.string()),
   blank: z.array(z.string()),
+  metadata: z
+    .object({
+      source: z.string().optional(),
+      species: z.string().optional(),
+      gender: z.enum(["male", "female", "other", "unknown"]).optional(),
+      age: z.number().optional(),
+      diseaseState: z.string().optional(),
+      notes: z.string().optional(),
+    })
+    .optional(),
 });
 
 export const DrugSampleSchema = z.object({

@@ -1,14 +1,14 @@
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Analytics } from "@vercel/analytics/react";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { Inter, Urbanist } from "next/font/google";
-
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { NextIntlClientProvider, useMessages } from "next-intl";
 import "./globals.css";
 import ConvexClerkClientProvider from "./provider";
 
@@ -20,22 +20,23 @@ export const metadata: Metadata = {
   description: "Discovering the unknowns",
 };
 
-export default function LocaleLayout({
+export default async function LocaleLayout({
   children,
   params: { locale },
 }: {
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  const messages = useMessages();
+  setRequestLocale(locale);
+  const messages = await getMessages();
 
   return (
-    <ConvexClerkClientProvider>
-      <html lang={locale} className="h-full">
-        <NextIntlClientProvider messages={messages}>
-          <body
-            className={`h-full ${GeistSans.variable} ${GeistMono.variable} ${inter.className} ${urbanist.className}`}
-          >
+    <html lang={locale} className="h-full">
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        <body
+          className={`h-full ${GeistSans.variable} ${GeistMono.variable} ${inter.className} ${urbanist.className}`}
+        >
+          <ConvexClerkClientProvider>
             <ThemeProvider
               attribute="class"
               defaultTheme="system"
@@ -51,9 +52,9 @@ export default function LocaleLayout({
               <Toaster position="top-center" />
             </ThemeProvider>
             <Analytics />
-          </body>
-        </NextIntlClientProvider>
-      </html>
-    </ConvexClerkClientProvider>
+          </ConvexClerkClientProvider>
+        </body>
+      </NextIntlClientProvider>
+    </html>
   );
 }
