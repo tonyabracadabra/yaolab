@@ -173,14 +173,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   ratioModeEnabled={ratioModeEnabled}
                   ratioColColors={ratioColColors}
                   highlightRedundant={highlightRedundant}
-                  onNodeClick={(nodeId) => {
-                    if (!fgRef.current) return;
-                    fgRef.current.zoomToFit(1000, 100, (n: { id: string }) =>
-                      connectedComponents
-                        .find((cc) => cc.includes(nodeId))
-                        ?.includes(n.id)
-                    );
-                  }}
+                  connectedComponents={connectedComponents}
                 />
               )}
             </Card>

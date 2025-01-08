@@ -20,7 +20,7 @@ interface GraphVisualizationProps {
   ratioModeEnabled: boolean;
   ratioColColors?: { col: string; color: string }[];
   highlightRedundant: boolean;
-  onNodeClick: (nodeId: string) => void;
+  connectedComponents: string[][];
 }
 
 export function GraphVisualization({
@@ -31,7 +31,7 @@ export function GraphVisualization({
   ratioModeEnabled,
   ratioColColors,
   highlightRedundant,
-  onNodeClick,
+  connectedComponents,
 }: GraphVisualizationProps) {
   const { theme } = useTheme();
   const fgRef = useRef<any>();
@@ -45,9 +45,16 @@ export function GraphVisualization({
   }, []);
 
   const handleNodeClick = (node: ForceGraphNode) => {
-    if (!node.id) return;
+    if (!node.id || !fgRef.current) return;
     setSelectedNode(node);
-    onNodeClick(node.id);
+
+    if (connectedComponents?.length) {
+      fgRef.current.zoomToFit(1000, 100, (n: { id: string }) =>
+        connectedComponents.find((cc) => cc.includes(node.id))?.includes(n.id)
+      );
+    } else {
+      fgRef.current.zoomToFit(1000, 100);
+    }
   };
 
   const getEdgeColor = (isRedundant: boolean) => {
