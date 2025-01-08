@@ -85,9 +85,9 @@ export function MS2Spectrum({ data, className }: MS2SpectrumProps) {
   return (
     <div className={cn("relative h-full w-full", className)} ref={chartRef}>
       <div className="absolute -top-3 right-0 z-10">
-        <div className="flex items-center gap-2 px-2.5 py-1.5 text-[10px] bg-background/20 backdrop-blur-sm border border-border/50 rounded-lg shadow-sm">
-          <span className="text-muted-foreground font-medium">Threshold</span>
-          <div className="w-14">
+        <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] bg-background/20 backdrop-blur-sm border border-border/50 rounded-md">
+          <span className="text-muted-foreground">Threshold</span>
+          <div className="w-12">
             <Slider
               size="sm"
               value={[threshold]}
@@ -97,7 +97,7 @@ export function MS2Spectrum({ data, className }: MS2SpectrumProps) {
               step={0.1}
             />
           </div>
-          <span className="tabular-nums font-medium w-6 text-right">
+          <span className="tabular-nums text-muted-foreground/80 w-5 text-right">
             {threshold}%
           </span>
         </div>
