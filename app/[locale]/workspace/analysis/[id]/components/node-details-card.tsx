@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { ForceGraphNode } from "../types";
+import { MS2Spectrum } from "./ms2-spectrum";
 import { SmilesVisualization } from "./smiles-visualization";
 
 interface NodeDetailsCardProps {
@@ -74,8 +75,8 @@ export function NodeDetailsCard({ node, onClose }: NodeDetailsCardProps) {
           <div className="flex-1 min-w-[320px]">
             <h4 className="text-xs font-medium mb-1.5">MS2 Spectrum</h4>
             <div className="bg-muted/30 rounded-lg p-2 h-[260px]">
-              {node.ms2Spectrum ? (
-                <div>MS2 Graph Placeholder</div>
+              {node["MS/MS spectrum"] ? (
+                <MS2Spectrum data={node["MS/MS spectrum"]} />
               ) : (
                 <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
                   No MS2 data available

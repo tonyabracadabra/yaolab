@@ -147,7 +147,7 @@ export function GraphVisualization({
             // Node label with improved visibility
             const label =
               typeof node[nodeLabel] === "number"
-                ? node[nodeLabel].toFixed(2)
+                ? Number(node[nodeLabel]).toFixed(2)
                 : String(node[nodeLabel]);
 
             // Set font properties with larger size
