@@ -16,6 +16,47 @@ interface GraphLegendProps {
   setColorScheme: (value: RatioColorScheme) => void;
 }
 
+// Define color scheme presets with their preview colors
+export const colorSchemes = [
+  {
+    label: "Accent",
+    value: "accent",
+    preview: ["#4f46e5", "#06b6d4", "#10b981", "#f59e0b"],
+  },
+  {
+    label: "Tableau",
+    value: "tableau",
+    preview: ["#4e79a7", "#f28e2c", "#e15759", "#76b7b2"],
+  },
+  {
+    label: "Purple",
+    value: "purple",
+    preview: ["#c084fc", "#a855f7", "#9333ea", "#7e22ce"],
+  },
+  {
+    label: "Green",
+    value: "green",
+    preview: ["#22c55e", "#16a34a", "#15803d", "#166534"],
+  },
+  {
+    label: "Orange",
+    value: "orange",
+    preview: ["#f97316", "#ea580c", "#c2410c", "#9a3412"],
+  },
+  {
+    label: "Classic",
+    value: "classic",
+    preview: ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6"],
+  },
+  {
+    label: "Rainbow",
+    value: "rainbow",
+    preview: ["#ef4444", "#f59e0b", "#22c55e", "#06b6d4"],
+  },
+] as const;
+
+export type ColorScheme = (typeof colorSchemes)[number]["value"];
+
 export function GraphLegend({
   highlightRedundant,
   ratioModeEnabled,
@@ -83,14 +124,25 @@ export function GraphLegend({
                       </span>
                     </div>
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent align="start" className="w-[180px]">
                     {colorSchemes.map((scheme) => (
                       <SelectItem
                         key={scheme.value}
                         value={scheme.value}
                         className="text-xs"
                       >
-                        {scheme.label}
+                        <div className="flex items-center gap-3">
+                          <div className="flex gap-0.5">
+                            {scheme.preview.map((color, i) => (
+                              <div
+                                key={i}
+                                className="w-2 h-2 rounded-sm"
+                                style={{ backgroundColor: color }}
+                              />
+                            ))}
+                          </div>
+                          <span>{scheme.label}</span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -103,15 +155,3 @@ export function GraphLegend({
     </div>
   );
 }
-
-export const colorSchemes = [
-  { label: "Accent", value: "accent" },
-  { label: "Tableau", value: "tableau" },
-  { label: "Purple", value: "purple" },
-  { label: "Green", value: "green" },
-  { label: "Orange", value: "orange" },
-  { label: "Classic", value: "classic" },
-  { label: "Rainbow", value: "rainbow" },
-] as const;
-
-export type ColorScheme = (typeof colorSchemes)[number]["value"];
