@@ -155,7 +155,7 @@ export const removeFile = zAction({
 export const generateUploadUrl = zAction({
   args: { fileName: z.optional(z.string()), mimeType: z.string() },
   handler: async (_, { fileName, mimeType }) => {
-    const storageId = `${nanoid(10)}${fileName && `.${fileName}`}`;
+    const storageId = `${nanoid(10)}${fileName ? `.${fileName}` : ""}`;
     const command = new PutObjectCommand({
       Bucket: process.env.BUCKET_NAME || "",
       Key: storageId,
@@ -222,21 +222,15 @@ export const removeRawFile = zAction({
       throw new Error("Raw file not found");
     }
 
-    // get all analysis that use this raw file
     const analyses = await runQuery(api.analyses.getAll, { rawFile: id });
 
+    // Using Promise.all for concurrent execution
     await Promise.all([
-      runAction(api.actions.removeFile, {
-        storageId: rawFile.mgf,
-      }),
-      runAction(api.actions.removeFile, {
-        storageId: rawFile.targetedIons,
-      }),
-      [
-        ...analyses.map((analysis) =>
-          runAction(api.actions.removeAnalysis, { id: analysis.id })
-        ),
-      ],
+      runAction(api.actions.removeFile, { storageId: rawFile.mgf }),
+      runAction(api.actions.removeFile, { storageId: rawFile.targetedIons }),
+      ...analyses.map((analysis) =>
+        runAction(api.actions.removeAnalysis, { id: analysis.id })
+      ),
     ]);
 
     await runMutation(api.rawFiles.remove, { id });
