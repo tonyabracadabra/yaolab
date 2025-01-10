@@ -164,21 +164,35 @@ export function EdgeDetailsCard({ edge, onClose }: EdgeDetailsCardProps) {
 
         {/* Tolerance Control */}
         <div className="w-full">
-          <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] bg-background/20 backdrop-blur-sm border border-border/50 rounded-md">
-            <span className="text-muted-foreground">Tolerance</span>
-            <div className="w-12">
-              <Slider
-                size="sm"
-                value={[tolerance]}
-                onValueChange={([value]) => setTolerance(value)}
-                min={MIN_TOLERANCE}
-                max={MAX_TOLERANCE}
-                step={0.001}
-              />
+          <div className="flex flex-col gap-1.5 px-2 py-2 text-[10px] bg-background/20 backdrop-blur-sm border border-border/50 rounded-md">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">
+                Mass Difference Tolerance
+              </span>
+              <span className="tabular-nums text-muted-foreground/80">
+                ±{tolerance.toFixed(3)} Da
+              </span>
             </div>
-            <span className="tabular-nums text-muted-foreground/80 w-12 text-right">
-              ±{tolerance.toFixed(3)} Da
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] text-muted-foreground/70">
+                Narrow
+              </span>
+              <div className="flex-1">
+                <Slider
+                  size="sm"
+                  value={[tolerance]}
+                  onValueChange={([value]) => setTolerance(value)}
+                  min={MIN_TOLERANCE}
+                  max={MAX_TOLERANCE}
+                  step={0.001}
+                />
+              </div>
+              <span className="text-[9px] text-muted-foreground/70">Wide</span>
+            </div>
+            <p className="text-[9px] text-muted-foreground/70">
+              Adjust the tolerance to control how precisely the mass differences
+              should match
+            </p>
           </div>
         </div>
 
