@@ -7,7 +7,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { FileWarning, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
+import { Suspense, useCallback, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import { AnalysisHeader } from "./components/analysis-header";
 import { AnalysisStatus } from "./components/analysis-status";
 import { GraphControls } from "./components/graph-controls";
@@ -18,13 +19,49 @@ import { useGraphState } from "./hooks/use-graph-state";
 import { useNodeSizes } from "./hooks/use-node-sizes";
 import { useRatioColors } from "./hooks/use-ratio-colors";
 import { useRetryAnalysis } from "./hooks/use-retry-analysis";
+
+// Dynamically import heavy visualization component
 const GraphVisualization = dynamic(
   () =>
     import("./components/graph-visualization").then(
       (mod) => mod.GraphVisualization
     ),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    ),
+  }
 );
+
+interface LoadingStateProps {
+  message: string;
+}
+
+function LoadingState({ message }: LoadingStateProps) {
+  return (
+    <div className="flex items-center justify-center gap-2 p-4">
+      <Loader2 className="h-4 w-4 animate-spin" />
+      <span className="text-muted-foreground">{message}</span>
+    </div>
+  );
+}
+
+function ErrorState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex items-center h-full justify-center gap-2 flex-col p-8">
+      <FileWarning size={48} className="stroke-destructive" />
+      <span className="text-muted-foreground">
+        An error occurred while processing the analysis
+      </span>
+      <Button variant="outline" className="mt-4" onClick={onRetry}>
+        Try again
+      </Button>
+    </div>
+  );
+}
 
 export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const analysis = useQuery(api.analyses.get, { id: params.id });
@@ -36,6 +73,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     setGraphData,
     graphsWithPrototype,
     connectedComponents,
+    error: graphError,
   } = useGraphData(analysis?.result);
 
   const {
@@ -60,11 +98,17 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const { downloading, handleDownloadGraphML, handleDownloadRawData } =
     useDownloads();
 
-  useEffect(() => {
-    if (oriGraphData) {
+  // Memoize graph data update handler
+  const handleGraphDataUpdate = useCallback(() => {
+    if (!oriGraphData) return;
+
+    try {
       setGraphData(
         hideEndogenousSubgraphs ? graphsWithPrototype : oriGraphData
       );
+    } catch (error) {
+      console.error("Error updating graph data:", error);
+      toast.error("Failed to update graph visualization");
     }
   }, [
     hideEndogenousSubgraphs,
@@ -73,19 +117,25 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     setGraphData,
   ]);
 
+  useEffect(() => {
+    handleGraphDataUpdate();
+  }, [handleGraphDataUpdate]);
+
+  // Memoize download handlers
+  const downloadHandlers = useMemo(
+    () => ({
+      onDownloadGraphML: () => graphData && handleDownloadGraphML(graphData),
+      onDownloadRawData: () => graphData && handleDownloadRawData(graphData),
+    }),
+    [graphData, handleDownloadGraphML, handleDownloadRawData]
+  );
+
   if (!analysis) {
-    return (
-      <div className="w-full h-full">
-        <div className="flex items-center justify-center gap-2">
-          Loading analytics ...
-          <Loader2 className="animate-spin" />
-        </div>
-      </div>
-    );
+    return <LoadingState message="Loading analysis..." />;
   }
 
   return (
-    <div className="flex flex-col gap-4 px-4 py-2 w-full">
+    <div className="flex flex-col gap-4 px-4 py-2 w-full min-h-screen">
       <AnalysisHeader
         rawFileName={analysis.rawFile?.name}
         reactionDb={analysis.reactionDb}
@@ -99,70 +149,56 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
         creationTime={analysis._creationTime}
       />
 
-      <div className="flex flex-col gap-2 items-center justify-center w-full h-full">
-        {analysis.status === "running" && <div>{analysis.log}</div>}
-        <div className="w-full h-full">
-          {analysis.status === "failed" && (
-            <div className="flex items-center h-full justify-center gap-2 flex-col">
-              <FileWarning size={48} className="stroke-destructive" />
-              <span className="text-muted-foreground">
-                An unknown error occurred
-              </span>
-              <Button variant="outline" className="mt-8" onClick={handleRetry}>
-                Try again
-              </Button>
-            </div>
-          )}
-          {analysis.status === "running" && (
-            <div className="flex items-center h-full justify-center gap-2">
-              <Loader2 className="animate-spin" />
-              <span>Analysis Running</span>
-            </div>
-          )}
-          {analysis.status === "complete" && (
-            <Card className="relative w-full h-full overflow-hidden">
-              <GraphControls
-                nodeLabel={nodeLabel}
-                setNodeLabel={setNodeLabel}
-                edgeLabel={edgeLabel}
-                setEdgeLabel={setEdgeLabel}
-                nodeSize={nodeSize}
-                setNodeSize={setNodeSize}
-                hideEndogenousSubgraphs={hideEndogenousSubgraphs}
-                setHideEndogenousSubgraphs={setHideEndogenousSubgraphs}
-                ratioModeEnabled={ratioModeEnabled}
-                setRatioModeEnabled={setRatioModeEnabled}
-                highlightRedundant={highlightRedundant}
-                setHighlightRedundant={setHighlightRedundant}
-                colorScheme={colorScheme}
-                setColorScheme={setColorScheme}
-                graphData={graphData}
-                hasDrugSample={!!analysis.config.drugSample}
-                downloading={downloading}
-                onDownloadGraphML={() =>
-                  graphData && handleDownloadGraphML(graphData)
-                }
-                onDownloadRawData={() =>
-                  graphData && handleDownloadRawData(graphData)
-                }
-              />
+      <div className="flex-1 flex flex-col gap-2 w-full">
+        {analysis.status === "running" && (
+          <LoadingState message="Analysis in progress..." />
+        )}
 
-              <GraphLegend
-                highlightRedundant={highlightRedundant}
-                ratioModeEnabled={ratioModeEnabled}
-                ratioColColors={ratioColColors}
-                colorScheme={colorScheme}
-                setColorScheme={setColorScheme}
-              />
+        {analysis.status === "failed" && <ErrorState onRetry={handleRetry} />}
 
-              {graphData === undefined ? (
-                <div className="flex items-center h-[60%] justify-center gap-2">
-                  Loading graph now <Loader2 className="animate-spin" />
-                </div>
-              ) : graphData.edges?.length === 0 &&
-                graphData.nodes?.length === 0 ? (
-                <span>No data to display</span>
-              ) : (
+        {analysis.status === "complete" && (
+          <Card className="relative w-full h-full overflow-hidden min-h-[70vh]">
+            <GraphControls
+              nodeLabel={nodeLabel}
+              setNodeLabel={setNodeLabel}
+              edgeLabel={edgeLabel}
+              setEdgeLabel={setEdgeLabel}
+              nodeSize={nodeSize}
+              setNodeSize={setNodeSize}
+              hideEndogenousSubgraphs={hideEndogenousSubgraphs}
+              setHideEndogenousSubgraphs={setHideEndogenousSubgraphs}
+              ratioModeEnabled={ratioModeEnabled}
+              setRatioModeEnabled={setRatioModeEnabled}
+              highlightRedundant={highlightRedundant}
+              setHighlightRedundant={setHighlightRedundant}
+              colorScheme={colorScheme}
+              setColorScheme={setColorScheme}
+              graphData={graphData}
+              hasDrugSample={!!analysis.config.drugSample}
+              downloading={downloading}
+              {...downloadHandlers}
+            />
+
+            <GraphLegend
+              highlightRedundant={highlightRedundant}
+              ratioModeEnabled={ratioModeEnabled}
+              ratioColColors={ratioColColors}
+              colorScheme={colorScheme}
+              setColorScheme={setColorScheme}
+            />
+
+            {graphError ? (
+              <ErrorState onRetry={handleGraphDataUpdate} />
+            ) : !graphData ? (
+              <LoadingState message="Preparing visualization..." />
+            ) : graphData.edges.length === 0 && graphData.nodes.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <span className="text-muted-foreground">
+                  No data to display
+                </span>
+              </div>
+            ) : (
+              <Suspense fallback={<LoadingState message="Loading graph..." />}>
                 <GraphVisualization
                   graphData={graphData}
                   nodeLabel={nodeLabel}
@@ -173,10 +209,10 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   highlightRedundant={highlightRedundant}
                   connectedComponents={connectedComponents}
                 />
-              )}
-            </Card>
-          )}
-        </div>
+              </Suspense>
+            )}
+          </Card>
+        )}
       </div>
     </div>
   );

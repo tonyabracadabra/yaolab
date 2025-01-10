@@ -68,8 +68,9 @@ export function GraphVisualization({
     fgRef.current.d3ReheatSimulation();
   }, []);
 
-  const handleNodeClick = (node: ForceGraphNode) => {
+  const handleNodeClick = (node: ForceGraphNode, event: MouseEvent) => {
     if (!node.id || !fgRef.current) return;
+
     setSelectedNode(node);
 
     const zoomDuration = 1000;
@@ -97,7 +98,7 @@ export function GraphVisualization({
   };
 
   return (
-    <div className="relative flex-1 min-h-0 bg-background/50 w-full h-full">
+    <>
       <div className="absolute inset-0 w-full h-full">
         <ForceGraph2D
           ref={fgRef}
@@ -211,13 +212,12 @@ export function GraphVisualization({
           }}
         />
       </div>
-
       {selectedNode && (
         <NodeDetailsCard
           node={selectedNode}
           onClose={() => setSelectedNode(null)}
         />
       )}
-    </div>
+    </>
   );
 }

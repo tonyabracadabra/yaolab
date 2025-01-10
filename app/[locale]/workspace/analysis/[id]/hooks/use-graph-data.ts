@@ -1,159 +1,237 @@
 import { api } from "@/convex/_generated/api";
 import { useAction } from "convex/react";
 import Papa from "papaparse";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import type { Edge, GraphData, Node } from "../types";
+
+interface GraphDataState {
+  original: GraphData | undefined;
+  filtered: GraphData | undefined;
+  error: Error | null;
+}
+
+function parseMS2Spectrum(spectrumStr: string): Array<[number, number]> {
+  try {
+    // Remove extra whitespace and parse the string as JSON
+    const cleanStr = spectrumStr.trim().replace(/\s+/g, "");
+    return JSON.parse(cleanStr) as Array<[number, number]>;
+  } catch (error) {
+    console.error("Failed to parse MS2 spectrum:", error);
+    return [];
+  }
+}
 
 export function useGraphData(
   result: { edges: string; nodes: string } | undefined
 ) {
-  const [oriGraphData, setOriGraphData] = useState<GraphData>();
-  const [graphData, setGraphData] = useState<GraphData>();
+  const [state, setState] = useState<GraphDataState>({
+    original: undefined,
+    filtered: undefined,
+    error: null,
+  });
+  const processingRef = useRef(false);
   const generateDownloadUrl = useAction(api.actions.generateDownloadUrl);
 
-  useEffect(() => {
-    const fetchAndProcessData = async (result: {
-      edges: string;
-      nodes: string;
-    }) => {
-      try {
-        const [edgesUrl, nodesUrl] = await Promise.all([
-          generateDownloadUrl({ storageId: result.edges }).then(
-            (data) => data.signedUrl
-          ),
-          generateDownloadUrl({ storageId: result.nodes }).then(
-            (data) => data.signedUrl
-          ),
-        ]);
+  const processGraphData = useCallback(
+    async (edgesText: string, nodesText: string): Promise<GraphData> => {
+      const parseConfig = {
+        header: true,
+        dynamicTyping: true,
+        skipEmptyLines: true,
+        transform: (value: string) => {
+          if (!value) return value;
+          const lowerValue = value.toLowerCase();
+          return lowerValue === "true"
+            ? true
+            : lowerValue === "false"
+              ? false
+              : value;
+        },
+      };
 
-        const [edgesText, nodesText] = await Promise.all([
-          fetch(edgesUrl).then(async (response) => {
-            const text = await response.text();
-            console.log("Fetched edges data:", text.slice(0, 200) + "...");
-            return text;
-          }),
-          fetch(nodesUrl).then(async (response) => {
-            const text = await response.text();
-            console.log("Fetched nodes data:", text.slice(0, 200) + "...");
-            return text;
-          }),
-        ]);
+      const [{ data: edgesRaw }, { data: nodesRaw }] = await Promise.all([
+        Papa.parse<Edge>(edgesText, parseConfig),
+        Papa.parse<Node>(nodesText, parseConfig),
+      ]);
 
-        const parseConfig = {
-          header: true,
-          dynamicTyping: true,
-          transform: function (value: string, field: string): any {
-            if (value.toLowerCase() === "true") return true;
-            if (value.toLowerCase() === "false") return false;
-            return value;
-          },
-        };
-
-        const edgesRaw = Papa.parse<Edge>(edgesText, parseConfig).data;
-        const nodesRaw = Papa.parse<Node>(nodesText, parseConfig).data;
-
-        const nodesIds = new Set(nodesRaw.map((n) => n.id));
-        const edgesRawFiltered = edgesRaw.filter(
-          (e) => nodesIds.has(e.id1) && nodesIds.has(e.id2)
-        );
-
-        const processedData = {
-          nodes: nodesRaw.map((n) => ({ ...n, id: `${n.id}` })),
-          edges: edgesRawFiltered.map((e) => ({
-            ...e,
-            id1: `${e.id1}`,
-            id2: `${e.id2}`,
-          })),
-        };
-
-        setOriGraphData(processedData);
-        setGraphData(processedData);
-      } catch (error) {
-        console.error("Failed to fetch and process data", error);
+      if (!edgesRaw.length || !nodesRaw.length) {
+        throw new Error("Empty graph data received");
       }
-    };
 
-    if (result) {
-      fetchAndProcessData(result);
-    }
-  }, [result, generateDownloadUrl]);
-
-  const connectedComponents = useMemo(() => {
-    if (!oriGraphData) return [];
-
-    const nodes = oriGraphData.nodes;
-    const edges = oriGraphData.edges;
-    const connectedComponents: string[][] = [];
-    const visited = new Set<string>();
-    const adjList = new Map<string, string[]>();
-
-    for (const node of nodes) {
-      adjList.set(node.id, []);
-    }
-
-    for (const edge of edges) {
-      if (!edge.id1 || !edge.id2) continue;
-      adjList.get(edge.id1)?.push(edge.id2);
-      adjList.get(edge.id2)?.push(edge.id1);
-    }
-
-    for (const node of nodes) {
-      if (!visited.has(node.id)) {
-        const connectedComponent: string[] = [];
-        const queue = [node.id];
-
-        while (queue.length > 0) {
-          const curr = queue.shift()!;
-          if (!visited.has(curr)) {
-            visited.add(curr);
-            connectedComponent.push(curr);
-            for (const neighbor of adjList.get(curr) || []) {
-              queue.push(neighbor);
-            }
-          }
-        }
-
-        connectedComponents.push(connectedComponent);
-      }
-    }
-
-    return connectedComponents;
-  }, [oriGraphData]);
-
-  const graphsWithPrototype = useMemo(() => {
-    if (!oriGraphData) return;
-
-    const newNodes = [];
-    const newEdges = [];
-
-    for (const connectedComponent of connectedComponents) {
-      const subgraphNodes = oriGraphData.nodes.filter((node) =>
-        connectedComponent.includes(node.id)
+      // Create validated nodes map with type checking
+      const nodesMap = new Map(
+        nodesRaw
+          .filter((n): n is Node => Boolean(n?.id))
+          .map((n) => [
+            `${n.id}`,
+            {
+              ...n,
+              id: `${n.id}`,
+              msmsSpectrum: n.msmsSpectrum
+                ? parseMS2Spectrum(n.msmsSpectrum as string)
+                : undefined,
+            },
+          ])
       );
 
-      const prototypeNode = subgraphNodes.find((node) => node.isPrototype);
-      if (prototypeNode) {
-        newNodes.push(...subgraphNodes);
-        const subgraphEdges = oriGraphData.edges.filter(
-          (edge) =>
-            connectedComponent.includes(edge.id1) &&
-            connectedComponent.includes(edge.id2)
-        );
-        newEdges.push(...subgraphEdges);
+      // Validate and process edges
+      const validatedEdges = edgesRaw
+        .filter((e): e is Edge => Boolean(e?.id1 && e?.id2))
+        .filter((e) => nodesMap.has(`${e.id1}`) && nodesMap.has(`${e.id2}`))
+        .map((e) => ({
+          ...e,
+          id1: `${e.id1}`,
+          id2: `${e.id2}`,
+        }));
+
+      return {
+        nodes: Array.from(nodesMap.values()),
+        edges: validatedEdges,
+      };
+    },
+    []
+  );
+
+  const fetchAndProcessData = useCallback(async () => {
+    if (!result || processingRef.current) return;
+    processingRef.current = true;
+
+    try {
+      // Fetch URLs concurrently
+      const [edgesUrl, nodesUrl] = await Promise.all([
+        generateDownloadUrl({ storageId: result.edges }),
+        generateDownloadUrl({ storageId: result.nodes }),
+      ]).then((urls) => urls.map((url) => url.signedUrl));
+
+      if (!edgesUrl || !nodesUrl) {
+        throw new Error("Failed to generate download URLs");
       }
+
+      // Fetch data with error handling
+      const [edgesResponse, nodesResponse] = await Promise.all([
+        fetch(edgesUrl),
+        fetch(nodesUrl),
+      ]);
+
+      if (!edgesResponse.ok || !nodesResponse.ok) {
+        throw new Error("Failed to fetch graph data");
+      }
+
+      const [edgesText, nodesText] = await Promise.all([
+        edgesResponse.text(),
+        nodesResponse.text(),
+      ]);
+
+      const processedData = await processGraphData(edgesText, nodesText);
+
+      setState({
+        original: processedData,
+        filtered: processedData,
+        error: null,
+      });
+    } catch (error) {
+      console.error("Graph data processing error:", error);
+      setState((prev) => ({ ...prev, error: error as Error }));
+      toast.error(
+        error instanceof Error ? error.message : "Failed to process graph data"
+      );
+      setState({ original: undefined, filtered: undefined, error: null });
+    } finally {
+      processingRef.current = false;
     }
+  }, [result, generateDownloadUrl, processGraphData]);
+
+  useEffect(() => {
+    fetchAndProcessData();
+  }, [fetchAndProcessData]);
+
+  const connectedComponents = useMemo(() => {
+    if (!state.filtered?.nodes || !state.filtered?.edges) return [];
+
+    const adjList = new Map<string, Set<string>>();
+    const visited = new Set<string>();
+    const components: string[][] = [];
+
+    // Initialize adjacency list
+    state.filtered.nodes.forEach((node) => {
+      adjList.set(node.id, new Set());
+    });
+
+    // Build undirected graph
+    state.filtered.edges.forEach((edge) => {
+      if (!edge.id1 || !edge.id2) return;
+      adjList.get(edge.id1)?.add(edge.id2);
+      adjList.get(edge.id2)?.add(edge.id1);
+    });
+
+    // Optimized BFS implementation
+    const bfs = (startId: string): string[] => {
+      const component: string[] = [];
+      const queue = [startId];
+
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        if (visited.has(current)) continue;
+
+        visited.add(current);
+        component.push(current);
+
+        adjList.get(current)?.forEach((neighbor) => {
+          if (!visited.has(neighbor)) queue.push(neighbor);
+        });
+      }
+
+      return component;
+    };
+
+    // Find all components
+    state.filtered.nodes.forEach((node) => {
+      if (!visited.has(node.id)) {
+        components.push(bfs(node.id));
+      }
+    });
+
+    return components;
+  }, [state.filtered]);
+
+  const graphsWithPrototype = useMemo(() => {
+    if (!state.filtered?.nodes || !state.filtered?.edges) return;
+
+    // Find components with prototype nodes
+    const componentsWithPrototype = connectedComponents.filter((component) =>
+      state.filtered!.nodes.some(
+        (node) => component.includes(node.id) && node.isPrototype
+      )
+    );
+
+    if (componentsWithPrototype.length === 0) return state.filtered;
+
+    // Create efficient lookup for nodes to keep
+    const nodeIds = new Set(componentsWithPrototype.flat());
 
     return {
-      nodes: newNodes,
-      edges: newEdges,
+      nodes: state.filtered.nodes.filter((node) => nodeIds.has(node.id)),
+      edges: state.filtered.edges.filter(
+        (edge) => nodeIds.has(edge.id1) && nodeIds.has(edge.id2)
+      ),
     };
-  }, [connectedComponents, oriGraphData]);
+  }, [connectedComponents, state.filtered]);
+
+  const setGraphData = useCallback((newData: GraphData | undefined) => {
+    setState((prev) => ({
+      original: prev.original,
+      filtered: newData,
+      error: null,
+    }));
+  }, []);
 
   return {
-    oriGraphData,
-    graphData,
+    oriGraphData: state.original,
+    graphData: state.filtered,
     setGraphData,
     connectedComponents,
     graphsWithPrototype,
+    error: state.error,
   };
 }

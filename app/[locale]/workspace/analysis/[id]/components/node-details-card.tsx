@@ -17,7 +17,6 @@ const formatValue = (value: unknown): string => {
 };
 
 export function NodeDetailsCard({ node, onClose }: NodeDetailsCardProps) {
-  console.log("node", node);
   const priorityFields = ["mz", "rt", "intensity", "formula"];
 
   const priorityInfo = Object.entries(node)
@@ -57,7 +56,7 @@ export function NodeDetailsCard({ node, onClose }: NodeDetailsCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 -mr-2 shrink-0"
+            className="h-7 w-7 mr-0 shrink-0"
             onClick={onClose}
           >
             <Cross2Icon className="h-3 w-3" />
