@@ -46,3 +46,5 @@ notebooks
 # dagster
 # folders starts with tmp 
 tmp*
+
+.venv/
