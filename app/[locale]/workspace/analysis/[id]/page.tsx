@@ -75,6 +75,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     graphsWithPrototype,
     connectedComponents,
     error: graphError,
+    highlightIsf,
+    setHighlightIsf,
   } = useGraphData(analysis?.result);
 
   const {
@@ -192,6 +194,8 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
               activeFilter={activeFilter}
               onFilterApply={applyFilter}
               onFilterClear={clearFilter}
+              highlightIsf={highlightIsf}
+              setHighlightIsf={setHighlightIsf}
             />
             <GraphLegend
               highlightRedundant={highlightRedundant}
@@ -200,6 +204,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
               ionMzFilterValues={activeFilter}
               colorScheme={colorScheme}
               setColorScheme={setColorScheme}
+              highlightIsf={highlightIsf}
             />
             {graphError ? (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -235,6 +240,7 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
                   ratioColColors={ratioColColors}
                   highlightRedundant={highlightRedundant}
                   connectedComponents={connectedComponents}
+                  highlightIsf={highlightIsf}
                 />
               </Suspense>
             )}

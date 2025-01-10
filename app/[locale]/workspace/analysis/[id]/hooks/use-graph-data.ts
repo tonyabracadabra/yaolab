@@ -21,6 +21,7 @@ export function useGraphData(
   });
   const processingRef = useRef(false);
   const generateDownloadUrl = useAction(api.actions.generateDownloadUrl);
+  const [highlightIsf, setHighlightIsf] = useState(false);
 
   const processGraphData = useCallback(
     async (edgesText: string, nodesText: string): Promise<GraphData> => {
@@ -60,18 +61,34 @@ export function useGraphData(
           .map((n) => [`${n.id}`, { ...n, id: `${n.id}` }])
       );
 
-      // Process edges in a single pass
+      // Process edges to identify ISF edges
       const validatedEdges = edgesRaw
         .filter((e): e is Edge => {
           const id1 = `${e?.id1}`;
           const id2 = `${e?.id2}`;
           return Boolean(id1 && id2 && nodesMap.has(id1) && nodesMap.has(id2));
         })
-        .map((e) => ({
-          ...e,
-          id1: `${e.id1}`,
-          id2: `${e.id2}`,
-        }));
+        .map((e) => {
+          const source = nodesMap.get(`${e.id1}`);
+          const target = nodesMap.get(`${e.id2}`);
+
+          // Check ISF conditions
+          const isIsf =
+            source &&
+            target &&
+            Math.abs(source.rt - target.rt) <= 0.02 && // RT diff ≤ 0.02 min
+            source.mz < target.mz && // smaller m/z appears in larger m/z MS2
+            target.msmsSpectrum.some(
+              ([mz]) => Math.abs(mz - source.mz) <= 0.01
+            ); // tolerance of 0.01
+
+          return {
+            ...e,
+            id1: `${e.id1}`,
+            id2: `${e.id2}`,
+            isIsf,
+          };
+        });
 
       return {
         nodes: Array.from(nodesMap.values()),
@@ -221,5 +238,7 @@ export function useGraphData(
     connectedComponents,
     graphsWithPrototype,
     error: state.error,
+    highlightIsf,
+    setHighlightIsf,
   };
 }

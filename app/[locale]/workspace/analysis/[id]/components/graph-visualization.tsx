@@ -21,6 +21,7 @@ interface GraphVisualizationProps {
   ratioColColors?: { col: string; color: string }[];
   highlightRedundant: boolean;
   connectedComponents: string[][];
+  highlightIsf: boolean;
 }
 
 export function GraphVisualization({
@@ -32,6 +33,7 @@ export function GraphVisualization({
   ratioColColors,
   highlightRedundant,
   connectedComponents,
+  highlightIsf,
 }: GraphVisualizationProps) {
   const { theme } = useTheme();
   const fgRef = useRef<any>();
@@ -86,11 +88,21 @@ export function GraphVisualization({
     }
   };
 
-  const getEdgeColor = (isRedundant: boolean) => {
-    if (isRedundant && highlightRedundant) {
-      return theme === "dark" ? "#ef4444" : "#dc2626"; // Adjusted red colors
+  const getEdgeColor = (edge: ForceGraphEdge) => {
+    if (edge.redundantData && highlightRedundant) {
+      return theme === "dark" ? "#ef4444" : "#dc2626";
+    }
+    if (edge.isIsf && highlightIsf) {
+      return theme === "dark" ? "#8b5cf6" : "#7c3aed"; // Purple for ISF
     }
     return theme === "dark" ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.2)";
+  };
+
+  const getEdgeStyle = (edge: ForceGraphEdge) => {
+    if (edge.isIsf && highlightIsf) {
+      return [10, 4]; // Dashed line for ISF
+    }
+    return undefined;
   };
 
   const getEdgeLabelBackground = () => {
@@ -174,13 +186,14 @@ export function GraphVisualization({
           linkCanvasObject={(link: ForceGraphEdge, ctx) => {
             if (!link.source || !link.target) return;
 
-            // Edge line
             ctx.beginPath();
+            ctx.setLineDash(getEdgeStyle(link) || []);
             ctx.moveTo(link.source.x ?? 0, link.source.y ?? 0);
             ctx.lineTo(link.target.x ?? 0, link.target.y ?? 0);
-            ctx.strokeStyle = getEdgeColor(!!link.redundantData);
+            ctx.strokeStyle = getEdgeColor(link);
             ctx.lineWidth = 1;
             ctx.stroke();
+            ctx.setLineDash([]); // Reset dash pattern
 
             // Edge label
             const label =

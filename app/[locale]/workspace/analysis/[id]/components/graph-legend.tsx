@@ -23,6 +23,7 @@ interface GraphLegendProps {
   ratioColColors?: { col: string; color: string }[];
   colorScheme: RatioColorScheme;
   setColorScheme: (value: RatioColorScheme) => void;
+  highlightIsf: boolean;
 }
 
 export function GraphLegend({
@@ -32,6 +33,7 @@ export function GraphLegend({
   ratioColColors,
   colorScheme,
   setColorScheme,
+  highlightIsf,
 }: GraphLegendProps) {
   return (
     <div className="absolute left-4 top-4 z-[20]">
@@ -58,6 +60,19 @@ export function GraphLegend({
                   {ionMzFilterValues.intensity > 0 && (
                     <>, Int ≥ {ionMzFilterValues.intensity.toLocaleString()}</>
                   )}
+                </span>
+              </div>
+            )}
+            {highlightIsf && (
+              <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-1">
+                  <div
+                    className="w-3 h-0.5 bg-purple-500"
+                    style={{ borderTop: "1px dashed" }}
+                  />
+                </div>
+                <span className="text-muted-foreground">
+                  In-Source Fragment
                 </span>
               </div>
             )}

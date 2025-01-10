@@ -66,6 +66,7 @@ export interface Edge {
   correlation?: number;
   modCos?: number;
   redundantData?: boolean;
+  isIsf?: boolean;
   [key: string]: unknown;
 }
 

@@ -49,6 +49,8 @@ interface GraphControlsProps {
   activeFilter?: IonMzFilter;
   onFilterApply: (filter: IonMzFilter) => void;
   onFilterClear: () => void;
+  highlightIsf: boolean;
+  setHighlightIsf: (value: boolean) => void;
 }
 
 const ionFilterSchema = z.object({
@@ -87,6 +89,8 @@ export function GraphControls({
   activeFilter,
   onFilterApply,
   onFilterClear,
+  highlightIsf,
+  setHighlightIsf,
 }: GraphControlsProps) {
   const form = useForm<IonMzFilter>({
     resolver: zodResolver(ionFilterSchema),
@@ -507,10 +511,26 @@ export function GraphControls({
                           </p>
                         </div>
                       </div>
+
+                      <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                        <Switch
+                          checked={highlightIsf}
+                          onCheckedChange={setHighlightIsf}
+                          className="mt-0.5 data-[state=checked]:bg-primary"
+                        />
+                        <div className="space-y-1">
+                          <Label className="text-xs font-medium">
+                            Highlight In-Source Fragments
+                          </Label>
+                          <p className="text-[11px] leading-tight text-muted-foreground">
+                            Show edges where smaller m/z ions appear in MS2 of
+                            larger ions (RT diff ≤ 0.02 min)
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </TabsContent>
-
                 {filterTabContent}
               </div>
             </Tabs>
