@@ -11,17 +11,6 @@ interface GraphDataState {
   error: Error | null;
 }
 
-function parseMS2Spectrum(spectrumStr: string): Array<[number, number]> {
-  try {
-    // Remove extra whitespace and parse the string as JSON
-    const cleanStr = spectrumStr.trim().replace(/\s+/g, "");
-    return JSON.parse(cleanStr) as Array<[number, number]>;
-  } catch (error) {
-    console.error("Failed to parse MS2 spectrum:", error);
-    return [];
-  }
-}
-
 export function useGraphData(
   result: { edges: string; nodes: string } | undefined
 ) {
@@ -39,17 +28,22 @@ export function useGraphData(
         header: true,
         dynamicTyping: true,
         skipEmptyLines: true,
-        transform: (value: string) => {
+        transform: (value: string, field: string) => {
           if (!value) return value;
-          const lowerValue = value.toLowerCase();
-          return lowerValue === "true"
-            ? true
-            : lowerValue === "false"
-              ? false
-              : value;
+
+          if (field === "msmsSpectrum") {
+            const cleanStr = value.trim().replace(/\s+/g, "");
+            return JSON.parse(cleanStr) as Array<[number, number]>;
+          }
+
+          // Simplified boolean conversion
+          return ["true", "false"].includes(value.toLowerCase())
+            ? value.toLowerCase() === "true"
+            : value;
         },
       };
 
+      // Parse both files concurrently
       const [{ data: edgesRaw }, { data: nodesRaw }] = await Promise.all([
         Papa.parse<Edge>(edgesText, parseConfig),
         Papa.parse<Node>(nodesText, parseConfig),
@@ -59,26 +53,20 @@ export function useGraphData(
         throw new Error("Empty graph data received");
       }
 
-      // Create validated nodes map with type checking
+      // Create nodes map with string IDs
       const nodesMap = new Map(
         nodesRaw
           .filter((n): n is Node => Boolean(n?.id))
-          .map((n) => [
-            `${n.id}`,
-            {
-              ...n,
-              id: `${n.id}`,
-              msmsSpectrum: n.msmsSpectrum
-                ? parseMS2Spectrum(n.msmsSpectrum as string)
-                : undefined,
-            },
-          ])
+          .map((n) => [`${n.id}`, { ...n, id: `${n.id}` }])
       );
 
-      // Validate and process edges
+      // Process edges in a single pass
       const validatedEdges = edgesRaw
-        .filter((e): e is Edge => Boolean(e?.id1 && e?.id2))
-        .filter((e) => nodesMap.has(`${e.id1}`) && nodesMap.has(`${e.id2}`))
+        .filter((e): e is Edge => {
+          const id1 = `${e?.id1}`;
+          const id2 = `${e?.id2}`;
+          return Boolean(id1 && id2 && nodesMap.has(id1) && nodesMap.has(id2));
+        })
         .map((e) => ({
           ...e,
           id1: `${e.id1}`,

@@ -1,4 +1,7 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Popover,
@@ -13,8 +16,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Download, Loader2, Settings2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Download, Loader2, Search, Settings2 } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 import { kAvailableEdges, kAvailableNodes } from "../constants";
 import type { EdgeKey, GraphData, NodeKey, RatioColorScheme } from "../types";
 
@@ -38,7 +47,29 @@ interface GraphControlsProps {
   downloading: boolean;
   onDownloadGraphML: () => void;
   onDownloadRawData: () => void;
+  onIonMzFilterChange: (
+    mz: number,
+    tolerance: number,
+    intensityThreshold: number
+  ) => void;
+  ionMzFilterValues: IonFilterValues | undefined;
 }
+
+const ionFilterSchema = z.object({
+  mz: z.number().min(0, "m/z must be positive").step(0.0001),
+  tolerance: z
+    .number()
+    .min(0.0001, "Tolerance must be positive")
+    .max(2, "Maximum tolerance is 2 Da")
+    .step(0.0001),
+  intensity: z
+    .number()
+    .min(0, "Intensity must be between 0-100")
+    .max(100)
+    .step(1),
+});
+
+type IonFilterValues = z.infer<typeof ionFilterSchema>;
 
 export function GraphControls({
   nodeLabel,
@@ -53,14 +84,184 @@ export function GraphControls({
   setRatioModeEnabled,
   highlightRedundant,
   setHighlightRedundant,
-  colorScheme,
-  setColorScheme,
   graphData,
   hasDrugSample,
   downloading,
   onDownloadGraphML,
-  onDownloadRawData,
+  onIonMzFilterChange,
+  ionMzFilterValues,
 }: GraphControlsProps) {
+  const form = useForm<IonFilterValues>({
+    resolver: zodResolver(ionFilterSchema),
+    defaultValues: {
+      mz: ionMzFilterValues?.mz ?? 0,
+      tolerance: ionMzFilterValues?.tolerance ?? 0.01,
+      intensity: ionMzFilterValues?.intensity ?? 50,
+    },
+  });
+
+  const handleFilterSubmit = (values: IonFilterValues) => {
+    onIonMzFilterChange(values.mz, values.tolerance, values.intensity);
+    toast.success("Ion filter applied successfully");
+  };
+
+  const handleClearFilter = () => {
+    onIonMzFilterChange(0, 0.01, 50);
+    form.reset({
+      mz: 0,
+      tolerance: 0.01,
+      intensity: 50,
+    });
+    toast.success("Ion filter cleared");
+  };
+
+  const isIonFilterActive = !!ionMzFilterValues;
+
+  const filterTabContent = (
+    <TabsContent value="search" className="p-4 mt-0">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+            </div>
+            <h5 className="text-sm font-medium">Feature Ion Filter</h5>
+          </div>
+          {isIonFilterActive && (
+            <Badge
+              variant="secondary"
+              className="bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/20"
+            >
+              Filter Active
+            </Badge>
+          )}
+        </div>
+
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleFilterSubmit)}
+            className="space-y-4"
+          >
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="mz"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <Label
+                      htmlFor="mz"
+                      className="text-xs font-medium text-muted-foreground"
+                    >
+                      m/z Value
+                    </Label>
+                    <div className="relative">
+                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.0001"
+                          placeholder="Enter m/z"
+                          className={cn(
+                            "h-8 pl-8 text-xs bg-background",
+                            isIonFilterActive && "border-emerald-500/50"
+                          )}
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(parseFloat(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="tolerance"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <Label
+                      htmlFor="tolerance"
+                      className="text-xs font-medium text-muted-foreground"
+                    >
+                      Tolerance (Da)
+                    </Label>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.001"
+                        className={cn(
+                          "h-8 text-xs bg-background",
+                          isIonFilterActive && "border-emerald-500/50"
+                        )}
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(parseFloat(e.target.value))
+                        }
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="intensity"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <Label
+                      htmlFor="intensity"
+                      className="text-xs font-medium text-muted-foreground"
+                    >
+                      Min. Intensity %
+                    </Label>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="1"
+                        className={cn(
+                          "h-8 text-xs bg-background",
+                          isIonFilterActive && "border-emerald-500/50"
+                        )}
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(parseFloat(e.target.value))
+                        }
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                type="submit"
+                size="sm"
+                className="flex-1 h-8 text-xs"
+                disabled={!form.formState.isDirty}
+              >
+                Apply Filter
+              </Button>
+              {isIonFilterActive && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs"
+                  onClick={handleClearFilter}
+                >
+                  Clear Filter
+                </Button>
+              )}
+            </div>
+          </form>
+        </Form>
+      </div>
+    </TabsContent>
+  );
+
   return (
     <div className="absolute right-6 top-6 flex items-center gap-2 z-50">
       <div className="flex items-center gap-2">
@@ -75,7 +276,7 @@ export function GraphControls({
             </Button>
           </PopoverTrigger>
           <PopoverContent
-            className="w-[580px] z-[9999] p-0 shadow-lg"
+            className="w-[580px] z-[9999] p-0 shadow-lg flex flex-col max-h-[60vh]"
             align="end"
             sideOffset={8}
             onInteractOutside={(e) => {
@@ -88,7 +289,7 @@ export function GraphControls({
               }
             }}
           >
-            <div className="border-b border-border/50 p-4">
+            <div className="border-b border-border/50 p-4 flex-shrink-0">
               <div className="space-y-1">
                 <h4 className="font-medium">Graph Settings</h4>
                 <p className="text-sm text-muted-foreground">
@@ -97,159 +298,185 @@ export function GraphControls({
               </div>
             </div>
 
-            <div className="p-4 space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  </div>
-                  <h5 className="text-sm font-medium">Node & Edge Display</h5>
-                </div>
-                <div className="grid grid-cols-3 gap-4 pl-6">
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="nodeLabel"
-                      className="text-xs font-medium text-muted-foreground"
-                    >
-                      Node Label
-                    </Label>
-                    <Select
-                      value={nodeLabel}
-                      onValueChange={(value: NodeKey) => setNodeLabel(value)}
-                    >
-                      <SelectTrigger className="h-8 text-xs bg-background">
-                        <SelectValue placeholder="Select node label" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {kAvailableNodes.map((v) => (
-                          <SelectItem
-                            key={v.key}
-                            value={v.key}
-                            className="text-xs"
-                          >
-                            {v.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="edgeLabel"
-                      className="text-xs font-medium text-muted-foreground"
-                    >
-                      Edge Label
-                    </Label>
-                    <Select
-                      value={edgeLabel}
-                      onValueChange={(value: EdgeKey) => setEdgeLabel(value)}
-                    >
-                      <SelectTrigger className="h-8 text-xs bg-background">
-                        <SelectValue placeholder="Select edge label" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {kAvailableEdges.map((v) => (
-                          <SelectItem
-                            key={v.col}
-                            value={v.col}
-                            className="text-xs"
-                          >
-                            {v.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="nodeSize"
-                      className="text-xs font-medium text-muted-foreground"
-                    >
-                      Node Size
-                    </Label>
-                    <Select
-                      value={nodeSize}
-                      onValueChange={(value: NodeKey) => setNodeSize(value)}
-                    >
-                      <SelectTrigger className="h-8 text-xs bg-background">
-                        <SelectValue placeholder="Select node size" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {kAvailableNodes.map((v) => (
-                          <SelectItem
-                            key={v.col}
-                            value={v.key}
-                            className="text-xs"
-                          >
-                            {v.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
+            <Tabs defaultValue="display" className="flex flex-col">
+              <TabsList className="flex items-center justify-start px-4">
+                <TabsTrigger value="display" className="text-xs">
+                  Display
+                </TabsTrigger>
+                <TabsTrigger value="options" className="text-xs">
+                  Options
+                </TabsTrigger>
+                <TabsTrigger value="search" className="text-xs">
+                  Filter
+                </TabsTrigger>
+              </TabsList>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  </div>
-                  <h5 className="text-sm font-medium">Display Options</h5>
-                </div>
-                <div className="grid grid-cols-2 gap-y-4 gap-x-8 pl-6">
-                  {hasDrugSample && (
-                    <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                      <Switch
-                        checked={hideEndogenousSubgraphs}
-                        onCheckedChange={setHideEndogenousSubgraphs}
-                        className="mt-0.5 data-[state=checked]:bg-primary"
-                      />
-                      <div className="space-y-1">
-                        <Label className="text-xs font-medium">
-                          Hide endogenous subgraphs
+              <div className="flex-1 overflow-y-auto">
+                <TabsContent value="display" className="p-4 mt-0">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      </div>
+                      <h5 className="text-sm font-medium">
+                        Node & Edge Display
+                      </h5>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 pl-6">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="nodeLabel"
+                          className="text-xs font-medium text-muted-foreground"
+                        >
+                          Node Label
                         </Label>
-                        <p className="text-[11px] leading-tight text-muted-foreground">
-                          Only show subgraphs with prototype compounds
-                        </p>
+                        <Select
+                          value={nodeLabel}
+                          onValueChange={(value: NodeKey) =>
+                            setNodeLabel(value)
+                          }
+                        >
+                          <SelectTrigger className="h-8 text-xs bg-background">
+                            <SelectValue placeholder="Select node label" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {kAvailableNodes.map((v) => (
+                              <SelectItem
+                                key={v.key}
+                                value={v.key}
+                                className="text-xs"
+                              >
+                                {v.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="edgeLabel"
+                          className="text-xs font-medium text-muted-foreground"
+                        >
+                          Edge Label
+                        </Label>
+                        <Select
+                          value={edgeLabel}
+                          onValueChange={(value: EdgeKey) =>
+                            setEdgeLabel(value)
+                          }
+                        >
+                          <SelectTrigger className="h-8 text-xs bg-background">
+                            <SelectValue placeholder="Select edge label" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {kAvailableEdges.map((v) => (
+                              <SelectItem
+                                key={v.col}
+                                value={v.col}
+                                className="text-xs"
+                              >
+                                {v.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="nodeSize"
+                          className="text-xs font-medium text-muted-foreground"
+                        >
+                          Node Size
+                        </Label>
+                        <Select
+                          value={nodeSize}
+                          onValueChange={(value: NodeKey) => setNodeSize(value)}
+                        >
+                          <SelectTrigger className="h-8 text-xs bg-background">
+                            <SelectValue placeholder="Select node size" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {kAvailableNodes.map((v) => (
+                              <SelectItem
+                                key={v.col}
+                                value={v.key}
+                                className="text-xs"
+                              >
+                                {v.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
-                  )}
+                  </div>
+                </TabsContent>
 
-                  <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                    <Switch
-                      checked={ratioModeEnabled}
-                      onCheckedChange={setRatioModeEnabled}
-                      className="mt-0.5 data-[state=checked]:bg-primary"
-                    />
-                    <div className="space-y-1">
-                      <Label className="text-xs font-medium">
-                        Compound Response Mode
-                      </Label>
-                      <p className="text-[11px] leading-tight text-muted-foreground">
-                        Enable compound response visualization
-                      </p>
+                <TabsContent value="options" className="p-4 mt-0">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      </div>
+                      <h5 className="text-sm font-medium">Display Options</h5>
+                    </div>
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-8 pl-6">
+                      {hasDrugSample && (
+                        <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                          <Switch
+                            checked={hideEndogenousSubgraphs}
+                            onCheckedChange={setHideEndogenousSubgraphs}
+                            className="mt-0.5 data-[state=checked]:bg-primary"
+                          />
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium">
+                              Hide endogenous subgraphs
+                            </Label>
+                            <p className="text-[11px] leading-tight text-muted-foreground">
+                              Only show subgraphs with prototype compounds
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                        <Switch
+                          checked={ratioModeEnabled}
+                          onCheckedChange={setRatioModeEnabled}
+                          className="mt-0.5 data-[state=checked]:bg-primary"
+                        />
+                        <div className="space-y-1">
+                          <Label className="text-xs font-medium">
+                            Compound Response Mode
+                          </Label>
+                          <p className="text-[11px] leading-tight text-muted-foreground">
+                            Enable compound response visualization
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                        <Switch
+                          checked={highlightRedundant}
+                          onCheckedChange={setHighlightRedundant}
+                          className="mt-0.5 data-[state=checked]:bg-primary"
+                        />
+                        <div className="space-y-1">
+                          <Label className="text-xs font-medium">
+                            Highlight Redundant Data
+                          </Label>
+                          <p className="text-[11px] leading-tight text-muted-foreground">
+                            Show edges with redundant information
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
+                </TabsContent>
 
-                  <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                    <Switch
-                      checked={highlightRedundant}
-                      onCheckedChange={setHighlightRedundant}
-                      className="mt-0.5 data-[state=checked]:bg-primary"
-                    />
-                    <div className="space-y-1">
-                      <Label className="text-xs font-medium">
-                        Highlight Redundant Data
-                      </Label>
-                      <p className="text-[11px] leading-tight text-muted-foreground">
-                        Show edges with redundant information
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                {filterTabContent}
               </div>
-            </div>
+            </Tabs>
           </PopoverContent>
         </Popover>
 

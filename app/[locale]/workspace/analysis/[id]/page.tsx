@@ -7,7 +7,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { FileWarning, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { Suspense, useCallback, useEffect, useMemo } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AnalysisHeader } from "./components/analysis-header";
 import { AnalysisStatus } from "./components/analysis-status";
@@ -98,6 +98,15 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const { downloading, handleDownloadGraphML, handleDownloadRawData } =
     useDownloads();
 
+  const [ionMzFilterValues, setIonMzFilterValues] = useState<
+    | {
+        mz: number;
+        tolerance: number;
+        intensity: number;
+      }
+    | undefined
+  >(undefined);
+
   // Memoize graph data update handler
   const handleGraphDataUpdate = useCallback(() => {
     if (!oriGraphData) return;
@@ -129,6 +138,46 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     }),
     [graphData, handleDownloadGraphML, handleDownloadRawData]
   );
+
+  const handleIonMzFilter = useCallback(
+    (mz: number, tolerance: number, intensityThreshold: number) => {
+      if (!graphData) return;
+
+      setIonMzFilterValues({ mz, tolerance, intensityThreshold });
+
+      const filteredNodes = graphData.nodes.filter((node) => {
+        const mzDiff = node.msmsSpectrum
+          .sort(([_, intensityA], [__, intensityB]) => intensityB - intensityA)
+          .slice(
+            0,
+            Math.ceil(node.msmsSpectrum.length * (intensityThreshold / 100))
+          )
+          .find(([mz, _]) => {
+            return Math.abs(mz - mz) <= tolerance;
+          });
+        return mzDiff;
+      });
+
+      const filteredEdges = graphData.edges.filter((edge) => {
+        const sourceNode = filteredNodes.find((node) => node.id === edge.id1);
+        const targetNode = filteredNodes.find((node) => node.id === edge.id2);
+        return sourceNode && targetNode;
+      });
+
+      setGraphData({
+        nodes: filteredNodes,
+        edges: filteredEdges,
+      });
+    },
+    [graphData, setGraphData]
+  );
+
+  // Effect to reset graph data when filter is disabled
+  useEffect(() => {
+    if (!ionMzFilterValues) {
+      handleGraphDataUpdate();
+    }
+  }, [ionMzFilterValues, handleGraphDataUpdate]);
 
   if (!analysis) {
     return <LoadingState message="Loading analysis..." />;
@@ -177,16 +226,16 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
               hasDrugSample={!!analysis.config.drugSample}
               downloading={downloading}
               {...downloadHandlers}
+              onIonMzFilterChange={handleIonMzFilter}
             />
-
             <GraphLegend
               highlightRedundant={highlightRedundant}
               ratioModeEnabled={ratioModeEnabled}
               ratioColColors={ratioColColors}
+              ionMzFilterValues={ionMzFilterValues}
               colorScheme={colorScheme}
               setColorScheme={setColorScheme}
             />
-
             {graphError ? (
               <ErrorState onRetry={handleGraphDataUpdate} />
             ) : !graphData ? (

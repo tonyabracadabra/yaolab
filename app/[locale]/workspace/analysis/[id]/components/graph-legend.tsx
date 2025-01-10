@@ -6,11 +6,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Palette } from "lucide-react";
+import { EyeOff } from "lucide-react"; // Added EyeOff icon
 import { colorSchemes } from "../constants";
 import type { RatioColorScheme } from "../types";
 
 interface GraphLegendProps {
+  ionMzFilterValues:
+    | {
+        mz: number;
+        tolerance: number;
+        intensity: number;
+      }
+    | undefined;
   highlightRedundant: boolean;
   ratioModeEnabled: boolean;
   ratioColColors?: { col: string; color: string }[];
@@ -19,6 +26,7 @@ interface GraphLegendProps {
 }
 
 export function GraphLegend({
+  ionMzFilterValues,
   highlightRedundant,
   ratioModeEnabled,
   ratioColColors,
@@ -39,6 +47,18 @@ export function GraphLegend({
               <div className="flex items-center gap-2 text-xs">
                 <div className="w-3 h-0.5 bg-destructive rounded-full" />
                 <span className="text-muted-foreground">Redundant</span>
+              </div>
+            )}
+            {ionMzFilterValues && (
+              <div className="flex items-center gap-2 text-xs">
+                <EyeOff className="w-3 h-3 text-muted-foreground" />
+                <span className="text-muted-foreground">
+                  Filtered: m/z {ionMzFilterValues.mz.toFixed(4)} ±{" "}
+                  {ionMzFilterValues.tolerance.toFixed(2)} Da
+                  {ionMzFilterValues.intensity > 0 && (
+                    <>, Int ≥ {ionMzFilterValues.intensity.toLocaleString()}</>
+                  )}
+                </span>
               </div>
             )}
           </div>
@@ -66,7 +86,6 @@ export function GraphLegend({
                 <Select value={colorScheme} onValueChange={setColorScheme}>
                   <SelectTrigger className="h-7 w-[120px] text-xs">
                     <div className="flex items-center gap-1.5">
-                      <Palette className="h-3 w-3" />
                       <SelectValue placeholder="Color Scheme" />
                     </div>
                   </SelectTrigger>

@@ -11,6 +11,7 @@ export function useGraphState(graphsWithPrototype: GraphData | undefined) {
   const [hideEndogenousSubgraphs, setHideEndogenousSubgraphs] = useState(true);
   const [colorScheme, setColorScheme] = useState<RatioColorScheme>("accent");
   const [graphData, setGraphData] = useState<GraphData>();
+  const [isIonFilterActive, setIsIonFilterActive] = useState(false);
 
   useEffect(() => {
     if (hideEndogenousSubgraphs) {
@@ -36,5 +37,7 @@ export function useGraphState(graphsWithPrototype: GraphData | undefined) {
     colorScheme,
     setColorScheme,
     graphData,
+    isIonFilterActive,
+    setIsIonFilterActive,
   };
 }

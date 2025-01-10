@@ -52,7 +52,7 @@ export interface Node {
   mz: number;
   rt: number;
   isPrototype?: boolean;
-  [key: string]: unknown;
+  msmsSpectrum: Array<[number, number]>;
 }
 
 export interface Edge {
@@ -105,9 +105,7 @@ export interface ForceGraphNode extends Omit<Node, "mz" | "rt"> {
   mz?: number;
   rt?: number;
   isPrototype?: boolean;
-  retentionTime?: number;
-  msmsSpectrum?: Array<[number, number]>;
-  smiles?: string;
+  msmsSpectrum: Array<[number, number]>;
   [key: string]: any;
 }
 
