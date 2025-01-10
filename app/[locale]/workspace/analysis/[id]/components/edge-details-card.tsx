@@ -262,15 +262,6 @@ export function EdgeDetailsCard({ edge, onClose }: EdgeDetailsCardProps) {
         {/* Actions */}
         <div className="flex gap-2">
           <Button
-            variant="outline"
-            onClick={handleDownloadKeggPairs}
-            className="h-8 text-xs gap-1.5 flex-1"
-          >
-            <Download className="h-3.5 w-3.5" />
-            Download KEGG Data
-          </Button>
-
-          <Button
             variant="secondary"
             onClick={handleDownloadFilteredData}
             className="h-8 text-xs gap-1.5 flex-1"
@@ -282,6 +273,14 @@ export function EdgeDetailsCard({ edge, onClose }: EdgeDetailsCardProps) {
           >
             <FileDown className="h-3.5 w-3.5" />
             Download Results
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleDownloadKeggPairs}
+            className="h-8 text-xs gap-1.5 flex-1"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Download All KEGG Data
           </Button>
         </div>
       </div>
