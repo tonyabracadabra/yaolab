@@ -7,7 +7,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { FileWarning, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { AnalysisHeader } from "./components/analysis-header";
 import { AnalysisStatus } from "./components/analysis-status";
@@ -16,6 +16,7 @@ import { GraphLegend } from "./components/graph-legend";
 import { useDownloads } from "./hooks/use-downloads";
 import { useGraphData } from "./hooks/use-graph-data";
 import { useGraphState } from "./hooks/use-graph-state";
+import { useIonMzFilter } from "./hooks/use-ion-mz-filter";
 import { useNodeSizes } from "./hooks/use-node-sizes";
 import { useRatioColors } from "./hooks/use-ratio-colors";
 import { useRetryAnalysis } from "./hooks/use-retry-analysis";
@@ -42,7 +43,7 @@ interface LoadingStateProps {
 
 function LoadingState({ message }: LoadingStateProps) {
   return (
-    <div className="flex items-center justify-center gap-2 p-4">
+    <div className="flex items-center justify-center h-[60vh] gap-2">
       <Loader2 className="h-4 w-4 animate-spin" />
       <span className="text-muted-foreground">{message}</span>
     </div>
@@ -51,7 +52,7 @@ function LoadingState({ message }: LoadingStateProps) {
 
 function ErrorState({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="flex items-center h-full justify-center gap-2 flex-col p-8">
+    <div className="flex items-center justify-center h-[60vh] gap-2 flex-col">
       <FileWarning size={48} className="stroke-destructive" />
       <span className="text-muted-foreground">
         An error occurred while processing the analysis
@@ -98,16 +99,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const { downloading, handleDownloadGraphML, handleDownloadRawData } =
     useDownloads();
 
-  const [ionMzFilterValues, setIonMzFilterValues] = useState<
-    | {
-        mz: number;
-        tolerance: number;
-        intensity: number;
-      }
-    | undefined
-  >(undefined);
-
-  // Memoize graph data update handler
   const handleGraphDataUpdate = useCallback(() => {
     if (!oriGraphData) return;
 
@@ -126,6 +117,12 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     setGraphData,
   ]);
 
+  const { activeFilter, applyFilter, clearFilter } = useIonMzFilter(
+    graphData,
+    setGraphData,
+    handleGraphDataUpdate
+  );
+
   useEffect(() => {
     handleGraphDataUpdate();
   }, [handleGraphDataUpdate]);
@@ -138,46 +135,6 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
     }),
     [graphData, handleDownloadGraphML, handleDownloadRawData]
   );
-
-  const handleIonMzFilter = useCallback(
-    (mz: number, tolerance: number, intensityThreshold: number) => {
-      if (!graphData) return;
-
-      setIonMzFilterValues({ mz, tolerance, intensityThreshold });
-
-      const filteredNodes = graphData.nodes.filter((node) => {
-        const mzDiff = node.msmsSpectrum
-          .sort(([_, intensityA], [__, intensityB]) => intensityB - intensityA)
-          .slice(
-            0,
-            Math.ceil(node.msmsSpectrum.length * (intensityThreshold / 100))
-          )
-          .find(([mz, _]) => {
-            return Math.abs(mz - mz) <= tolerance;
-          });
-        return mzDiff;
-      });
-
-      const filteredEdges = graphData.edges.filter((edge) => {
-        const sourceNode = filteredNodes.find((node) => node.id === edge.id1);
-        const targetNode = filteredNodes.find((node) => node.id === edge.id2);
-        return sourceNode && targetNode;
-      });
-
-      setGraphData({
-        nodes: filteredNodes,
-        edges: filteredEdges,
-      });
-    },
-    [graphData, setGraphData]
-  );
-
-  // Effect to reset graph data when filter is disabled
-  useEffect(() => {
-    if (!ionMzFilterValues) {
-      handleGraphDataUpdate();
-    }
-  }, [ionMzFilterValues, handleGraphDataUpdate]);
 
   if (!analysis) {
     return <LoadingState message="Loading analysis..." />;
@@ -200,13 +157,19 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
 
       <div className="flex-1 flex flex-col gap-2 w-full">
         {analysis.status === "running" && (
-          <LoadingState message="Analysis in progress..." />
+          <Card className="w-full flex-1 flex items-center justify-center min-h-[70vh]">
+            <LoadingState message="Analysis in progress..." />
+          </Card>
         )}
 
-        {analysis.status === "failed" && <ErrorState onRetry={handleRetry} />}
+        {analysis.status === "failed" && (
+          <Card className="w-full flex-1 flex items-center justify-center min-h-[70vh]">
+            <ErrorState onRetry={handleRetry} />
+          </Card>
+        )}
 
         {analysis.status === "complete" && (
-          <Card className="relative w-full h-full overflow-hidden min-h-[70vh]">
+          <Card className="relative w-full flex-1 overflow-hidden min-h-[70vh]">
             <GraphControls
               nodeLabel={nodeLabel}
               setNodeLabel={setNodeLabel}
@@ -226,28 +189,43 @@ export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
               hasDrugSample={!!analysis.config.drugSample}
               downloading={downloading}
               {...downloadHandlers}
-              onIonMzFilterChange={handleIonMzFilter}
+              activeFilter={activeFilter}
+              onFilterApply={applyFilter}
+              onFilterClear={clearFilter}
             />
             <GraphLegend
               highlightRedundant={highlightRedundant}
               ratioModeEnabled={ratioModeEnabled}
               ratioColColors={ratioColColors}
-              ionMzFilterValues={ionMzFilterValues}
+              ionMzFilterValues={activeFilter}
               colorScheme={colorScheme}
               setColorScheme={setColorScheme}
             />
             {graphError ? (
-              <ErrorState onRetry={handleGraphDataUpdate} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <ErrorState onRetry={handleGraphDataUpdate} />
+              </div>
             ) : !graphData ? (
-              <LoadingState message="Preparing visualization..." />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <LoadingState message="Preparing visualization..." />
+              </div>
             ) : graphData.edges.length === 0 && graphData.nodes.length === 0 ? (
-              <div className="flex items-center justify-center h-full">
-                <span className="text-muted-foreground">
-                  No data to display
-                </span>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-2">
+                  <FileWarning className="h-8 w-8 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    No data to display
+                  </span>
+                </div>
               </div>
             ) : (
-              <Suspense fallback={<LoadingState message="Loading graph..." />}>
+              <Suspense
+                fallback={
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <LoadingState message="Loading graph..." />
+                  </div>
+                }
+              >
                 <GraphVisualization
                   graphData={graphData}
                   nodeLabel={nodeLabel}
