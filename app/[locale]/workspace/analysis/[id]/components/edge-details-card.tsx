@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { Download, FileDown, Loader2 } from "lucide-react";
+import { Dna, Download, Loader2, Route } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ForceGraphEdge } from "../types";
@@ -166,9 +166,11 @@ export function EdgeDetailsCard({ edge, onClose }: EdgeDetailsCardProps) {
         <div className="w-full">
           <div className="flex flex-col gap-1.5 px-2 py-2 text-[10px] bg-background/20 backdrop-blur-sm border border-border/50 rounded-md">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">
-                Mass Difference Tolerance
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-muted-foreground">
+                  Mass Difference Tolerance
+                </span>
+              </div>
               <span className="tabular-nums text-muted-foreground/80">
                 ±{tolerance.toFixed(3)} Da
               </span>
@@ -201,7 +203,10 @@ export function EdgeDetailsCard({ edge, onClose }: EdgeDetailsCardProps) {
           {/* Enzymes */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-medium">Enzymes</h4>
+              <div className="flex items-center gap-1.5">
+                <Dna className="h-3.5 w-3.5 text-muted-foreground" />
+                <h4 className="text-xs font-medium">Enzymes</h4>
+              </div>
               {filteredData?.enzymes.length ||
                 (0 > 0 && (
                   <div className="text-[10px] text-muted-foreground bg-muted/80 px-2 py-1 rounded-md">
@@ -209,7 +214,7 @@ export function EdgeDetailsCard({ edge, onClose }: EdgeDetailsCardProps) {
                   </div>
                 ))}
             </div>
-            <div className="bg-muted/20 rounded-lg h-[250px]">
+            <div className="bg-muted/20 rounded-lg h-[120px]">
               {isLoading ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -238,7 +243,10 @@ export function EdgeDetailsCard({ edge, onClose }: EdgeDetailsCardProps) {
           {/* Pathways */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-medium">Pathways</h4>
+              <div className="flex items-center gap-1.5">
+                <Route className="h-3.5 w-3.5 text-muted-foreground" />
+                <h4 className="text-xs font-medium">Pathways</h4>
+              </div>
               {filteredData?.pathways.length ||
                 (0 > 0 && (
                   <div className="text-[10px] text-muted-foreground bg-muted/80 px-2 py-1 rounded-md">
@@ -246,7 +254,7 @@ export function EdgeDetailsCard({ edge, onClose }: EdgeDetailsCardProps) {
                   </div>
                 ))}
             </div>
-            <div className="bg-muted/20 rounded-lg h-[250px]">
+            <div className="bg-muted/20 rounded-lg h-[120px]">
               {isLoading ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -285,7 +293,7 @@ export function EdgeDetailsCard({ edge, onClose }: EdgeDetailsCardProps) {
                 filteredData.pathways.length === 0)
             }
           >
-            <FileDown className="h-3.5 w-3.5" />
+            <Download className="h-3.5 w-3.5" />
             Download Results
           </Button>
           <Button
