@@ -15,32 +15,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Download, Loader2, Settings2 } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
+import { kAvailableEdges, kAvailableNodes } from "../constants";
 import type { EdgeKey, GraphData, NodeKey, RatioColorScheme } from "../types";
-
-export const kAvailableNodes = [
-  { key: "mz", label: "m/z", col: "mz" },
-  { key: "rt", label: "Retention Time", col: "rt" },
-] as const;
-
-export const kAvailableEdges = [
-  { col: "mzDiff", label: "m/z Difference" },
-  { col: "rtDiff", label: "Retention Time Difference" },
-  { col: "matchedMzDiff", label: "Matched m/z Difference" },
-  { col: "matchedFormulaChange", label: "Matched Formula Change" },
-  { col: "matchedDescription", label: "Matched Reaction Description" },
-  { col: "correlation", label: "Sample Correlation" },
-  { col: "modCos", label: "Modified Cosine Similarity" },
-] as const;
-
-export const colorSchemes = [
-  { label: "Accent", value: "accent" },
-  { label: "Tableau", value: "tableau" },
-  { label: "Purple", value: "purple" },
-  { label: "Green", value: "green" },
-  { label: "Orange", value: "orange" },
-  { label: "Classic", value: "classic" },
-  { label: "Rainbow", value: "rainbow" },
-] as const;
 
 interface GraphControlsProps {
   nodeLabel: NodeKey;

@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Palette } from "lucide-react";
+import { colorSchemes } from "../constants";
 import type { RatioColorScheme } from "../types";
 
 interface GraphLegendProps {
@@ -103,15 +104,3 @@ export function GraphLegend({
     </div>
   );
 }
-
-export const colorSchemes = [
-  { label: "Accent", value: "accent" },
-  { label: "Tableau", value: "tableau" },
-  { label: "Purple", value: "purple" },
-  { label: "Green", value: "green" },
-  { label: "Orange", value: "orange" },
-  { label: "Classic", value: "classic" },
-  { label: "Rainbow", value: "rainbow" },
-] as const;
-
-export type ColorScheme = (typeof colorSchemes)[number]["value"];

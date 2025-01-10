@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { kAvailableEdges, kAvailableNodes } from "../components/graph-controls";
+import { kAvailableEdges, kAvailableNodes } from "../constants";
 import type { EdgeKey, GraphData, NodeKey, RatioColorScheme } from "../types";
 
 export function useGraphState(graphsWithPrototype: GraphData | undefined) {

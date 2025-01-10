@@ -1,4 +1,4 @@
-import { kAvailableEdges, kAvailableNodes } from "./constants";
+import { colorSchemes, kAvailableEdges, kAvailableNodes } from "./constants";
 
 export interface BioSample {
   name: string;
@@ -44,16 +44,6 @@ export interface AnalysisProgress {
   status: "running" | "complete" | "failed";
   message?: string;
 }
-
-export const colorSchemes = [
-  { label: "Accent", value: "accent" },
-  { label: "Tableau", value: "tableau" },
-  { label: "Purple", value: "purple" },
-  { label: "Green", value: "green" },
-  { label: "Orange", value: "orange" },
-  { label: "Classic", value: "classic" },
-  { label: "Rainbow", value: "rainbow" },
-] as const;
 
 export type RatioColorScheme = (typeof colorSchemes)[number]["value"];
 
