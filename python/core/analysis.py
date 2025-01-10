@@ -101,6 +101,7 @@ class AnalysisWorker(BaseModel):
             edges, nodes = await self._run_step(
                 postprocessing,
                 targeted_ions_df=targeted_ions_df,
+                spectra=spectra,
                 samples_df=samples_df,
                 edges=edges,
                 bio_samples=config.bioSamples,
