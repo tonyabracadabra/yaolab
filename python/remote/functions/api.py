@@ -8,7 +8,8 @@ from core.models.analysis import AnalysisTriggerInput, MassInput, PreprocessIons
 from core.preprocess import preprocess_targeted_ions_file
 from core.utils.convex import ConvexClient, get_convex, load_binary
 from core.utils.logger import logger
-from fastapi import Depends, HTTPException, Response
+from fastapi import Depends, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from remote.image import image
@@ -20,6 +21,11 @@ security = HTTPBearer()
 
 class AnalysisResponse(BaseModel):
     call_id: str
+
+
+class PreprocessIonsResponse(BaseModel):
+    storageId: str
+    sampleCols: list[str]
 
 
 @app.function(secrets=[modal.Secret.from_name("yaolab")], image=image)
@@ -88,7 +94,7 @@ def _upload_parquet(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> s
 @web.post("/analysis/preprocessIons")
 async def preprocess_ions(
     input: PreprocessIonsInput, token: HTTPAuthorizationCredentials = Depends(security)
-) -> Response:
+) -> JSONResponse:
     """
     Preprocess targeted ions file.
 
@@ -97,7 +103,7 @@ async def preprocess_ions(
         convex: ConvexClient instance for file operations
 
     Returns:
-        Dictionary containing storage ID and sample columns
+        JSONResponse containing storage ID and sample columns
 
     Raises:
         HTTPException: If preprocessing fails
@@ -108,13 +114,12 @@ async def preprocess_ions(
         df, sample_cols = preprocess_targeted_ions_file(blob=blob, tool=input.tool)
         storage_id = _upload_parquet(df, file_name="target-ions", convex=convex)
 
-        return Response(
-            status_code=200,
-            content={"storageId": storage_id, "sampleCols": sample_cols},
+        return PreprocessIonsResponse(
+            storageId=storage_id,
+            sampleCols=sample_cols,
         )
     except Exception as e:
         logger.log(logging.ERROR, e)
         raise HTTPException(status_code=400, detail=str(e))
     finally:
-        convex.action("actions:removeFile", {"storageId": input.targetedIons})
         convex.action("actions:removeFile", {"storageId": input.targetedIons})

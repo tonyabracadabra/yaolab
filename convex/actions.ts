@@ -115,7 +115,10 @@ export const preprocessIons = zAction({
       await runAction(api.actions.removeFile, {
         storageId: targetedIons,
       });
-      throw new Error(`Error: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(
+        `Failed to preprocess ions: HTTP ${response.status} - ${errorText}`
+      );
     }
     const data = await response.json();
 
