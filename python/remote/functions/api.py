@@ -4,15 +4,16 @@ import fastapi
 import modal
 import pandas as pd
 import pyteomics.mass
-from core.models.analysis import AnalysisTriggerInput, MassInput, PreprocessIonsInput
-from core.preprocess import preprocess_targeted_ions_file
-from core.utils.convex import ConvexClient, get_convex, load_binary
-from core.utils.logger import logger
 from fastapi import Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from remote.image import image
+
+from core.models.analysis import AnalysisTriggerInput, MassInput, PreprocessIonsInput
+from core.preprocess import preprocess_targeted_ions_file
+from core.utils.convex import ConvexClient, get_convex, load_binary
+from core.utils.logger import logger
 
 app = modal.App("analysis-api")
 web = fastapi.FastAPI()
@@ -122,5 +123,4 @@ async def preprocess_ions(
         logger.log(logging.ERROR, e)
         raise HTTPException(status_code=400, detail=str(e))
     finally:
-        convex.action("actions:removeFile", {"storageId": input.targetedIons})
         convex.action("actions:removeFile", {"storageId": input.targetedIons})
