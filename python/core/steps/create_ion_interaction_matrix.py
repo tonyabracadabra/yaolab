@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-from app.utils.constants import ReactionColumn, TargetIonsColumn
-from app.utils.logger import log
+from core.utils.constants import ReactionColumn, TargetIonsColumn
+from core.utils.logger import log
 from numba import jit
 from scipy.sparse import coo_matrix
 

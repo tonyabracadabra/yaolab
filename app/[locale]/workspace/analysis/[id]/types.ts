@@ -116,7 +116,7 @@ export interface ForceGraphNode extends Omit<Node, "mz" | "rt"> {
   rt?: number;
   isPrototype?: boolean;
   retentionTime?: number;
-  ms2Spectrum?: Array<[number, number]>;
+  msmsSpectrum?: Array<[number, number]>;
   smiles?: string;
   [key: string]: any;
 }

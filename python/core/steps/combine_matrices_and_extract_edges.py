@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-from app.utils.constants import EdgeColumn
-from app.utils.logger import log
+from core.utils.constants import EdgeColumn
+from core.utils.logger import log
 from scipy.sparse import coo_matrix
 
 

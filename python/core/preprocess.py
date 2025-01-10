@@ -3,8 +3,8 @@ from io import BytesIO
 from typing import Callable
 
 import pandas as pd
-from app.models.analysis import MSTool
-from app.utils.constants import MDialColumn, TargetIonsColumn
+from core.models.analysis import MSTool
+from core.utils.constants import MDialColumn, TargetIonsColumn
 
 
 def _preprocess_mzmine3(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
@@ -43,8 +43,7 @@ def _preprocess_mdial(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
     df = df.drop(
         df.columns[
             # Drop columns with NA values and columns with all NaN or empty values
-            na_cols_mask
-            | (df.isna() | (df == "")).all()
+            na_cols_mask | (df.isna() | (df == "")).all()
         ],
         axis=1,
     )

@@ -26,129 +26,192 @@ export function AnalysisHeader({
         <Button
           size="sm"
           variant="secondary"
-          className="flex w-fit min-w-[150px] items-center justify-center gap-2 flex-nowrap"
+          className="flex w-fit min-w-[150px] items-center justify-center gap-2 flex-nowrap shadow-sm hover:bg-secondary/80"
         >
           <List size={16} />
           All analyses
         </Button>
       </Link>
       <div className="flex gap-2 flex-wrap">
-        <Badge className="flex items-center justify-center gap-1">
+        <Badge
+          variant="secondary"
+          className="flex items-center justify-center gap-1.5 px-3 h-7 shadow-sm hover:bg-secondary/80"
+        >
           <FileIcon size={14} />
-          <span className="ml-2">{rawFileName}</span>
+          {rawFileName}
         </Badge>
-        <Badge className="flex items-center justify-center gap-1">
+        <Badge
+          variant="secondary"
+          className="flex items-center justify-center gap-1.5 px-3 h-7 shadow-sm hover:bg-secondary/80"
+        >
           <Atom size={14} />
-          <span className="ml-2">
-            {typeof reactionDb === "string" ? "default" : reactionDb.name}
-          </span>
+          {typeof reactionDb === "string" ? "default" : reactionDb.name}
         </Badge>
         <Tooltip>
-          <TooltipTrigger>
-            <Badge className="flex items-center justify-center gap-2">
-              <FlaskConical className="h-4 w-4" />
+          <TooltipTrigger asChild>
+            <Badge
+              variant="secondary"
+              className="flex items-center justify-center gap-1.5 px-3 h-7 shadow-sm hover:bg-secondary/80 cursor-pointer"
+            >
+              <FlaskConical className="h-3.5 w-3.5" />
               Experiments
             </Badge>
           </TooltipTrigger>
-          <TooltipContent side="bottom">
-            <div className="flex items-start justify-between gap-4 p-2">
-              <div className="flex flex-col gap-2">
-                <div>Bio Samples</div>
-                <div className="text-neutral-400 gap-4 flex flex-col items-center justify-center py-2">
-                  {config.bioSamples.map((e, i) => (
-                    <div
-                      key={i}
-                      className="w-full flex-col flex items-start max-w-[400px] gap-2"
-                    >
-                      <div className="font-bold text-lg">{e.name}</div>
-                      <div className="flex items-center justify-center gap-4">
-                        <div className="flex flex-col gap-2">
-                          <div>Blank Groups</div>
-                          <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                            {e.blank.map((g, j) => (
-                              <Badge key={j}>{g}</Badge>
-                            ))}
+          <TooltipContent side="bottom" className="w-[600px] p-0">
+            <div className="p-4 space-y-4">
+              <div className="space-y-1">
+                <h4 className="font-medium">Experiment Configuration</h4>
+                <p className="text-sm text-muted-foreground">
+                  Sample groups and experimental setup details
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                    </div>
+                    <h5 className="text-sm font-medium">Bio Samples</h5>
+                  </div>
+
+                  <div className="space-y-4 pl-6">
+                    {config.bioSamples.map((e, i) => (
+                      <div
+                        key={i}
+                        className="space-y-3 p-3 rounded-lg bg-muted/50"
+                      >
+                        <div className="font-medium">{e.name}</div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <div className="text-xs font-medium text-muted-foreground">
+                              Blank Groups
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {e.blank.map((g, j) => (
+                                <Badge
+                                  key={j}
+                                  variant="outline"
+                                  className="text-[11px]"
+                                >
+                                  {g}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          <div>Sample Groups</div>
-                          <div className="text-neutral-500 gap-2 flex items-center justify-center">
-                            {e.sample.map((g, j) => (
-                              <Badge key={j}>{g}</Badge>
-                            ))}
+                          <div className="space-y-2">
+                            <div className="text-xs font-medium text-muted-foreground">
+                              Sample Groups
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {e.sample.map((g, j) => (
+                                <Badge
+                                  key={j}
+                                  variant="outline"
+                                  className="text-[11px]"
+                                >
+                                  {g}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-              {config.drugSample && (
-                <div className="flex flex-col gap-2">
-                  <div>Drug Sample</div>
-                  <div className="text-neutral-400 flex flex-col gap-2">
-                    <div className="font-bold text-lg">
-                      {config.drugSample.name}
+
+                {config.drugSample && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      </div>
+                      <h5 className="text-sm font-medium">Drug Sample</h5>
                     </div>
-                    <div className="flex items-center justify-center gap-4">
-                      <div className="flex flex-col gap-2">
-                        <div>Drug Groups</div>
-                        <div className="text-neutral-500 gap-2 flex items-center justify-center">
+
+                    <div className="space-y-3 p-3 rounded-lg bg-muted/50 pl-6">
+                      <div className="font-medium">
+                        {config.drugSample.name}
+                      </div>
+                      <div className="space-y-2">
+                        <div className="text-xs font-medium text-muted-foreground">
+                          Drug Groups
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
                           {config.drugSample.groups.map((g, j) => (
-                            <Badge key={j}>{g}</Badge>
+                            <Badge
+                              key={j}
+                              variant="outline"
+                              className="text-[11px]"
+                            >
+                              {g}
+                            </Badge>
                           ))}
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </TooltipContent>
         </Tooltip>
         <Tooltip>
-          <TooltipTrigger>
-            <Badge>
-              <Settings2 className="h-4 w-4 mr-2" />
+          <TooltipTrigger asChild>
+            <Badge
+              variant="secondary"
+              className="flex items-center justify-center gap-1.5 px-3 h-7 shadow-sm hover:bg-secondary/80 cursor-pointer"
+            >
+              <Settings2 className="h-3.5 w-3.5" />
               Configs
             </Badge>
           </TooltipTrigger>
-          <TooltipContent side="bottom">
-            <div className="flex items-center justify-center gap-2 flex-wrap max-w-[400px] h-fit p-2 text-xs">
-              <div className="flex items-center justify-center gap-4">
-                <div className="flex flex-col gap-2">
-                  <div>Correlation Threshold</div>
-                  <div className="text-neutral-500">
-                    {config.correlationThreshold}
+          <TooltipContent side="bottom" className="w-[600px] p-0">
+            <div className="p-4 space-y-4">
+              <div className="space-y-1">
+                <h4 className="font-medium">Analysis Configuration</h4>
+                <p className="text-sm text-muted-foreground">
+                  Technical parameters and thresholds
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <div className="text-xs font-medium text-muted-foreground">
+                    Correlation Threshold
                   </div>
+                  <div className="text-sm">{config.correlationThreshold}</div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <div>MS2 Similarity Threshold</div>
-                  <div className="text-neutral-500">
-                    {config.ms2SimilarityThreshold}
+                <div className="space-y-1.5">
+                  <div className="text-xs font-medium text-muted-foreground">
+                    MS2 Similarity Threshold
                   </div>
+                  <div className="text-sm">{config.ms2SimilarityThreshold}</div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <div>m/z Error Threshold</div>
-                  <div className="text-neutral-500">
-                    {config.mzErrorThreshold}
+                <div className="space-y-1.5">
+                  <div className="text-xs font-medium text-muted-foreground">
+                    m/z Error Threshold
                   </div>
+                  <div className="text-sm">{config.mzErrorThreshold}</div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <div>Retention Time Window</div>
-                  <div className="text-neutral-500">{config.rtTimeWindow}</div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <div>Signal Enrichment Factor</div>
-                  <div className="text-neutral-500">
-                    {config.signalEnrichmentFactor}
+                <div className="space-y-1.5">
+                  <div className="text-xs font-medium text-muted-foreground">
+                    Retention Time Window
                   </div>
+                  <div className="text-sm">{config.rtTimeWindow}</div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <div>Minimum Signal Threshold</div>
-                  <div className="text-neutral-500">
-                    {config.minSignalThreshold}
+                <div className="space-y-1.5">
+                  <div className="text-xs font-medium text-muted-foreground">
+                    Signal Enrichment Factor
                   </div>
+                  <div className="text-sm">{config.signalEnrichmentFactor}</div>
+                </div>
+                <div className="space-y-1.5">
+                  <div className="text-xs font-medium text-muted-foreground">
+                    Minimum Signal Threshold
+                  </div>
+                  <div className="text-sm">{config.minSignalThreshold}</div>
                 </div>
               </div>
             </div>

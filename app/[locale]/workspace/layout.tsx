@@ -14,45 +14,49 @@ export default function WorkspaceLayout({
   const t = useTranslations("New");
 
   return (
-    <div className="w-full flex h-full">
-      <div className="pl-8 flex items-center justify-center gap-6 border-r-[1px] h-full py-4">
-        <WorkspaceNav
-          items={[
-            {
-              title: t("new-analysis"),
-              icon: ListPlus,
-              href: "/workspace/new",
-              regex: /\/workspace(\/new)?$/,
-            },
-            {
-              title: t("all-analysis"),
-              icon: Waypoints,
-              href: "/workspace/analysis",
-              regex: /\/workspace\/analysis(\/.*)?$/,
-            },
-            {
-              title: t("all-rawfiles"),
-              icon: FileArchive,
-              href: "/workspace/raw",
-              regex: /\/workspace\/raw(\/.*)?$/,
-            },
-            {
-              title: t("all-reaction-dbs"),
-              icon: Atom,
-              href: "/workspace/reactions",
-              regex: /\/workspace\/reactions(\/.*)?$/,
-            },
-          ]}
-        />
+    <div className="flex h-[calc(100vh-4rem)]">
+      <div className="w-64 border-r bg-background">
+        <div className="flex flex-col gap-1 p-4">
+          <WorkspaceNav
+            items={[
+              {
+                title: t("new-analysis"),
+                icon: ListPlus,
+                href: "/workspace/new",
+                regex: /\/workspace(\/new)?$/,
+              },
+              {
+                title: t("all-analysis"),
+                icon: Waypoints,
+                href: "/workspace/analysis",
+                regex: /\/workspace\/analysis(\/.*)?$/,
+              },
+              {
+                title: t("all-rawfiles"),
+                icon: FileArchive,
+                href: "/workspace/raw",
+                regex: /\/workspace\/raw(\/.*)?$/,
+              },
+              {
+                title: t("all-reaction-dbs"),
+                icon: Atom,
+                href: "/workspace/reactions",
+                regex: /\/workspace\/reactions(\/.*)?$/,
+              },
+            ]}
+          />
+        </div>
       </div>
 
-      {isAuthenticated ? (
-        <>{children}</>
-      ) : (
-        <div className="flex items-center justify-center w-full h-full">
-          <Loader2 className="animate-spin" />
-        </div>
-      )}
+      <div className="flex-1 overflow-auto">
+        {isAuthenticated ? (
+          children
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <Loader2 className="animate-spin" />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -17,6 +17,7 @@ const formatValue = (value: unknown): string => {
 };
 
 export function NodeDetailsCard({ node, onClose }: NodeDetailsCardProps) {
+  console.log("node", node);
   const priorityFields = ["mz", "rt", "intensity", "formula"];
 
   const priorityInfo = Object.entries(node)
@@ -75,8 +76,8 @@ export function NodeDetailsCard({ node, onClose }: NodeDetailsCardProps) {
           <div className="flex flex-col">
             <h4 className="text-xs font-medium mb-1.5">MS2 Spectrum</h4>
             <div className="bg-muted/20 rounded-lg flex-1 h-[250px]">
-              {node["MS/MS spectrum"] ? (
-                <MS2Spectrum data={node["MS/MS spectrum"]} className="h-full" />
+              {node.msmsSpectrum ? (
+                <MS2Spectrum data={node.msmsSpectrum} className="h-full" />
               ) : (
                 <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
                   No MS2 data available

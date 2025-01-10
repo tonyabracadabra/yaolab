@@ -39,8 +39,14 @@ export function MoleculeStructure({
   const MOL_DETAILS = {
     width,
     height,
-    bondLineWidth: 1,
+    bondLineWidth: 1.2,
     addStereoAnnotation: true,
+    backgroundColor: "transparent",
+    highlightBondColor: "#000000",
+    highlightAtomColor: "#000000",
+    bondColor: "#000000",
+    atomColor: "#000000",
+    padding: 0.15,
     ...extraDetails,
   };
 
@@ -150,18 +156,35 @@ export function MoleculeStructure({
     <div
       title={structure}
       className={cn(
-        "relative flex items-center justify-center bg-transparent w-full",
+        "relative flex items-center justify-center bg-transparent w-full overflow-hidden",
         className
       )}
-      style={{ minHeight: height }}
+      style={{
+        minHeight: height,
+        aspectRatio: width / height,
+      }}
     >
       {svg ? (
         <div
-          className="w-full h-full flex items-center justify-center"
-          dangerouslySetInnerHTML={{ __html: svg }}
+          className={cn(
+            "w-full h-full flex items-center justify-center p-3",
+            "[&_svg]:w-full [&_svg]:h-full [&_svg]:max-w-full [&_svg]:max-h-full",
+            "[&_svg]:object-contain [&_svg]:dark:invert",
+            "[&_svg]:transition-all [&_svg]:duration-200",
+            "hover:[&_svg]:scale-[1.02]",
+            "bg-background/40 backdrop-blur-sm rounded-lg border border-border/5"
+          )}
+          dangerouslySetInnerHTML={{
+            __html: svg
+              .replace(/<svg/, '<svg preserveAspectRatio="xMidYMid meet"')
+              .replace(
+                /<svg([^>]*)>/,
+                '<svg$1><rect width="100%" height="100%" rx="8" ry="8" fill="transparent"/>'
+              ),
+          }}
         />
       ) : (
-        <div className="flex items-center justify-center w-full h-full">
+        <div className="flex items-center justify-center w-full h-full bg-background/40 backdrop-blur-sm rounded-lg border border-border/5">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       )}

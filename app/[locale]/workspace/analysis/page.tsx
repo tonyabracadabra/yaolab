@@ -237,65 +237,91 @@ export default function AnalysisList() {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 8,
+      },
+    },
   });
 
   return (
-    <div className="w-full py-2 px-4 overflow-hidden">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header, i) => {
-                return (
-                  <TableHead key={i}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody className="max-h-[70vh] overflow-hidden">
-          {analyses === undefined ? (
-            <TableRow className="flex items-center justify-center">
-              <Loader2 className="animate-spin" />
-            </TableRow>
-          ) : (
-            <>
-              {table.getRowModel().rows.map((row, i) => (
-                <TableRow
-                  key={i}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell, j) => (
-                    <TableCell key={j}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
+    <div className="flex flex-col h-full">
+      <div className="flex-1 flex flex-col min-h-0">
+        <Table>
+          <TableHeader>
+            <TableRow className="sticky top-0 bg-background z-10 hover:bg-background">
+              {table.getHeaderGroups()[0].headers.map((header, i) => (
+                <TableHead key={i}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
                       )}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                </TableHead>
               ))}
-              {analyses.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </>
-          )}
-        </TableBody>
-      </Table>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {analyses === undefined ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+                </TableCell>
+              </TableRow>
+            ) : (
+              <>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </>
+            )}
+          </TableBody>
+        </Table>
+        <div className="sticky bottom-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="max-w-7xl mx-auto px-8 py-2 flex justify-between items-center">
+            <div className="text-sm text-muted-foreground">
+              {analyses?.length} total results
+            </div>
+            <div className="flex items-center space-x-6">
+              <div className="text-sm text-muted-foreground">
+                Page {table.getState().pagination.pageIndex + 1} of{" "}
+                {table.getPageCount()}
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!table.getCanPreviousPage()}
+                  onClick={() => table.previousPage()}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!table.getCanNextPage()}
+                  onClick={() => table.nextPage()}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

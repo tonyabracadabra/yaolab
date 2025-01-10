@@ -1,12 +1,12 @@
 import numpy as np
-from app.utils.logger import log
+from core.utils.constants import SCANS_KEY
+from core.utils.logger import log
 from matchms import Scores, calculate_scores
 from matchms.similarity import ModifiedCosine
 from matchms.Spectrum import Spectrum
 from scipy.sparse import coo_matrix
 
 # Constants
-SCANS_KEY = "scans"
 SCORE_KEY = "ModifiedCosine_score"
 TOLERANCE = 0.005
 

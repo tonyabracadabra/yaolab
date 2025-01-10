@@ -119,7 +119,6 @@ export function SampleGroups({
   setEnableDrugSample,
   id,
 }: SampleGroupsInterface) {
-  const t = useTranslations("New");
   const samleCols =
     useQuery(api.rawFiles.get, {
       id,
@@ -139,7 +138,7 @@ export function SampleGroups({
       <AccordionTrigger className="hover:no-underline">
         Sample Groups Configuration
       </AccordionTrigger>
-      <AccordionContent>
+      <AccordionContent className="dark:bg-gray-900/80 bg-gray-100/80 rounded-xl p-4">
         <div className="space-y-6">
           {bioSampleFields.map((field, index) => (
             <div key={field.id} className="space-y-4">
@@ -172,16 +171,14 @@ export function SampleGroups({
                 )}
               />
 
-              <SampleInfoForm form={form} index={index} />
-
-              <div className="flex items-center justify-between gap-4 mt-4">
+              <div className="flex items-center gap-4 mt-4">
                 <SampleGroupFieldArray
                   options={samleCols}
                   form={form}
                   bioSampleIndex={index}
                   type="sample"
                 />
-                <div className="flex h-full items-center justify-center">
+                <div className="flex h-full items-center justify-center translate-y-2">
                   vs
                 </div>
                 <SampleGroupFieldArray
@@ -191,6 +188,7 @@ export function SampleGroups({
                   type="blank"
                 />
               </div>
+              <SampleInfoForm form={form} index={index} />
             </div>
           ))}
 

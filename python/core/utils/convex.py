@@ -7,7 +7,6 @@ import pandas as pd
 import requests
 from async_lru import alru_cache
 from dotenv import load_dotenv
-from fastapi import Request
 from matchms.importing import load_from_mgf
 from matchms.Spectrum import Spectrum
 
@@ -24,10 +23,9 @@ MIME_TYPE_CSV = "text/csv"
 MIME_TYPE_PARQUET = "application/octet-stream"
 
 
-def get_convex(request: Request) -> ConvexClient:
+def get_convex(convex_token: str) -> ConvexClient:
     convex = ConvexClient(CONVEX_URL)
-    token = request.headers.get("Authorization", "").replace("Bearer ", "")
-    convex.set_auth(token)
+    convex.set_auth(convex_token)
     return convex
 
 

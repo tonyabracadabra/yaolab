@@ -3,7 +3,11 @@ from pathlib import Path
 
 import pandas as pd
 
-_matched = lambda x: f"matched{x[0].upper()}{x[1:]}"
+SCANS_KEY = "scans"
+
+
+def _matched(x: str) -> str:
+    return f"matched{x[0].upper()}{x[1:]}"
 
 
 class AutoValueEnumMeta(EnumMeta):
@@ -19,6 +23,7 @@ class TargetIonsColumn(AutoValueEnumMeta):
     MZ = "mz"
     RT = "rt"
     IS_PROTOTYPE = "isPrototype"
+    MSMS_SPECTRUM = "msmsSpectrum"
     SAMPLE = "sample"
 
 

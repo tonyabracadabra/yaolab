@@ -95,6 +95,12 @@ export const NodeSchema = z.object({
   mz: z.number(),
   rt: z.number(),
   isPrototype: z.boolean(),
+  ms2Spectrum: z.array(
+    z.object({
+      mz: z.number(),
+      intensity: z.number(),
+    })
+  ),
 });
 
 export const AnalysisResultSchema = z.object({

@@ -19,7 +19,7 @@ import {
 } from "recharts";
 
 interface MS2SpectrumProps {
-  data: string;
+  data: Array<[number, number]>;
   className?: string;
 }
 
@@ -29,11 +29,11 @@ export function MS2Spectrum({ data, className }: MS2SpectrumProps) {
   const [threshold, setThreshold] = useState(5); // Show top 95% by default (100 - threshold)
 
   // Parse raw data
-  const rawChartData = data.split(" ").map((pair) => {
-    const [mz, intensity] = pair.split(":");
+  const rawChartData = data.map((pair) => {
+    const [mz, intensity] = pair;
     return {
-      mz: parseFloat(mz),
-      intensity: parseFloat(intensity),
+      mz,
+      intensity,
     };
   });
 

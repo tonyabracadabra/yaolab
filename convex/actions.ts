@@ -21,14 +21,17 @@ export const triggerAnalysis = zAction({
       rawFile,
     });
 
-    const response = await fetch(`${process.env.FASTAPI_URL}/analysis/start`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(res),
-    });
+    const response = await fetch(
+      `${process.env.ANALYSIS_API_URL}/analysis/start`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(res),
+      }
+    );
 
     return { ...res, status: response.ok ? "success" : "error" };
   },
@@ -48,14 +51,17 @@ export const retryAnalysis = zAction({
       log: "",
     });
 
-    const response = await fetch(`${process.env.FASTAPI_URL}/analysis/start`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ id }),
-    });
+    const response = await fetch(
+      `${process.env.ANALYSIS_API_URL}/analysis/start`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id }),
+      }
+    );
 
     return { status: response.ok ? "success" : "error" };
   },
@@ -66,13 +72,16 @@ export const calculateMass = zAction({
     formulaChanges: z.array(z.string()),
   },
   handler: async (_, { formulaChanges }) => {
-    const response = await fetch(`${process.env.FASTAPI_URL}/analysis/mass`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ formulaChanges }),
-    });
+    const response = await fetch(
+      `${process.env.ANALYSIS_API_URL}/analysis/mass`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ formulaChanges }),
+      }
+    );
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
@@ -106,7 +115,7 @@ export const preprocessIons = zAction({
   },
   handler: async ({ runAction }, { tool, targetedIons, token }) => {
     const response = await fetch(
-      `${process.env.FASTAPI_URL}/analysis/preprocessIons`,
+      `${process.env.ANALYSIS_API_URL}/analysis/preprocessIons`,
       {
         method: "POST",
         headers: {

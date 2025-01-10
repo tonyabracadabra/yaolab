@@ -7,7 +7,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { FileWarning, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { AnalysisHeader } from "./components/analysis-header";
 import { AnalysisStatus } from "./components/analysis-status";
 import { GraphControls } from "./components/graph-controls";
@@ -29,7 +29,6 @@ const GraphVisualization = dynamic(
 export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
   const analysis = useQuery(api.analyses.get, { id: params.id });
   const handleRetry = useRetryAnalysis(params.id);
-  const fgRef = useRef<any>();
 
   const {
     oriGraphData,

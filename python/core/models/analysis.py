@@ -1,14 +1,18 @@
-from __future__ import annotations
-
 from enum import Enum
 from typing import Literal
 
-from app.utils.constants import AutoValueEnumMeta
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel
+
+from core.utils.constants import AutoValueEnumMeta
 
 
 class AnalysisTriggerInput(BaseModel):
     id: str
+
+
+class AnalysisResult(BaseModel):
+    nodes: list[dict]
+    edges: list[dict]
 
 
 class BioSample(BaseModel):
@@ -30,16 +34,7 @@ class AnalysisConfig(BaseModel):
     rtTimeWindow: float
     correlationThreshold: float
     bioSamples: list[BioSample]
-    drugSample: DrugSample | None
-
-    class Config:
-        arbitrary_types_allowed = True
-
-
-class AnalysisCreationInput(BaseModel):
-    rawFile: str
-    reactionDb: str
-    config: AnalysisConfig
+    drugSample: DrugSample | None = None
 
     class Config:
         arbitrary_types_allowed = True
@@ -94,4 +89,17 @@ class Analysis(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-        extra = Extra.ignore
+        extra = "ignore"
+
+
+class MassInput(BaseModel):
+    """Input model for mass calculation endpoint"""
+
+    formulaChanges: list[str]
+
+
+class PreprocessIonsInput(BaseModel):
+    """Input model for preprocessing ions endpoint"""
+
+    targetedIons: str
+    tool: MSTool

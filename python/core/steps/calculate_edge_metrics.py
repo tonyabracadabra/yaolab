@@ -1,6 +1,6 @@
 import pandas as pd
-from app.utils.constants import EdgeColumn, TargetIonsColumn
-from app.utils.logger import log
+from core.utils.constants import EdgeColumn, TargetIonsColumn
+from core.utils.logger import log
 from scipy.spatial.distance import cosine
 
 
@@ -44,8 +44,8 @@ async def calculate_edge_metrics(
 
         return correlation, rt_difference, mz_difference
 
-    edge_data_df[
-        [EdgeColumn.CORRELATION, EdgeColumn.RT_DIFF, EdgeColumn.MZ_DIFF]
-    ] = edge_data_df.apply(calculate_metrics, axis=1, result_type="expand")
+    edge_data_df[[EdgeColumn.CORRELATION, EdgeColumn.RT_DIFF, EdgeColumn.MZ_DIFF]] = (
+        edge_data_df.apply(calculate_metrics, axis=1, result_type="expand")
+    )
 
     return edge_data_df
