@@ -64,9 +64,17 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-export default function Page({ params }: { params: { id: Id<"analyses"> } }) {
-  const analysis = useQuery(api.analyses.get, { id: params.id });
-  const handleRetry = useRetryAnalysis(params.id);
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function Page({ params }: PageProps) {
+  const analysisId = params.id as Id<"analyses">;
+
+  const analysis = useQuery(api.analyses.get, { id: analysisId });
+  const handleRetry = useRetryAnalysis(analysisId);
 
   const {
     oriGraphData,

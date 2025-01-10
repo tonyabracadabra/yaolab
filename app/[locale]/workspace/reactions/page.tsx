@@ -8,6 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
+import { downloadDefaultReactions } from "@/actions/default-reactions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +34,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { ReactionDatabaseSchema } from "@/convex/schema";
@@ -40,6 +46,7 @@ import { useUser } from "@clerk/nextjs";
 import Avatar from "boring-avatars";
 import { useMutation, useQuery } from "convex/react";
 import {
+  Download,
   Loader2,
   MinusCircle,
   MoreHorizontal,
@@ -63,8 +70,41 @@ export default function ReactionDBList() {
       accessorKey: "name",
       header: "Name",
       cell: ({ row }) => (
-        <div className="flex items-center justify-center gap-4 text-white">
-          <div>{row.original.name}</div>
+        <div className="flex items-center justify-center gap-4">
+          <div className="text-foreground">{row.original.name}</div>
+          {row.original.name.startsWith("Default") && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  onClick={async () => {
+                    const { csv } = await downloadDefaultReactions(
+                      row.original.ionMode
+                    );
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `default-reactions-${row.original.ionMode}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs text-sm">
+                  Provides molecular mass and formula changes between substrates
+                  and products for most metabolic reactions in the KEGG
+                  database. Helps users further interpret unknown edges in MRMN.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
       ),
     },
@@ -72,9 +112,9 @@ export default function ReactionDBList() {
       accessorKey: "user",
       header: "User",
       cell: ({ row }) => (
-        <div className="flex items-center justify-center gap-4 text-white">
+        <div className="flex items-center justify-center gap-4">
           <Avatar size={25} name={user?.username || ""} variant="marble" />
-          <div>{user?.username}</div>
+          <div className="text-foreground">{user?.username}</div>
         </div>
       ),
     },
@@ -82,16 +122,16 @@ export default function ReactionDBList() {
       accessorKey: "ionMode",
       header: "Ion Mode",
       cell: ({ row }) => (
-        <div className="flex items-center justify-center gap-4 text-white">
+        <div className="flex items-center justify-center gap-4 text-foreground">
           <div className="flex items-center justify-center gap-4">
             {row.original.ionMode === "neg" ? (
               <>
-                <MinusCircle size={14} />
+                <MinusCircle size={14} className="text-foreground" />
                 Negative
               </>
             ) : (
               <>
-                <PlusCircle size={14} />
+                <PlusCircle size={14} className="text-foreground" />
                 Positive
               </>
             )}
@@ -107,7 +147,7 @@ export default function ReactionDBList() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="xs">
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="h-4 w-4 text-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="flex flex-col items-center justify-center">
@@ -127,18 +167,18 @@ export default function ReactionDBList() {
                       Are you sure you want to delete the reaction database?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will permanently delete your account and remove your
-                      data from our servers.
+                      This action cannot be undone. The database will be
+                      permanently deleted.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      className="bg-destructive hover:bg-destructive text-white"
+                      className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                       onClick={async () => {
                         await remove({ id: row.original._id });
                         toast.success(
-                          `Raw file ${row.original.name} deleted successfully`
+                          `Reaction database ${row.original.name} deleted successfully`
                         );
                       }}
                     >
@@ -167,25 +207,25 @@ export default function ReactionDBList() {
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header, i) => {
-                return (
-                  <TableHead key={i}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                );
-              })}
+              {headerGroup.headers.map((header, i) => (
+                <TableHead key={i} className="text-foreground">
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </TableHead>
+              ))}
             </TableRow>
           ))}
         </TableHeader>
         <TableBody className="max-h-[70vh] overflow-hidden">
           {reactionDbs === undefined ? (
             <TableRow className="flex items-center justify-center">
-              <Loader2 className="animate-spin" />
+              <TableCell>
+                <Loader2 className="animate-spin text-foreground" />
+              </TableCell>
             </TableRow>
           ) : (
             <>
@@ -193,6 +233,7 @@ export default function ReactionDBList() {
                 <TableRow
                   key={i}
                   data-state={row.getIsSelected() && "selected"}
+                  className="hover:bg-muted/50"
                 >
                   {row.getVisibleCells().map((cell, j) => (
                     <TableCell key={j}>
@@ -208,7 +249,7 @@ export default function ReactionDBList() {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="h-24 text-center"
+                    className="h-24 text-center text-muted-foreground"
                   >
                     No results.
                   </TableCell>

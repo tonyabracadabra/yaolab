@@ -67,6 +67,8 @@ export interface Edge {
   modCos?: number;
   redundantData?: boolean;
   isIsf?: boolean;
+  source?: string;
+  target?: string;
   [key: string]: unknown;
 }
 
@@ -111,9 +113,12 @@ export interface ForceGraphNode extends Omit<Node, "mz" | "rt"> {
   [key: string]: any;
 }
 
-export interface ForceGraphEdge extends Edge {
-  source: ForceGraphNode;
-  target: ForceGraphNode;
+export interface ForceGraphEdge extends Omit<Edge, "source" | "target"> {
+  source?: ForceGraphNode;
+  target?: ForceGraphNode;
+  redundantData?: boolean;
+  isIsf?: boolean;
+  [key: string]: unknown;
 }
 
 export interface ForceGraphData {

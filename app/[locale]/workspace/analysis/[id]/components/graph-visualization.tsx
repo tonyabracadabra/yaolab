@@ -10,6 +10,7 @@ import type {
   GraphData,
   NodeKey,
 } from "../types";
+import { EdgeDetailsCard } from "./edge-details-card";
 import { NodeDetailsCard } from "./node-details-card";
 
 interface GraphVisualizationProps {
@@ -38,16 +39,25 @@ export function GraphVisualization({
   const { theme } = useTheme();
   const fgRef = useRef<any>();
   const [selectedNode, setSelectedNode] = useState<ForceGraphNode | null>(null);
+  const [selectedEdge, setSelectedEdge] = useState<ForceGraphEdge | null>(null);
 
   // Memoize graph data transformation
   const processedGraphData = useMemo(
     () => ({
-      nodes: graphData.nodes,
+      nodes: graphData.nodes.map((node) => ({
+        ...node,
+        x: 0,
+        y: 0,
+      })) as ForceGraphNode[],
       links: graphData.edges.map((edge) => ({
-        source: graphData.nodes.find((n) => n.id === edge.id1)!,
-        target: graphData.nodes.find((n) => n.id === edge.id2)!,
         ...edge,
-      })),
+        source: graphData.nodes.find(
+          (n) => n.id === edge.id1
+        ) as ForceGraphNode,
+        target: graphData.nodes.find(
+          (n) => n.id === edge.id2
+        ) as ForceGraphNode,
+      })) as ForceGraphEdge[],
     }),
     [graphData]
   );
@@ -74,6 +84,7 @@ export function GraphVisualization({
     if (!node.id || !fgRef.current) return;
 
     setSelectedNode(node);
+    setSelectedEdge(null);
 
     const zoomDuration = 1000;
     const padding = 50;
@@ -107,6 +118,11 @@ export function GraphVisualization({
 
   const getEdgeLabelBackground = () => {
     return theme === "dark" ? "rgba(0, 0, 0, 0.9)" : "rgba(255, 255, 255, 0.9)";
+  };
+
+  const handleLinkClick = (link: ForceGraphEdge) => {
+    setSelectedEdge(link);
+    setSelectedNode(null);
   };
 
   return (
@@ -254,11 +270,20 @@ export function GraphVisualization({
           ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
           ctx.fillText(label, midX, midY);
         }}
+        onLinkClick={handleLinkClick}
       />
       {selectedNode && (
         <NodeDetailsCard
           node={selectedNode}
           onClose={() => setSelectedNode(null)}
+        />
+      )}
+      {selectedEdge && (
+        <EdgeDetailsCard
+          edge={selectedEdge}
+          onClose={() => {
+            setSelectedEdge(null);
+          }}
         />
       )}
     </>
