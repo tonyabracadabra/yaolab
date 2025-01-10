@@ -164,20 +164,22 @@ export function EdgeDetailsCard({ edge, onClose }: EdgeDetailsCardProps) {
 
         {/* Tolerance Control */}
         <div className="w-full">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium">Tolerance Range (Da)</span>
-            <div className="text-[10px] text-muted-foreground bg-muted/80 px-2 py-1 rounded-md">
-              ±{tolerance.toFixed(3)} Da
+          <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] bg-background/20 backdrop-blur-sm border border-border/50 rounded-md">
+            <span className="text-muted-foreground">Tolerance</span>
+            <div className="w-12">
+              <Slider
+                size="sm"
+                value={[tolerance]}
+                onValueChange={([value]) => setTolerance(value)}
+                min={MIN_TOLERANCE}
+                max={MAX_TOLERANCE}
+                step={0.001}
+              />
             </div>
+            <span className="tabular-nums text-muted-foreground/80 w-12 text-right">
+              ±{tolerance.toFixed(3)} Da
+            </span>
           </div>
-          <Slider
-            value={[tolerance]}
-            onValueChange={([value]) => setTolerance(value)}
-            min={MIN_TOLERANCE}
-            max={MAX_TOLERANCE}
-            step={0.001}
-            className="w-full"
-          />
         </div>
 
         {/* Results Section */}
