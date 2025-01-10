@@ -35,10 +35,7 @@ interface MetabolicReactionResult {
   };
 }
 
-export async function queryMetabolicReactions(
-  mz: number,
-  tolerance: number | undefined = 0.01
-): Promise<MetabolicReactionResult> {
+export async function queryMetabolicReactions(): Promise<MetabolicReactionResult> {
   try {
     const filePath = path.join(
       process.cwd(),
@@ -53,84 +50,52 @@ export async function queryMetabolicReactions(
 
     const validatedData = data.map((record) => reactionSchema.parse(record));
 
-    // If tolerance is undefined, return all data
-    if (tolerance === undefined) {
-      const mzToReactions: {
-        [key: string]: { enzymes: string[]; pathways: string[] };
-      } = {};
-
-      validatedData.forEach((row: ReactionRecord) => {
-        const rowMz = parseFloat(row["Δm/z"]).toFixed(4); // Convert to string with fixed precision
-        const current = mzToReactions[rowMz] || {
-          enzymes: [],
-          pathways: [],
-        };
-
-        if (row["ENZYME ID"]) {
-          current.enzymes = Array.from(
-            new Set([...current.enzymes, row["ENZYME ID"]])
-          );
-        }
-
-        if (row["PATHWAY"]) {
-          const pathways = row["PATHWAY"]
-            .split("///")
-            .map((p) => p.trim().replace("rn", ""));
-          current.pathways = Array.from(
-            new Set([...current.pathways, ...pathways])
-          );
-        }
-
-        mzToReactions[rowMz] = current;
-      });
-
-      // Create sets and convert to arrays for unique values
-      const allEnzymes = new Set<string>();
-      const allPathways = new Set<string>();
-
-      validatedData.forEach((m) => {
-        if (m["ENZYME ID"]) allEnzymes.add(m["ENZYME ID"]);
-        if (m["PATHWAY"]) {
-          m["PATHWAY"]
-            .split("///")
-            .map((p) => p.trim().replace("rn", ""))
-            .forEach((p) => allPathways.add(p));
-        }
-      });
-
-      return {
-        enzymes: Array.from(allEnzymes),
-        pathways: Array.from(allPathways),
-        mzToReactions,
-      };
-    }
-
-    // For specific mz value
     const mzToReactions: {
       [key: string]: { enzymes: string[]; pathways: string[] };
     } = {};
-    const matches = validatedData.filter((row: ReactionRecord) => {
-      const rowMz = parseFloat(row["Δm/z"]);
-      return Math.abs(rowMz - mz) <= tolerance!;
+
+    validatedData.forEach((row: ReactionRecord) => {
+      const rowMz = parseFloat(row["Δm/z"]).toFixed(4); // Convert to string with fixed precision
+      const current = mzToReactions[rowMz] || {
+        enzymes: [],
+        pathways: [],
+      };
+
+      if (row["ENZYME ID"]) {
+        current.enzymes = Array.from(
+          new Set([...current.enzymes, row["ENZYME ID"]])
+        );
+      }
+
+      if (row["PATHWAY"]) {
+        const pathways = row["PATHWAY"]
+          .split("///")
+          .map((p) => p.trim().replace("rn", ""));
+        current.pathways = Array.from(
+          new Set([...current.pathways, ...pathways])
+        );
+      }
+
+      mzToReactions[rowMz] = current;
     });
 
-    // Create sets for unique values
-    const matchedEnzymes = new Set<string>();
-    const matchedPathways = new Set<string>();
+    // Create sets and convert to arrays for unique values
+    const allEnzymes = new Set<string>();
+    const allPathways = new Set<string>();
 
-    matches.forEach((m) => {
-      if (m["ENZYME ID"]) matchedEnzymes.add(m["ENZYME ID"]);
+    validatedData.forEach((m) => {
+      if (m["ENZYME ID"]) allEnzymes.add(m["ENZYME ID"]);
       if (m["PATHWAY"]) {
         m["PATHWAY"]
           .split("///")
           .map((p) => p.trim().replace("rn", ""))
-          .forEach((p) => matchedPathways.add(p));
+          .forEach((p) => allPathways.add(p));
       }
     });
 
     return {
-      enzymes: Array.from(matchedEnzymes),
-      pathways: Array.from(matchedPathways),
+      enzymes: Array.from(allEnzymes),
+      pathways: Array.from(allPathways),
       mzToReactions,
     };
   } catch (error) {

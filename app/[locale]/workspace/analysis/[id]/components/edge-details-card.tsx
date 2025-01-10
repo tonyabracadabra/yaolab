@@ -43,10 +43,8 @@ export function EdgeDetailsCard({ edge, onClose }: EdgeDetailsCardProps) {
   useEffect(() => {
     const fetchMetabolicData = async () => {
       try {
-        if (typeof edge.mzDiff === "number") {
-          const data = await queryMetabolicReactions(edge.mzDiff, tolerance);
-          setMetabolicData(data);
-        }
+        const data = await queryMetabolicReactions();
+        setMetabolicData(data);
       } catch (error) {
         toast.error("Failed to load metabolic data");
         console.error(error);
@@ -56,7 +54,7 @@ export function EdgeDetailsCard({ edge, onClose }: EdgeDetailsCardProps) {
     };
 
     fetchMetabolicData();
-  }, [edge.mzDiff, tolerance]);
+  }, []);
 
   const filteredData = useMemo(() => {
     if (!metabolicData || typeof edge.mzDiff !== "number") return null;
