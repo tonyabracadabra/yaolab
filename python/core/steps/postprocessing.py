@@ -1,24 +1,17 @@
 import pandas as pd
+from matchms.Spectrum import Spectrum
+
 from core.models.analysis import BioSample, DrugSample
 from core.utils.constants import SCANS_KEY, EdgeColumn, TargetIonsColumn
 from core.utils.logger import log
-from matchms.Spectrum import Spectrum
-from pydantic import BaseModel
 
 
-class MSMSPeak(BaseModel):
-    mz: float
-    intensity: float
-
-
-def _create_msms_spectrum(spectrum: Spectrum) -> list[MSMSPeak]:
-    """Convert matchms Spectrum to MSMSSpectrum model"""
-    peaks = [
-        MSMSPeak(mz=float(mz), intensity=float(intensity))
+def _create_msms_spectrum(spectrum: Spectrum) -> list[list[float]]:
+    """Convert matchms Spectrum to a list of [mz, intensity] pairs"""
+    return [
+        [float(mz), float(intensity)]
         for mz, intensity in zip(spectrum.peaks.mz, spectrum.peaks.intensities)
     ]
-
-    return peaks
 
 
 def _add_msms_data(nodes: pd.DataFrame, spectra: list[Spectrum]) -> pd.DataFrame:
@@ -36,7 +29,7 @@ def _add_msms_data(nodes: pd.DataFrame, spectra: list[Spectrum]) -> pd.DataFrame
     ids = nodes[TargetIonsColumn.ID].values
     id_to_index = {id_: index for index, id_ in enumerate(ids)}
 
-    # Create a mapping of ID to MSMS spectrum using the same approach as create_similarity_matrix
+    # Create a mapping of ID to MSMS spectrum
     msms_map = {}
     for spectrum in spectra:
         spectrum_id = int(spectrum.metadata[SCANS_KEY])

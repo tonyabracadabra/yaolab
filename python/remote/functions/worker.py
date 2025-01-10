@@ -1,9 +1,10 @@
 import modal
+from remote.image import image
+
 from core.analysis import AnalysisWorker
 from core.models.analysis import AnalysisResult, AnalysisTriggerInput
 from core.utils.convex import ConvexClient, get_convex
 from core.utils.rprint import rlog as log
-from remote.image import image
 
 app = modal.App("analysis-worker")
 
@@ -44,8 +45,6 @@ async def run_analysis_workflow(
             convex=convex,
         )
         await worker.run()
-        log("Analysis completed successfully")
-        return AnalysisResult(nodes=worker.nodes, edges=worker.edges)
 
     except Exception as e:
         log(f"Analysis workflow failed: {str(e)}")

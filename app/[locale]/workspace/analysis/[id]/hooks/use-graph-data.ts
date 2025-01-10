@@ -27,8 +27,16 @@ export function useGraphData(
         ]);
 
         const [edgesText, nodesText] = await Promise.all([
-          fetch(edgesUrl).then((response) => response.text()),
-          fetch(nodesUrl).then((response) => response.text()),
+          fetch(edgesUrl).then(async (response) => {
+            const text = await response.text();
+            console.log("Fetched edges data:", text.slice(0, 200) + "...");
+            return text;
+          }),
+          fetch(nodesUrl).then(async (response) => {
+            const text = await response.text();
+            console.log("Fetched nodes data:", text.slice(0, 200) + "...");
+            return text;
+          }),
         ]);
 
         const parseConfig = {
