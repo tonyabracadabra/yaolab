@@ -305,15 +305,13 @@ export function GraphControls({
 
   return (
     <div className="absolute right-6 top-6 flex items-center gap-2 z-50">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 rounded-lg bg-secondary/20 backdrop-blur">
         <Popover>
           <PopoverTrigger asChild>
             <Button
               size="sm"
-              variant="secondary"
-              className={cn(
-                "h-8 w-8 p-0 rounded-full shadow-sm hover:bg-secondary/80"
-              )}
+              variant="ghost"
+              className={cn("h-8 w-8 p-0 shadow-sm hover:bg-secondary/80")}
             >
               <Settings2 className={"w-4 h-4"} />
             </Button>
@@ -536,11 +534,10 @@ export function GraphControls({
             </Tabs>
           </PopoverContent>
         </Popover>
-
         <Button
-          variant="secondary"
+          variant="ghost"
           size="sm"
-          className="h-8 w-8 p-0 rounded-full shadow-sm hover:bg-secondary/80"
+          className="h-8 w-8 p-0 shadow-sm hover:bg-secondary/80"
           disabled={downloading || !graphData}
           onClick={onDownloadGraphML}
         >
