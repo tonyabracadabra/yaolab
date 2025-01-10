@@ -11,6 +11,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
+import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
   FormControl,
@@ -136,7 +137,9 @@ export function SampleGroups({
   return (
     <AccordionItem value="sample-groups">
       <AccordionTrigger className="hover:no-underline">
-        Sample Groups Configuration
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary">3</Badge> Sample Groups Configuration
+        </div>
       </AccordionTrigger>
       <AccordionContent className="dark:bg-gray-900/80 bg-gray-100/80 rounded-xl p-4">
         <div className="space-y-6">

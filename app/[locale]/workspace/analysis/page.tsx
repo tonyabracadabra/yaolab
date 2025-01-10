@@ -85,11 +85,13 @@ export default function AnalysisList() {
       cell: ({ row }) => (
         <Button
           variant="ghost"
+          size="sm"
+          className="hover:bg-accent/40 transition-colors"
           onClick={() => {
             router.push(`${pathname}/${row.original.id}`);
           }}
         >
-          <EnterIcon className="stroke-[0.8px] w-4 h-4 stroke-muted-foreground opacity-75" />
+          <EnterIcon className="w-4 h-4 text-muted-foreground" />
         </Button>
       ),
     },
@@ -97,9 +99,9 @@ export default function AnalysisList() {
       accessorKey: "user",
       header: "User",
       cell: ({ row }) => (
-        <div className="flex items-center justify-center gap-4 text-white">
-          <Avatar size={25} name={user?.username || ""} variant="marble" />
-          <div>{user?.username}</div>
+        <div className="flex items-center gap-3">
+          <Avatar size={28} name={user?.username || ""} variant="marble" />
+          <span className="text-sm font-medium">{user?.username}</span>
         </div>
       ),
     },
@@ -109,23 +111,26 @@ export default function AnalysisList() {
       cell: ({ row }) => {
         if (row.original.status === "running") {
           return (
-            <Badge className="flex items-center justify-center gap-2 w-fit">
-              <Loader2 className="animate-spin" size={12} />
-              <div>{row.original.status}</div>
+            <Badge variant="secondary" className="flex items-center gap-1.5">
+              <Loader2 className="animate-spin w-3 h-3" />
+              <span>Running</span>
             </Badge>
           );
         } else if (row.original.status === "complete") {
           return (
-            <Badge className="flex items-center justify-center gap-2 w-fit bg-green-500 text-green-50 hover:bg-green-600">
-              <CheckIcon size={12} />
-              <div>{row.original.status}</div>
+            <Badge
+              variant="default"
+              className="bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 flex items-center gap-1.5"
+            >
+              <CheckIcon className="w-3 h-3" />
+              <span>Complete</span>
             </Badge>
           );
         } else {
           return (
-            <Badge className="flex items-center justify-center gap-2 w-fit bg-destructive text-red-50 hover:bg-red-700">
-              <XIcon size={12} />
-              <div>{row.original.status}</div>
+            <Badge variant="destructive" className="flex items-center gap-1.5">
+              <XIcon className="w-3 h-3" />
+              <span>Failed</span>
             </Badge>
           );
         }
@@ -134,12 +139,25 @@ export default function AnalysisList() {
     {
       accessorKey: "reactionDb",
       header: "Reaction Database",
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {typeof row.original.reactionDb === "string"
+            ? row.original.reactionDb
+            : row.original.reactionDb.name}
+        </span>
+      ),
     },
     {
       accessorKey: "creationTime",
       header: "Created At",
       cell: ({ row }) => (
-        <div>{new Date(row.original.creationTime).toLocaleDateString()}</div>
+        <span className="text-sm text-muted-foreground">
+          {new Date(row.original.creationTime).toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })}
+        </span>
       ),
     },
     {
@@ -147,26 +165,28 @@ export default function AnalysisList() {
       header: () => (
         <Button
           size="sm"
-          variant="ghost"
+          variant="outline"
+          className="border-dashed"
           onClick={() => {
             router.push("/workspace/new");
           }}
         >
-          <Plus size={16} strokeWidth={3} />
+          <Plus className="w-4 h-4 mr-2" />
+          New Analysis
         </Button>
       ),
       cell: ({ row }) => (
         <div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="xs">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="flex flex-col items-center justify-center">
+            <DropdownMenuContent align="end" className="w-[160px]">
               <Button
                 variant="ghost"
-                className="w-full flex items-center justify-between gap-2"
+                className="w-full justify-start gap-2 px-2 py-1.5 text-sm"
                 onClick={async () => {
                   const token = await getToken({
                     template: "convex",

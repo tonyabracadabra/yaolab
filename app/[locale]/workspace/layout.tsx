@@ -15,8 +15,13 @@ export default function WorkspaceLayout({
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">
-      <div className="w-64 border-r bg-background">
-        <div className="flex flex-col gap-1 p-4">
+      <div className="w-[240px] border-r border-border/40 bg-gradient-to-b from-background to-background/95">
+        <div className="flex flex-col gap-2 p-5">
+          <div className="mb-2">
+            <h2 className="text-sm font-medium text-muted-foreground px-3">
+              Workspace
+            </h2>
+          </div>
           <WorkspaceNav
             items={[
               {
@@ -48,12 +53,12 @@ export default function WorkspaceLayout({
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto bg-background/50">
         {isAuthenticated ? (
-          children
+          <div className="h-full p-6">{children}</div>
         ) : (
           <div className="flex items-center justify-center h-full">
-            <Loader2 className="animate-spin" />
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         )}
       </div>

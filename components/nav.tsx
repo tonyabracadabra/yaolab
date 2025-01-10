@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export type SidebarNavItem = {
   title: string;
@@ -29,32 +28,34 @@ export function WorkspaceNav({ items }: WorkspaceNavProps) {
   }
 
   return (
-    <nav className="flex flex-col items-start gap-2 h-full border-r-secondary pr-4">
+    <nav className="flex flex-col items-start gap-1">
       {items.map((item, index) => {
+        const isActive = item.regex.test(path);
+
         return (
           item.href && (
-            <Link key={index} href={item.disabled ? "/" : item.href}>
+            <Link
+              key={index}
+              href={item.disabled ? "/" : item.href}
+              className="w-full"
+            >
               <span
                 className={cn(
-                  "group w-[170px] flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                  item.regex.test(path) ? "bg-accent" : "transparent",
-                  item.disabled && "cursor-not-allowed opacity-80"
+                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "hover:bg-accent/50 hover:text-accent-foreground",
+                  isActive && "bg-accent/60 text-accent-foreground",
+                  !isActive && "text-muted-foreground",
+                  item.disabled && "cursor-not-allowed opacity-60"
                 )}
               >
                 <item.icon
                   className={cn(
-                    "mr-3 h-5 w-5",
-                    item.regex.test(path) ? "opacity-100" : "opacity-60"
+                    "mr-3 h-4 w-4 transition-colors",
+                    isActive ? "text-foreground" : "text-muted-foreground/70",
+                    "group-hover:text-foreground"
                   )}
                 />
-                <span
-                  className={cn(
-                    "whitespace-nowrap",
-                    item.regex.test(path) ? "text-primary" : "text-primary/60"
-                  )}
-                >
-                  {item.title}
-                </span>
+                <span className="truncate">{item.title}</span>
               </span>
             </Link>
           )
