@@ -9,7 +9,7 @@ import { zid } from "convex-helpers/server/zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { api, internal } from "./_generated/api";
-import { AnalysisCreationInputSchema, IonMode } from "./schema";
+import { AnalysisCreationInputSchema } from "./schema";
 import { s3Client, zAction } from "./utils";
 
 export const triggerAnalysis = zAction({
@@ -90,21 +90,6 @@ export const calculateMass = zAction({
     return data;
   },
   output: z.object({ masses: z.array(z.number()) }),
-});
-
-export const downloadDefaultReactions = zAction({
-  args: { mode: IonMode },
-  handler: async (_, { mode }) => {
-    const response = await fetch(
-      `${process.env.FASTAPI_URL}/analysis/defaultReactions?mode=${mode}`
-    );
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    return await response.json();
-  },
-  output: z.object({ csv: z.string() }),
 });
 
 export const preprocessIons = zAction({

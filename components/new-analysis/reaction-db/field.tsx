@@ -8,13 +8,14 @@ import {
 
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useAction, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { DownloadCloud, Loader2, Settings2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { UseFormReturn } from "react-hook-form";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 
+import { downloadDefaultReactions } from "@/actions/default-reactions";
 import { useRouter } from "next/navigation";
 import {
   Select,
@@ -33,9 +34,6 @@ interface RawFileFormFieldInterface {
 export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
   const t = useTranslations("New");
   const allReactionDatabases = useQuery(api.reactions.getAll, {});
-  const downloadDefaultReactions = useAction(
-    api.actions.downloadDefaultReactions
-  );
   const router = useRouter();
 
   return (
@@ -120,9 +118,9 @@ export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
                 e.preventDefault();
                 e.stopPropagation();
 
-                const { csv } = await downloadDefaultReactions({
-                  mode: form.watch("reactionDb").split("-")[1] as "pos" | "neg",
-                });
+                const { csv } = await downloadDefaultReactions(
+                  form.watch("reactionDb").split("-")[1] as "pos" | "neg"
+                );
                 const blob = new Blob([csv], { type: "text/csv" });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");

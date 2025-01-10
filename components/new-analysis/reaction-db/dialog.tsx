@@ -20,6 +20,7 @@ import { z } from "zod";
 import { FormLabelWithTooltip } from "../../form-label-tooltip";
 import { Button } from "../../ui/button";
 
+import { downloadDefaultReactions } from "@/actions/default-reactions";
 import { useTranslations } from "next-intl";
 import {
   Dialog,
@@ -248,9 +249,6 @@ export function ReactionDbCreationDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const calculateMass = useAction(api.actions.calculateMass);
   const createReactionDatabase = useMutation(api.reactions.create);
-  const downloadDefaultReactions = useAction(
-    api.actions.downloadDefaultReactions
-  );
 
   const onClose = () => {
     form.reset();
@@ -446,9 +444,9 @@ export function ReactionDbCreationDialog({
                   variant="secondary"
                   className="flex items-center gap-2 text-xs"
                   onClick={async () => {
-                    const { csv } = await downloadDefaultReactions({
-                      mode: form.getValues().ionMode,
-                    });
+                    const { csv } = await downloadDefaultReactions(
+                      form.getValues().ionMode
+                    );
                     const blob = new Blob([csv], { type: "text/csv" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
