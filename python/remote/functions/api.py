@@ -4,21 +4,14 @@ import fastapi
 import modal
 import pandas as pd
 import pyteomics.mass
+from core.models.analysis import AnalysisTriggerInput, MassInput, PreprocessIonsInput
+from core.preprocess import preprocess_targeted_ions_file
+from core.utils.convex import ConvexClient, get_convex, load_binary
+from core.utils.logger import logger
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from remote.image import image
-
-from core.models.analysis import (
-    AnalysisTriggerInput,
-    IonMode,
-    MassInput,
-    PreprocessIonsInput,
-)
-from core.preprocess import preprocess_targeted_ions_file
-from core.utils.constants import DEFAULT_NEG_DF, DEFAULT_POS_DF
-from core.utils.convex import ConvexClient, get_convex, load_binary
-from core.utils.logger import logger
 
 app = modal.App("analysis-api")
 web = fastapi.FastAPI()
@@ -81,21 +74,6 @@ async def mass(input: MassInput) -> dict[str, list[float]]:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@web.get("/analysis/defaultReactions")
-async def download_default_reactions(mode: IonMode) -> dict[str, str]:
-    """
-    Get default reactions based on ion mode.
-
-    Args:
-        mode: IonMode enum (POS or NEG)
-
-    Returns:
-        Dictionary containing CSV string of default reactions
-    """
-    default_reactions_df = DEFAULT_POS_DF if mode is IonMode.POS else DEFAULT_NEG_DF
-    return {"csv": default_reactions_df.to_csv(index=False)}
-
-
 def _upload_parquet(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> str:
     """Helper function to upload parquet file to storage"""
     parquet_buffer = df.to_parquet()
@@ -107,8 +85,7 @@ def _upload_parquet(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> s
 
 @web.post("/analysis/preprocessIons")
 async def preprocess_ions(
-    input: PreprocessIonsInput,
-    convex: ConvexClient = Depends(get_convex),
+    input: PreprocessIonsInput, token: HTTPAuthorizationCredentials = Depends(security)
 ) -> dict[str, str]:
     """
     Preprocess targeted ions file.
@@ -123,6 +100,7 @@ async def preprocess_ions(
     Raises:
         HTTPException: If preprocessing fails
     """
+    convex = get_convex(token.credentials)
     try:
         blob: bytes = await load_binary(input.targetedIons, convex=convex)
         df, sample_cols = preprocess_targeted_ions_file(blob=blob, tool=input.tool)
@@ -133,4 +111,6 @@ async def preprocess_ions(
         logger.log(logging.ERROR, e)
         raise HTTPException(status_code=400, detail=str(e))
     finally:
+        convex.action("actions:removeFile", {"storageId": input.targetedIons})
+        convex.action("actions:removeFile", {"storageId": input.targetedIons})
         convex.action("actions:removeFile", {"storageId": input.targetedIons})
