@@ -107,6 +107,7 @@ export interface ForceGraphNode extends Omit<Node, "mz" | "rt"> {
   rt?: number;
   isPrototype?: boolean;
   msmsSpectrum: Array<[number, number]>;
+  ratios?: Record<string, number>;
   [key: string]: any;
 }
 

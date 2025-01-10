@@ -1,9 +1,8 @@
 import pandas as pd
-from matchms.Spectrum import Spectrum
-
 from core.models.analysis import BioSample, DrugSample
 from core.utils.constants import SCANS_KEY, EdgeColumn, TargetIonsColumn
 from core.utils.logger import log
+from matchms.Spectrum import Spectrum
 
 
 def _create_msms_spectrum(spectrum: Spectrum) -> list[list[float]]:

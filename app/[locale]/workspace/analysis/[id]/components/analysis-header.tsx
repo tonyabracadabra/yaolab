@@ -25,52 +25,54 @@ export function AnalysisHeader({
       <Link href="/workspace/analysis">
         <Button
           size="sm"
-          variant="secondary"
-          className="flex w-fit min-w-[150px] items-center justify-center gap-2 flex-nowrap shadow-sm hover:bg-secondary/80"
+          variant="outline"
+          className="flex w-fit min-w-[150px] items-center justify-center gap-2 flex-nowrap hover:bg-secondary/10 transition-colors"
         >
-          <List size={16} />
+          <List className="h-4 w-4" />
           All analyses
         </Button>
       </Link>
       <div className="flex gap-2 flex-wrap">
         <Badge
-          variant="secondary"
-          className="flex items-center justify-center gap-1.5 px-3 h-7 shadow-sm hover:bg-secondary/80"
+          variant="outline"
+          className="flex items-center justify-center gap-1.5 px-3 py-1 h-8 hover:bg-secondary/10 transition-colors"
         >
-          <FileIcon size={14} />
+          <FileIcon className="h-3.5 w-3.5" />
           {rawFileName}
         </Badge>
         <Badge
-          variant="secondary"
-          className="flex items-center justify-center gap-1.5 px-3 h-7 shadow-sm hover:bg-secondary/80"
+          variant="outline"
+          className="flex items-center justify-center gap-1.5 px-3 py-1 h-8 hover:bg-secondary/10 transition-colors"
         >
-          <Atom size={14} />
+          <Atom className="h-3.5 w-3.5" />
           {typeof reactionDb === "string" ? "default" : reactionDb.name}
         </Badge>
         <Tooltip>
           <TooltipTrigger asChild>
             <Badge
-              variant="secondary"
-              className="flex items-center justify-center gap-1.5 px-3 h-7 shadow-sm hover:bg-secondary/80 cursor-pointer"
+              variant="outline"
+              className="flex items-center justify-center gap-1.5 px-3 py-1 h-8 hover:bg-secondary/10 transition-colors cursor-pointer"
             >
               <FlaskConical className="h-3.5 w-3.5" />
               Experiments
             </Badge>
           </TooltipTrigger>
-          <TooltipContent side="bottom" className="w-[600px] p-0">
-            <div className="p-4 space-y-4">
-              <div className="space-y-1">
-                <h4 className="font-medium">Experiment Configuration</h4>
+          <TooltipContent side="bottom" className="w-[600px] p-0 shadow-lg">
+            <div className="p-6 space-y-6">
+              <div className="space-y-1.5">
+                <h4 className="text-base font-semibold">
+                  Experiment Configuration
+                </h4>
                 <p className="text-sm text-muted-foreground">
                   Sample groups and experimental setup details
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center">
-                      <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                    <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
+                      <div className="h-2 w-2 rounded-full bg-primary" />
                     </div>
                     <h5 className="text-sm font-medium">Bio Samples</h5>
                   </div>
@@ -79,9 +81,9 @@ export function AnalysisHeader({
                     {config.bioSamples.map((e, i) => (
                       <div
                         key={i}
-                        className="space-y-3 p-3 rounded-lg bg-muted/50"
+                        className="space-y-3 p-4 rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors"
                       >
-                        <div className="font-medium">{e.name}</div>
+                        <div className="font-medium text-sm">{e.name}</div>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <div className="text-xs font-medium text-muted-foreground">
@@ -91,8 +93,8 @@ export function AnalysisHeader({
                               {e.blank.map((g, j) => (
                                 <Badge
                                   key={j}
-                                  variant="outline"
-                                  className="text-[11px]"
+                                  variant="secondary"
+                                  className="text-[11px] bg-secondary/50"
                                 >
                                   {g}
                                 </Badge>
@@ -107,8 +109,8 @@ export function AnalysisHeader({
                               {e.sample.map((g, j) => (
                                 <Badge
                                   key={j}
-                                  variant="outline"
-                                  className="text-[11px]"
+                                  variant="secondary"
+                                  className="text-[11px] bg-secondary/50"
                                 >
                                   {g}
                                 </Badge>
@@ -124,14 +126,14 @@ export function AnalysisHeader({
                 {config.drugSample && (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
+                        <div className="h-2 w-2 rounded-full bg-primary" />
                       </div>
                       <h5 className="text-sm font-medium">Drug Sample</h5>
                     </div>
 
-                    <div className="space-y-3 p-3 rounded-lg bg-muted/50 pl-6">
-                      <div className="font-medium">
+                    <div className="space-y-3 p-4 rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors pl-6">
+                      <div className="font-medium text-sm">
                         {config.drugSample.name}
                       </div>
                       <div className="space-y-2">
@@ -142,8 +144,8 @@ export function AnalysisHeader({
                           {config.drugSample.groups.map((g, j) => (
                             <Badge
                               key={j}
-                              variant="outline"
-                              className="text-[11px]"
+                              variant="secondary"
+                              className="text-[11px] bg-secondary/50"
                             >
                               {g}
                             </Badge>
@@ -160,58 +162,72 @@ export function AnalysisHeader({
         <Tooltip>
           <TooltipTrigger asChild>
             <Badge
-              variant="secondary"
-              className="flex items-center justify-center gap-1.5 px-3 h-7 shadow-sm hover:bg-secondary/80 cursor-pointer"
+              variant="outline"
+              className="flex items-center justify-center gap-1.5 px-3 py-1 h-8 hover:bg-secondary/10 transition-colors cursor-pointer"
             >
               <Settings2 className="h-3.5 w-3.5" />
               Configs
             </Badge>
           </TooltipTrigger>
-          <TooltipContent side="bottom" className="w-[600px] p-0">
-            <div className="p-4 space-y-4">
-              <div className="space-y-1">
-                <h4 className="font-medium">Analysis Configuration</h4>
+          <TooltipContent side="bottom" className="w-[600px] p-0 shadow-lg">
+            <div className="p-6 space-y-6">
+              <div className="space-y-1.5">
+                <h4 className="text-base font-semibold">
+                  Analysis Configuration
+                </h4>
                 <p className="text-sm text-muted-foreground">
                   Technical parameters and thresholds
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-1.5">
+              <div className="grid grid-cols-3 gap-6">
+                <div className="p-3 rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors space-y-2">
                   <div className="text-xs font-medium text-muted-foreground">
                     Correlation Threshold
                   </div>
-                  <div className="text-sm">{config.correlationThreshold}</div>
+                  <div className="text-sm font-medium">
+                    {config.correlationThreshold}
+                  </div>
                 </div>
-                <div className="space-y-1.5">
+                <div className="p-3 rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors space-y-2">
                   <div className="text-xs font-medium text-muted-foreground">
                     MS2 Similarity Threshold
                   </div>
-                  <div className="text-sm">{config.ms2SimilarityThreshold}</div>
+                  <div className="text-sm font-medium">
+                    {config.ms2SimilarityThreshold}
+                  </div>
                 </div>
-                <div className="space-y-1.5">
+                <div className="p-3 rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors space-y-2">
                   <div className="text-xs font-medium text-muted-foreground">
                     m/z Error Threshold
                   </div>
-                  <div className="text-sm">{config.mzErrorThreshold}</div>
+                  <div className="text-sm font-medium">
+                    {config.mzErrorThreshold}
+                  </div>
                 </div>
-                <div className="space-y-1.5">
+                <div className="p-3 rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors space-y-2">
                   <div className="text-xs font-medium text-muted-foreground">
                     Retention Time Window
                   </div>
-                  <div className="text-sm">{config.rtTimeWindow}</div>
+                  <div className="text-sm font-medium">
+                    {config.rtTimeWindow}
+                  </div>
                 </div>
-                <div className="space-y-1.5">
+                <div className="p-3 rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors space-y-2">
                   <div className="text-xs font-medium text-muted-foreground">
                     Signal Enrichment Factor
                   </div>
-                  <div className="text-sm">{config.signalEnrichmentFactor}</div>
+                  <div className="text-sm font-medium">
+                    {config.signalEnrichmentFactor}
+                  </div>
                 </div>
-                <div className="space-y-1.5">
+                <div className="p-3 rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors space-y-2">
                   <div className="text-xs font-medium text-muted-foreground">
                     Minimum Signal Threshold
                   </div>
-                  <div className="text-sm">{config.minSignalThreshold}</div>
+                  <div className="text-sm font-medium">
+                    {config.minSignalThreshold}
+                  </div>
                 </div>
               </div>
             </div>

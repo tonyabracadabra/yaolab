@@ -121,17 +121,47 @@ export function GraphVisualization({
         linkWidth={1.5}
         backgroundColor="transparent"
         nodeCanvasObject={(node: ForceGraphNode, ctx, globalScale) => {
-          if (!nodeIdtoSizes || !ratioColColors) return;
+          if (!nodeIdtoSizes) return;
 
           const size = nodeIdtoSizes?.get(node.id) || 8;
           const x = node.x ?? 0;
           const y = node.y ?? 0;
 
-          // Draw node
-          ctx.beginPath();
-          ctx.arc(x, y, size, 0, 2 * Math.PI);
+          if (ratioModeEnabled && ratioColColors) {
+            // Draw pie chart segments for ratio mode
+            let startAngle = 0;
+            let totalValue = 0;
 
-          if (!ratioModeEnabled) {
+            // Calculate total value for percentages
+            ratioColColors.forEach(({ col }) => {
+              totalValue += Number(node[col] || 0);
+            });
+
+            // Draw segments
+            ratioColColors.forEach(({ col, color }) => {
+              const value = Number(node[col] || 0);
+              if (value > 0) {
+                const sliceAngle = (value / totalValue) * 2 * Math.PI;
+
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.arc(x, y, size, startAngle, startAngle + sliceAngle);
+                ctx.closePath();
+
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.strokeStyle = theme === "dark" ? "#1e293b" : "#f8fafc";
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+
+                startAngle += sliceAngle;
+              }
+            });
+          } else {
+            // Draw regular node
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, 2 * Math.PI);
+
             const isSelected = selectedNode?.id === node.id;
             ctx.fillStyle = isSelected
               ? "#4f46e5"
@@ -143,14 +173,16 @@ export function GraphVisualization({
               : theme === "dark"
                 ? "#94a3b8"
                 : "#64748b";
+
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
           }
 
-          ctx.fill();
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-
-          // Prototype indicator
+          // Prototype indicator (draw on top of both regular and ratio nodes)
           if (node.isPrototype) {
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, 2 * Math.PI);
             ctx.strokeStyle = "#eab308";
             ctx.lineWidth = 2;
             ctx.stroke();

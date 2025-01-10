@@ -311,7 +311,7 @@ export function GraphControls({
             <Button
               size="sm"
               variant="ghost"
-              className={cn("h-8 w-8 p-0 shadow-sm hover:bg-secondary/80")}
+              className={cn("h-8 w-8 p-0 hover:bg-secondary/80")}
             >
               <Settings2 className={"w-4 h-4"} />
             </Button>
@@ -537,7 +537,7 @@ export function GraphControls({
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 w-8 p-0 shadow-sm hover:bg-secondary/80"
+          className="h-8 w-8 p-0 hover:bg-secondary/80"
           disabled={downloading || !graphData}
           onClick={onDownloadGraphML}
         >
