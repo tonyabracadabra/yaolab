@@ -223,11 +223,12 @@ export function EdgeDetailsCard({ edge, onClose }: EdgeDetailsCardProps) {
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-medium">Pathways</h4>
-              {filteredData?.pathways.length > 0 && (
-                <div className="text-[10px] text-muted-foreground bg-muted/80 px-2 py-1 rounded-md">
-                  {filteredData.pathways.length} found
-                </div>
-              )}
+              {filteredData?.pathways.length ||
+                (0 > 0 && (
+                  <div className="text-[10px] text-muted-foreground bg-muted/80 px-2 py-1 rounded-md">
+                    {filteredData?.pathways.length || 0} found
+                  </div>
+                ))}
             </div>
             <div className="bg-muted/20 rounded-lg h-[250px]">
               {isLoading ? (
