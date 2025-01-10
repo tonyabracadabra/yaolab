@@ -230,3 +230,46 @@ export const removeRawFile = zAction({
     await runMutation(api.rawFiles.remove, { id });
   },
 });
+
+export const uploadFile = zAction({
+  args: {
+    file: z.instanceof(ArrayBuffer),
+    fileName: z.string(),
+  },
+  handler: async (
+    { runAction },
+    args: { file: ArrayBuffer; fileName: string }
+  ): Promise<{ storageId: string }> => {
+    // Determine mime type based on file extension
+    const mimeType = args.fileName.endsWith(".parquet")
+      ? "application/octet-stream"
+      : "application/binary";
+
+    // Generate signed URL for upload
+    const { signedUrl, storageId } = await runAction(
+      api.actions.generateUploadUrl,
+      {
+        fileName: args.fileName,
+        mimeType,
+      }
+    );
+
+    // Upload the binary data using the signed URL
+    const response = await fetch(signedUrl, {
+      method: "PUT",
+      body: args.file,
+      headers: {
+        "Content-Type": mimeType,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to upload file: ${response.statusText}`);
+    }
+
+    return { storageId };
+  },
+  output: z.object({
+    storageId: z.string(),
+  }),
+});

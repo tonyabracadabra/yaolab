@@ -8,7 +8,7 @@ from core.models.analysis import AnalysisTriggerInput, MassInput, PreprocessIons
 from core.preprocess import preprocess_targeted_ions_file
 from core.utils.convex import ConvexClient, get_convex, load_binary
 from core.utils.logger import logger
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from remote.image import image
@@ -77,16 +77,18 @@ async def mass(input: MassInput) -> dict[str, list[float]]:
 def _upload_parquet(df: pd.DataFrame, file_name: str, convex: ConvexClient) -> str:
     """Helper function to upload parquet file to storage"""
     parquet_buffer = df.to_parquet()
-    return convex.action(
+    response = convex.action(
         "actions:uploadFile",
         {"file": parquet_buffer, "fileName": f"{file_name}.parquet"},
     )
+    # Extract storageId from the response
+    return response["storageId"]
 
 
 @web.post("/analysis/preprocessIons")
 async def preprocess_ions(
     input: PreprocessIonsInput, token: HTTPAuthorizationCredentials = Depends(security)
-) -> dict[str, str]:
+) -> Response:
     """
     Preprocess targeted ions file.
 
@@ -106,11 +108,13 @@ async def preprocess_ions(
         df, sample_cols = preprocess_targeted_ions_file(blob=blob, tool=input.tool)
         storage_id = _upload_parquet(df, file_name="target-ions", convex=convex)
 
-        return {"storageId": storage_id, "sampleCols": sample_cols}
+        return Response(
+            status_code=200,
+            content={"storageId": storage_id, "sampleCols": sample_cols},
+        )
     except Exception as e:
         logger.log(logging.ERROR, e)
         raise HTTPException(status_code=400, detail=str(e))
     finally:
-        convex.action("actions:removeFile", {"storageId": input.targetedIons})
         convex.action("actions:removeFile", {"storageId": input.targetedIons})
         convex.action("actions:removeFile", {"storageId": input.targetedIons})
