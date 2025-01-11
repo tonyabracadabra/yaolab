@@ -82,6 +82,31 @@ export function MS2Spectrum({ data, className }: MS2SpectrumProps) {
     return "preserveStartEnd"; // Default behavior for non-scrolling
   };
 
+  // Add this custom tooltip content component
+  function CustomTooltip({ active, payload }: any) {
+    if (!active || !payload?.length) return null;
+
+    const data = payload[0].payload;
+    return (
+      <ChartTooltipContent className="bg-background/95 backdrop-blur-sm border shadow-sm">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-muted-foreground text-xs">m/z:</span>
+            <span className="font-medium tabular-nums">
+              {data.mz.toFixed(4)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-muted-foreground text-xs">Intensity:</span>
+            <span className="font-medium tabular-nums">
+              {data.intensity.toFixed(1)}%
+            </span>
+          </div>
+        </div>
+      </ChartTooltipContent>
+    );
+  }
+
   return (
     <div className={cn("relative h-full w-full", className)} ref={chartRef}>
       <div className="absolute -top-3 right-0 z-10">
@@ -160,17 +185,7 @@ export function MS2Spectrum({ data, className }: MS2SpectrumProps) {
                   }}
                   width={45}
                 />
-                <ChartTooltip
-                  cursor={false}
-                  content={
-                    <ChartTooltipContent
-                      labelKey="mz"
-                      nameKey="intensity"
-                      hideLabel={false}
-                      className="bg-background/95 backdrop-blur-sm border shadow-sm"
-                    />
-                  }
-                />
+                <ChartTooltip cursor={false} content={<CustomTooltip />} />
                 <Bar
                   dataKey="intensity"
                   fill="hsl(var(--primary))"

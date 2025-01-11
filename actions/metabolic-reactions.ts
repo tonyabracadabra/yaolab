@@ -1,8 +1,6 @@
 "use server";
 
-import fs from "fs/promises";
 import Papa from "papaparse";
-import path from "path";
 import { z } from "zod";
 
 const reactionSchema = z.object({
@@ -37,11 +35,10 @@ interface MetabolicReactionResult {
 
 export async function queryMetabolicReactions(): Promise<MetabolicReactionResult> {
   try {
-    const filePath = path.join(
-      process.cwd(),
-      "public/files/kegg-pairs-enzyme-pathways.csv"
+    const response = await fetch(
+      "https://yaolab.network/files/kegg-pairs-enzyme-pathways.csv"
     );
-    const fileContent = await fs.readFile(filePath, "utf-8");
+    const fileContent = await response.text();
 
     const { data } = Papa.parse(fileContent, {
       header: true,

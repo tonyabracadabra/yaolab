@@ -31,10 +31,11 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className="h-full">
+    <html lang={locale} suppressHydrationWarning>
       <NextIntlClientProvider locale={locale} messages={messages}>
         <body
           className={`h-full ${GeistSans.variable} ${GeistMono.variable} ${inter.className} ${urbanist.className}`}
+          suppressHydrationWarning
         >
           <ConvexClerkClientProvider>
             <ThemeProvider
@@ -42,6 +43,7 @@ export default async function LocaleLayout({
               defaultTheme="system"
               enableSystem
               disableTransitionOnChange
+              storageKey="yaolab-theme"
             >
               <SiteHeader />
               <TooltipProvider>

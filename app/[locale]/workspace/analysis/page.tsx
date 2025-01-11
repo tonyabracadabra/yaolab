@@ -80,6 +80,7 @@ export default function AnalysisList() {
 
   const columns: ColumnDef<Analysis>[] = [
     {
+      id: "view",
       accessorKey: "_id",
       header: "",
       cell: ({ row }) => (
@@ -109,31 +110,39 @@ export default function AnalysisList() {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
-        if (row.original.status === "running") {
-          return (
-            <Badge variant="secondary" className="flex items-center gap-1.5">
-              <Loader2 className="animate-spin w-3 h-3" />
-              <span>Running</span>
-            </Badge>
-          );
-        } else if (row.original.status === "complete") {
-          return (
-            <Badge
-              variant="default"
-              className="bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 flex items-center gap-1.5"
-            >
-              <CheckIcon className="w-3 h-3" />
-              <span>Complete</span>
-            </Badge>
-          );
-        } else {
-          return (
-            <Badge variant="destructive" className="flex items-center gap-1.5">
-              <XIcon className="w-3 h-3" />
-              <span>Failed</span>
-            </Badge>
-          );
-        }
+        const statusConfig = {
+          running: {
+            variant: "secondary" as const,
+            icon: <Loader2 className="w-3 h-3 animate-spin" />,
+            label: "Running",
+            className: "",
+          },
+          complete: {
+            variant: "default" as const,
+            icon: <CheckIcon className="w-3 h-3" />,
+            label: "Complete",
+            className:
+              "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25",
+          },
+          failed: {
+            variant: "destructive" as const,
+            icon: <XIcon className="w-3 h-3" />,
+            label: "Failed",
+            className: "",
+          },
+        };
+
+        const config = statusConfig[row.original.status];
+
+        return (
+          <Badge
+            variant={config.variant}
+            className={`flex items-center gap-1.5 ${config.className || ""}`}
+          >
+            {config.icon}
+            <span>{config.label}</span>
+          </Badge>
+        );
       },
     },
     {
@@ -161,6 +170,7 @@ export default function AnalysisList() {
       ),
     },
     {
+      id: "actions",
       accessorKey: "_id",
       header: () => (
         <Button

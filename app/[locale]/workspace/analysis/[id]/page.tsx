@@ -7,7 +7,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { FileWarning, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { Suspense, useCallback, useEffect, useMemo } from "react";
+import { Suspense, use, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { AnalysisHeader } from "./components/analysis-header";
 import { AnalysisStatus } from "./components/analysis-status";
@@ -65,13 +65,16 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
+    locale: string;
     id: string;
-  };
+  }>;
 }
 
 export default function Page({ params }: PageProps) {
-  const analysisId = params.id as Id<"analyses">;
+  const resolvedParams = use(params);
+  const { id } = resolvedParams;
+  const analysisId = id as Id<"analyses">;
 
   const analysis = useQuery(api.analyses.get, { id: analysisId });
   const handleRetry = useRetryAnalysis(analysisId);
