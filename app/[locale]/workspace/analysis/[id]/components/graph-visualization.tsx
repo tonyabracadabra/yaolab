@@ -69,6 +69,140 @@ export function GraphVisualization({
     [graphData]
   );
 
+  // Cache for node sizes to avoid recalculation
+  const nodeSizesCache = useMemo(() => {
+    const cache = new Map<string, number>();
+    processedGraphData.nodes.forEach((node) => {
+      const baseSize = nodeIdtoSizes?.get(node.id) || 8;
+      cache.set(node.id, baseSize);
+    });
+    return cache;
+  }, [processedGraphData.nodes, nodeIdtoSizes]);
+
+  // Memoize font sizes for labels
+  const fontSizesCache = useMemo(() => {
+    const cache = new Map<string, number>();
+    processedGraphData.nodes.forEach((node) => {
+      const baseSize = nodeIdtoSizes?.get(node.id) || 8;
+      const fontSize = Math.max(6, baseSize * 0.7);
+      cache.set(node.id, fontSize);
+    });
+    return cache;
+  }, [processedGraphData.nodes, nodeIdtoSizes]);
+
+  // Memoize node rendering function to avoid recreating it on every render
+  const nodeCanvasObject = useCallback(
+    (
+      node: ForceGraphNode,
+      ctx: CanvasRenderingContext2D,
+      globalScale: number
+    ) => {
+      if (!nodeIdtoSizes) return;
+
+      const size = nodeSizesCache.get(node.id) || 8;
+      const x = node.x ?? 0;
+      const y = node.y ?? 0;
+
+      if (ratioModeEnabled && ratioColColors) {
+        let startAngle = 0;
+
+        // Calculate total value once per node
+        const totalValue = ratioColColors.reduce(
+          (sum, { col }) => sum + Number(node[col] || 0),
+          0
+        );
+
+        // Draw segments
+        ratioColColors.forEach(({ col, color }) => {
+          const value = Number(node[col] || 0);
+          if (value > 0) {
+            const sliceAngle = (value / totalValue) * 2 * Math.PI;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.arc(x, y, size, startAngle, startAngle + sliceAngle);
+            ctx.closePath();
+
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = theme === "dark" ? "#1e293b" : "#f8fafc";
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+
+            startAngle += sliceAngle;
+          }
+        });
+      } else {
+        // Regular node drawing
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, 2 * Math.PI);
+
+        const isSelected = selectedNode?.id === node.id;
+        ctx.fillStyle = isSelected
+          ? "#4f46e5"
+          : theme === "dark"
+            ? "#ffffff"
+            : "#f8fafc";
+        ctx.strokeStyle = isSelected
+          ? "#818cf8"
+          : theme === "dark"
+            ? "#94a3b8"
+            : "#64748b";
+
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      // Prototype indicator
+      if (node.isPrototype) {
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, 2 * Math.PI);
+        ctx.strokeStyle = "#eab308";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // Node label with fixed size
+      const label =
+        typeof node[nodeLabel] === "number"
+          ? Number(node[nodeLabel]).toFixed(2)
+          : String(node[nodeLabel]);
+
+      const fontSize = fontSizesCache.get(node.id) || 6;
+      ctx.font = `${fontSize}px Inter, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      ctx.strokeStyle = theme === "dark" ? "#000000" : "#ffffff";
+      ctx.lineWidth = 1.5;
+      ctx.strokeText(label, x, y);
+      ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
+      ctx.fillText(label, x, y);
+    },
+    [
+      nodeIdtoSizes,
+      ratioModeEnabled,
+      ratioColColors,
+      selectedNode,
+      theme,
+      nodeLabel,
+      nodeSizesCache,
+      fontSizesCache,
+    ]
+  );
+
+  // Memoize pointer area painting
+  const nodePointerAreaPaint = useCallback(
+    (node: ForceGraphNode, color: string, ctx: CanvasRenderingContext2D) => {
+      const size = (nodeSizesCache.get(node.id) || 8) + 2;
+      ctx.beginPath();
+      ctx.arc(node.x ?? 0, node.y ?? 0, size, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+    },
+    [nodeSizesCache]
+  );
+
   const handleRenderMinimap = useCallback(() => {
     if (!minimapCanvas || !fgRef.current) return;
 
@@ -253,10 +387,6 @@ export function GraphVisualization({
     setZoomLevel(transform.k);
   };
 
-  const getScaledValue = (baseValue: number, scale: number) => {
-    return baseValue * (1 + (1 - Math.min(1, scale)) * 2);
-  };
-
   return (
     <div className="relative w-full h-full">
       <ForceGraph2D
@@ -269,158 +399,47 @@ export function GraphVisualization({
         linkWidth={1.5}
         backgroundColor="transparent"
         onEngineStop={handleRenderMinimap}
-        nodeCanvasObject={(node: ForceGraphNode, ctx, globalScale) => {
-          if (!nodeIdtoSizes) return;
-
-          // Scale node size based on zoom level
-          const baseSize = nodeIdtoSizes?.get(node.id) || 8;
-          const size = getScaledValue(baseSize, globalScale);
-          const borderWidth = getScaledValue(1.5, globalScale);
-          const x = node.x ?? 0;
-          const y = node.y ?? 0;
-
-          if (ratioModeEnabled && ratioColColors) {
-            // Draw pie chart segments for ratio mode
-            let startAngle = 0;
-            let totalValue = 0;
-
-            // Calculate total value for percentages
-            ratioColColors.forEach(({ col }) => {
-              totalValue += Number(node[col] || 0);
-            });
-
-            // Draw segments
-            ratioColColors.forEach(({ col, color }) => {
-              const value = Number(node[col] || 0);
-              if (value > 0) {
-                const sliceAngle = (value / totalValue) * 2 * Math.PI;
-
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.arc(x, y, size, startAngle, startAngle + sliceAngle);
-                ctx.closePath();
-
-                ctx.fillStyle = color;
-                ctx.fill();
-                ctx.strokeStyle = theme === "dark" ? "#1e293b" : "#f8fafc";
-                ctx.lineWidth = 0.5;
-                ctx.stroke();
-
-                startAngle += sliceAngle;
-              }
-            });
-          } else {
-            // Draw regular node
-            ctx.beginPath();
-            ctx.arc(x, y, size, 0, 2 * Math.PI);
-
-            const isSelected = selectedNode?.id === node.id;
-            ctx.fillStyle = isSelected
-              ? "#4f46e5"
-              : theme === "dark"
-                ? "#ffffff"
-                : "#f8fafc";
-            ctx.strokeStyle = isSelected
-              ? "#818cf8"
-              : theme === "dark"
-                ? "#94a3b8"
-                : "#64748b";
-
-            ctx.fill();
-            ctx.lineWidth = borderWidth;
-            ctx.stroke();
-          }
-
-          // Prototype indicator with scaled border
-          if (node.isPrototype) {
-            ctx.beginPath();
-            ctx.arc(x, y, size, 0, 2 * Math.PI);
-            ctx.strokeStyle = "#eab308";
-            ctx.lineWidth = getScaledValue(2, globalScale);
-            ctx.stroke();
-          }
-
-          // Only show labels when zoomed in enough
-          if (globalScale > 0.4) {
-            const label =
-              typeof node[nodeLabel] === "number"
-                ? Number(node[nodeLabel]).toFixed(2)
-                : String(node[nodeLabel]);
-
-            const fontSize = Math.max(
-              6,
-              getScaledValue(size * 0.7, globalScale)
-            );
-            ctx.font = `${fontSize}px Inter, sans-serif`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.strokeStyle = theme === "dark" ? "#000000" : "#ffffff";
-            ctx.lineWidth = 2;
-            ctx.strokeText(label, x, y);
-            ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
-            ctx.fillText(label, x, y);
-          }
-        }}
-        nodePointerAreaPaint={(node: ForceGraphNode, color, ctx) => {
-          const size = (nodeIdtoSizes?.get(node.id) || 8) + 2;
-          ctx.beginPath();
-          ctx.arc(node.x ?? 0, node.y ?? 0, size, 0, 2 * Math.PI);
-          ctx.fillStyle = color;
-          ctx.fill();
-        }}
+        nodeCanvasObject={nodeCanvasObject}
+        nodePointerAreaPaint={nodePointerAreaPaint}
         linkCanvasObject={(link: ForceGraphEdge, ctx) => {
           if (!link.source || !link.target) return;
-
-          const scale = zoomLevel;
-          const baseWidth = link.redundantData || link.isIsf ? 2 : 1.5;
-          const lineWidth = getScaledValue(baseWidth, scale);
-          const opacity = Math.min(1, getScaledValue(0.3, scale));
 
           ctx.beginPath();
           ctx.setLineDash(getEdgeStyle(link) || []);
           ctx.moveTo(link.source.x ?? 0, link.source.y ?? 0);
           ctx.lineTo(link.target.x ?? 0, link.target.y ?? 0);
-
-          // Adjust edge color opacity based on zoom
-          const color = getEdgeColor(link);
-          if (color.startsWith("rgba")) {
-            ctx.strokeStyle = color.replace(/[\d.]+\)$/g, `${opacity})`);
-          } else {
-            ctx.strokeStyle = color;
-          }
-
-          ctx.lineWidth = lineWidth;
+          ctx.strokeStyle = getEdgeColor(link);
+          ctx.lineWidth = 1;
           ctx.stroke();
-          ctx.setLineDash([]);
+          ctx.setLineDash([]); // Reset dash pattern
 
-          // Only show edge labels when zoomed in enough
-          if (scale > 0.4) {
-            const label =
-              typeof link[edgeLabel] === "number"
-                ? link[edgeLabel].toFixed(2)
-                : String(link[edgeLabel]);
+          // Edge label
+          const label =
+            typeof link[edgeLabel] === "number"
+              ? link[edgeLabel].toFixed(2)
+              : String(link[edgeLabel]);
 
-            const midX = ((link.source.x ?? 0) + (link.target.x ?? 0)) / 2;
-            const midY = ((link.source.y ?? 0) + (link.target.y ?? 0)) / 2;
+          const midX = ((link.source.x ?? 0) + (link.target.x ?? 0)) / 2;
+          const midY = ((link.source.y ?? 0) + (link.target.y ?? 0)) / 2;
 
-            const fontSize = getScaledValue(3, scale);
-            ctx.font = `${fontSize}px Inter`;
-            const metrics = ctx.measureText(label);
-            const padding = getScaledValue(2, scale);
+          ctx.font = "3px Inter";
+          const metrics = ctx.measureText(label);
+          const padding = 2;
 
-            ctx.fillStyle = getEdgeLabelBackground();
-            ctx.fillRect(
-              midX - (metrics.width + padding) / 2,
-              midY - (fontSize + padding) / 2,
-              metrics.width + padding,
-              fontSize + padding
-            );
+          // Label background
+          ctx.fillStyle = getEdgeLabelBackground();
+          ctx.fillRect(
+            midX - (metrics.width + padding) / 2,
+            midY - (4 + padding) / 2,
+            metrics.width + padding,
+            4 + padding
+          );
 
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
-            ctx.fillText(label, midX, midY);
-          }
+          // Label text
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
+          ctx.fillText(label, midX, midY);
         }}
         onLinkClick={handleLinkClick}
         onZoom={handleZoom}

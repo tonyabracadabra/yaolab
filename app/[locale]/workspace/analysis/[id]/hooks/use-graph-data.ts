@@ -23,8 +23,21 @@ export function useGraphData(
   const generateDownloadUrl = useAction(api.actions.generateDownloadUrl);
   const [highlightIsf, setHighlightIsf] = useState(false);
 
+  // Add cache ref to avoid recomputation
+  const computationCacheRef = useRef<{
+    components?: string[][];
+    graphsWithPrototype?: GraphData;
+    lastFilteredData?: GraphData;
+  }>({});
+
   const processGraphData = useCallback(
     async (edgesText: string, nodesText: string): Promise<GraphData> => {
+      // Add parsing cache
+      const cacheKey = `${edgesText.length}-${nodesText.length}`;
+      if (computationCacheRef.current[cacheKey]) {
+        return computationCacheRef.current[cacheKey];
+      }
+
       const parseConfig = {
         header: true,
         dynamicTyping: true,
@@ -90,10 +103,13 @@ export function useGraphData(
           };
         });
 
-      return {
+      // Cache the result
+      computationCacheRef.current[cacheKey] = {
         nodes: Array.from(nodesMap.values()),
         edges: validatedEdges,
       };
+
+      return computationCacheRef.current[cacheKey];
     },
     []
   );
@@ -151,8 +167,17 @@ export function useGraphData(
     fetchAndProcessData();
   }, [fetchAndProcessData]);
 
+  // Memoize connectedComponents computation
   const connectedComponents = useMemo(() => {
     if (!state.filtered?.nodes || !state.filtered?.edges) return [];
+
+    // Return cached result if filtered data hasn't changed
+    if (
+      computationCacheRef.current.components &&
+      computationCacheRef.current.lastFilteredData === state.filtered
+    ) {
+      return computationCacheRef.current.components;
+    }
 
     const adjList = new Map<string, Set<string>>();
     const visited = new Set<string>();
@@ -197,11 +222,23 @@ export function useGraphData(
       }
     });
 
+    // Cache the result
+    computationCacheRef.current.components = components;
+    computationCacheRef.current.lastFilteredData = state.filtered;
     return components;
   }, [state.filtered]);
 
+  // Memoize graphsWithPrototype computation
   const graphsWithPrototype = useMemo(() => {
     if (!state.filtered?.nodes || !state.filtered?.edges) return;
+
+    // Return cached result if nothing has changed
+    if (
+      computationCacheRef.current.graphsWithPrototype &&
+      computationCacheRef.current.lastFilteredData === state.filtered
+    ) {
+      return computationCacheRef.current.graphsWithPrototype;
+    }
 
     // Find components with prototype nodes
     const componentsWithPrototype = connectedComponents.filter((component) =>
@@ -210,18 +247,29 @@ export function useGraphData(
       )
     );
 
-    if (componentsWithPrototype.length === 0) return state.filtered;
+    if (componentsWithPrototype.length === 0) {
+      computationCacheRef.current.graphsWithPrototype = state.filtered;
+      return state.filtered;
+    }
 
-    // Create efficient lookup for nodes to keep
+    // Create efficient lookup using Set
     const nodeIds = new Set(componentsWithPrototype.flat());
-
-    return {
+    const result = {
       nodes: state.filtered.nodes.filter((node) => nodeIds.has(node.id)),
       edges: state.filtered.edges.filter(
         (edge) => nodeIds.has(edge.id1) && nodeIds.has(edge.id2)
       ),
     };
-  }, [connectedComponents, state.filtered]);
+
+    // Cache the result
+    computationCacheRef.current.graphsWithPrototype = result;
+    return result;
+  }, [state.filtered, connectedComponents]);
+
+  // Reset cache when data changes
+  useEffect(() => {
+    computationCacheRef.current = {};
+  }, [result]);
 
   const setGraphData = useCallback((newData: GraphData | undefined) => {
     setState((prev) => ({

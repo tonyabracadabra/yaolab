@@ -135,13 +135,6 @@ export function GraphControls({
 
   const isIonFilterActive = activeFilter !== undefined;
 
-  console.log(
-    "isIonFilterActive",
-    isIonFilterActive,
-    "activeFilter",
-    activeFilter
-  );
-
   const filterTabTrigger = (
     <TabsTrigger value="search" className="text-xs relative">
       Filter
