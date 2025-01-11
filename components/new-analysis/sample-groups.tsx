@@ -3,7 +3,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { AnalysisCreationInputType } from "@/lib/utils";
 import { useQuery } from "convex/react";
 import { useTranslations } from "next-intl";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Path, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { MultiSelectCombobox } from "../multiselect-combobox";
@@ -155,7 +155,6 @@ export function SampleGroups({
   enableDrugSample,
   setEnableDrugSample,
 }: SampleGroupsInterface) {
-  const t = useTranslations("New");
   const { control, setValue, watch } =
     useFormContext<AnalysisCreationInputType>();
 
@@ -172,6 +171,35 @@ export function SampleGroups({
     control,
     name: "config.bioSamples",
   });
+
+  useEffect(() => {
+    if (enableDrugSample && sampleCols.length > 0) {
+      // Get all used columns in bio samples
+      const usedColumns =
+        watch("config.bioSamples")?.flatMap((e) => [...e.sample, ...e.blank]) ||
+        [];
+
+      // Find the first available column
+      const availableColumn = sampleCols.find(
+        (col) => !usedColumns.includes(col)
+      );
+
+      if (availableColumn) {
+        setValue(
+          "config.drugSample",
+          {
+            name: "My drug sample",
+            groups: [availableColumn],
+          },
+          {
+            shouldValidate: true,
+            shouldDirty: true,
+            shouldTouch: true,
+          }
+        );
+      }
+    }
+  }, [enableDrugSample, sampleCols, setValue, watch]);
 
   return (
     <AccordionItem value="sample-groups">
