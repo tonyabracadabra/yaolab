@@ -102,6 +102,7 @@ export function GraphVisualization({
       const size = nodeSizesCache.get(node.id) || 8;
       const x = node.x ?? 0;
       const y = node.y ?? 0;
+      const isSelected = selectedNode?.id === node.id;
 
       if (ratioModeEnabled && ratioColColors) {
         let startAngle = 0;
@@ -132,11 +133,34 @@ export function GraphVisualization({
           }
         });
       } else {
-        // Regular node drawing
+        // Regular node drawing with glow effect for selected nodes
+        if (isSelected) {
+          // Create intense pulsing glow effect with multiple layers
+          const time = Date.now() * 0.001; // Convert to seconds
+          const pulseIntensity = Math.sin(time * 3) * 8 + 25; // Pulsing between 17 and 33
+
+          // First glow layer - intense blue
+          ctx.shadowColor = "#4f46e5";
+          ctx.shadowBlur = pulseIntensity * 1.5;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+
+          // Second glow layer - lighter blue
+          ctx.shadowColor = "#818cf8";
+          ctx.shadowBlur = pulseIntensity;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+
+          // Third glow layer - white core
+          ctx.shadowColor = "#ffffff";
+          ctx.shadowBlur = pulseIntensity * 0.5;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+        }
+
         ctx.beginPath();
         ctx.arc(x, y, size, 0, 2 * Math.PI);
 
-        const isSelected = selectedNode?.id === node.id;
         ctx.fillStyle = isSelected
           ? "#4f46e5"
           : theme === "dark"
@@ -149,8 +173,14 @@ export function GraphVisualization({
             : "#64748b";
 
         ctx.fill();
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = isSelected ? 2 : 1.5;
         ctx.stroke();
+
+        // Reset shadow
+        if (isSelected) {
+          ctx.shadowColor = "transparent";
+          ctx.shadowBlur = 0;
+        }
       }
 
       // Prototype indicator
@@ -414,15 +444,47 @@ export function GraphVisualization({
         linkCanvasObject={(link: ForceGraphEdge, ctx) => {
           if (!link.source || !link.target) return;
 
+          const isSelected =
+            selectedEdge?.id1 === link.id1 && selectedEdge?.id2 === link.id2;
+
+          if (isSelected) {
+            // Create intense pulsing glow effect with multiple layers
+            const time = Date.now() * 0.001;
+            const pulseIntensity = Math.sin(time * 3) * 5 + 15; // Pulsing between 10 and 20
+
+            // Layer 1 - Outer glow
+            ctx.shadowColor = "#4f46e5";
+            ctx.shadowBlur = pulseIntensity * 2;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Layer 2 - Inner glow
+            ctx.shadowColor = "#818cf8";
+            ctx.shadowBlur = pulseIntensity;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Layer 3 - Core glow
+            ctx.shadowColor = "#c7d2fe";
+            ctx.shadowBlur = pulseIntensity * 0.5;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+          }
+
           ctx.beginPath();
           ctx.setLineDash(getEdgeStyle(link) || []);
           ctx.moveTo(link.source.x ?? 0, link.source.y ?? 0);
           ctx.lineTo(link.target.x ?? 0, link.target.y ?? 0);
-          ctx.strokeStyle = getEdgeColor(link);
-          // Slightly thicker lines in dark mode for better visibility
-          ctx.lineWidth = theme === "dark" ? 1.5 : 1;
+          ctx.strokeStyle = isSelected ? "#4f46e5" : getEdgeColor(link);
+          ctx.lineWidth = isSelected ? 2.5 : theme === "dark" ? 1.5 : 1;
           ctx.stroke();
           ctx.setLineDash([]); // Reset dash pattern
+
+          // Reset shadow
+          if (isSelected) {
+            ctx.shadowColor = "transparent";
+            ctx.shadowBlur = 0;
+          }
 
           // Edge label
           const label =
@@ -437,8 +499,15 @@ export function GraphVisualization({
           const metrics = ctx.measureText(label);
           const padding = 2;
 
-          // Label background
+          // Label background with pulsing glow if selected
           ctx.fillStyle = getEdgeLabelBackground();
+          if (isSelected) {
+            const time = Date.now() * 0.001;
+            const pulseIntensity = Math.sin(time * 2) * 2 + 6; // Pulsing between 4 and 8
+
+            ctx.shadowColor = "#4f46e5";
+            ctx.shadowBlur = pulseIntensity;
+          }
           ctx.fillRect(
             midX - (metrics.width + padding) / 2,
             midY - (4 + padding) / 2,
@@ -446,10 +515,18 @@ export function GraphVisualization({
             4 + padding
           );
 
+          // Reset shadow for text
+          ctx.shadowColor = "transparent";
+          ctx.shadowBlur = 0;
+
           // Label text
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.fillStyle = theme === "dark" ? "#ffffff" : "#000000";
+          ctx.fillStyle = isSelected
+            ? "#4f46e5"
+            : theme === "dark"
+              ? "#ffffff"
+              : "#000000";
           ctx.fillText(label, midX, midY);
         }}
         onLinkClick={handleLinkClick}
