@@ -3,7 +3,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { AnalysisCreationInputType } from "@/lib/utils";
 import { useQuery } from "convex/react";
 import { useTranslations } from "next-intl";
-import { UseFormReturn, useFieldArray } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 import { MultiSelectCombobox } from "../multiselect-combobox";
 import {
@@ -26,18 +26,18 @@ import { SampleInfoForm } from "./sample-info-form";
 
 interface SampleGroupFieldArrayProps {
   options: string[];
-  form: UseFormReturn<AnalysisCreationInputType>;
   type: "sample" | "blank" | "drug";
   bioSampleIndex?: number;
 }
 
 const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
-  form,
   bioSampleIndex,
   type,
   options,
 }) => {
   const t = useTranslations("New");
+  const { control, setValue, watch } =
+    useFormContext<AnalysisCreationInputType>();
   const isBioSample = type !== "drug" && bioSampleIndex !== undefined;
 
   return (
@@ -53,9 +53,8 @@ const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
           label: option,
         }))}
         onSelect={async (val: string) => {
-          if (isBioSample) {
-            const currBioSample =
-              form.getValues().config.bioSamples[bioSampleIndex];
+          if (isBioSample && bioSampleIndex !== undefined) {
+            const currBioSample = watch(`config.bioSamples.${bioSampleIndex}`);
             const other = type === "sample" ? "blank" : "sample";
 
             if (currBioSample[other].includes(val)) {
@@ -66,36 +65,36 @@ const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
             }
 
             if (currBioSample[type].includes(val)) {
-              form.setValue(
+              setValue(
                 `config.bioSamples.${bioSampleIndex}.${type}`,
-                currBioSample[type].filter((v) => v !== val)
+                currBioSample[type].filter((v: string) => v !== val)
               );
             } else {
-              form.setValue(`config.bioSamples.${bioSampleIndex}.${type}`, [
+              setValue(`config.bioSamples.${bioSampleIndex}.${type}`, [
                 ...currBioSample[type],
                 val,
               ]);
             }
           } else {
-            const groups = form.getValues().config.drugSample?.groups || [];
+            const groups = watch("config.drugSample.groups") || [];
             if (groups.includes(val)) {
-              form.setValue(
-                `config.drugSample.groups`,
-                groups.filter((v) => v !== val)
+              setValue(
+                "config.drugSample.groups",
+                groups.filter((v: string) => v !== val)
               );
             } else {
-              form.setValue(`config.drugSample.groups`, [...groups, val]);
+              setValue("config.drugSample.groups", [...groups, val]);
             }
           }
         }}
         selectedValues={
-          isBioSample
-            ? form.watch(`config.bioSamples.${bioSampleIndex}.${type}`) || []
-            : form.watch(`config.drugSample.groups`) || []
+          isBioSample && bioSampleIndex !== undefined
+            ? watch(`config.bioSamples.${bioSampleIndex}.${type}`) || []
+            : watch("config.drugSample.groups") || []
         }
         otherGroupSelectedValues={
-          isBioSample
-            ? form.watch(
+          isBioSample && bioSampleIndex !== undefined
+            ? watch(
                 `config.bioSamples.${bioSampleIndex}.${
                   type === "sample" ? "blank" : "sample"
                 }`
@@ -108,19 +107,21 @@ const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
 };
 
 interface SampleGroupsInterface {
-  form: UseFormReturn<AnalysisCreationInputType>;
+  id: Id<"rawFiles">;
   enableDrugSample: boolean;
   setEnableDrugSample: (value: boolean) => void;
-  id: Id<"rawFiles">;
 }
 
 export function SampleGroups({
-  form,
+  id,
   enableDrugSample,
   setEnableDrugSample,
-  id,
 }: SampleGroupsInterface) {
-  const samleCols =
+  const t = useTranslations("New");
+  const { control, setValue, watch } =
+    useFormContext<AnalysisCreationInputType>();
+
+  const sampleCols =
     useQuery(api.rawFiles.get, {
       id,
     })?.sampleCols || [];
@@ -130,7 +131,7 @@ export function SampleGroups({
     append: appendBioSample,
     remove: removeBioSample,
   } = useFieldArray({
-    control: form.control,
+    control,
     name: "config.bioSamples",
   });
 
@@ -161,7 +162,7 @@ export function SampleGroups({
               </div>
 
               <FormField
-                control={form.control}
+                control={control}
                 name={`config.bioSamples.${index}.name`}
                 render={({ field }) => (
                   <FormItem>
@@ -176,8 +177,7 @@ export function SampleGroups({
 
               <div className="flex items-center gap-4 mt-4">
                 <SampleGroupFieldArray
-                  options={samleCols}
-                  form={form}
+                  options={sampleCols}
                   bioSampleIndex={index}
                   type="sample"
                 />
@@ -185,13 +185,12 @@ export function SampleGroups({
                   vs
                 </div>
                 <SampleGroupFieldArray
-                  options={samleCols}
-                  form={form}
+                  options={sampleCols}
                   bioSampleIndex={index}
                   type="blank"
                 />
               </div>
-              <SampleInfoForm form={form} index={index} />
+              <SampleInfoForm index={index} />
             </div>
           ))}
 
@@ -227,9 +226,9 @@ export function SampleGroups({
                 onCheckedChange={(value) => {
                   setEnableDrugSample(value);
                   if (!value) {
-                    form.setValue("config.drugSample", undefined);
+                    setValue("config.drugSample", undefined);
                   } else {
-                    form.setValue("config.drugSample", {
+                    setValue("config.drugSample", {
                       name: "My drug sample",
                       groups: [],
                     });
@@ -243,7 +242,7 @@ export function SampleGroups({
           {enableDrugSample && (
             <div className="space-y-4 mt-6 p-4 border rounded-lg">
               <FormField
-                control={form.control}
+                control={control}
                 name="config.drugSample.name"
                 render={({ field }) => (
                   <FormItem>
@@ -256,18 +255,15 @@ export function SampleGroups({
                 )}
               />
               <SampleGroupFieldArray
-                options={samleCols.filter(
+                options={sampleCols.filter(
                   (col) =>
-                    !form
-                      .watch("config.bioSamples")
+                    !watch("config.bioSamples")
                       ?.flatMap((e) => e.sample)
                       .includes(col) &&
-                    !form
-                      .watch("config.bioSamples")
+                    !watch("config.bioSamples")
                       ?.flatMap((e) => e.blank)
                       .includes(col)
                 )}
-                form={form}
                 type="drug"
               />
             </div>

@@ -12,8 +12,7 @@ import { useQuery } from "convex/react";
 import { Loader2, Settings2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { UseFormReturn } from "react-hook-form";
-import { toast } from "sonner";
+import { useFormContext } from "react-hook-form";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import {
@@ -25,18 +24,15 @@ import {
 } from "../../ui/select";
 import { RawFileCreationDialog } from "./dialog";
 
-interface RawFileFormFieldInterface {
-  form: UseFormReturn<any>;
-}
-
-export function RawFileFormField({ form }: RawFileFormFieldInterface) {
+export function RawFileFormField() {
   const t = useTranslations("New");
+  const { control } = useFormContext();
   const allRawFiles = useQuery(api.rawFiles.getAll, {});
   const router = useRouter();
 
   return (
     <FormField
-      control={form.control}
+      control={control}
       name="rawFile"
       render={({ field: { onChange, value } }) => (
         <FormItem>
@@ -48,17 +44,11 @@ export function RawFileFormField({ form }: RawFileFormFieldInterface) {
               onValueChange={(v) => {
                 if (!v) return;
                 onChange(v);
-
-                toast.success(
-                  `Raw file selected as ${
-                    allRawFiles?.find((f) => f._id === v)?.name
-                  }, please configure the experiment groups`
-                );
               }}
               value={value}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("select-raw-file")} />
+                <SelectValue placeholder="Raw File to be analyzed" />
               </SelectTrigger>
               <SelectContent
                 postViewportContent={
@@ -66,7 +56,7 @@ export function RawFileFormField({ form }: RawFileFormFieldInterface) {
                     variant="ghost"
                     className="px-8 gap-4 flex items-start justify-start"
                     onClick={() => {
-                      router.push("/workspace/raw");
+                      router.push("/workspace/raw-files");
                     }}
                   >
                     <Settings2 size={16} />
@@ -74,19 +64,17 @@ export function RawFileFormField({ form }: RawFileFormFieldInterface) {
                   </Button>
                 }
               >
-                {allRawFiles?.map((rawFile) => {
-                  return (
-                    <SelectItem key={rawFile._id} value={rawFile?._id}>
-                      {rawFile.name}
-                    </SelectItem>
-                  );
-                })}
+                {allRawFiles?.map((file) => (
+                  <SelectItem key={file._id} value={file._id}>
+                    {file.name}
+                  </SelectItem>
+                ))}
                 {allRawFiles?.length === 0 && (
                   <SelectItem key={"none"} disabled value="none">
                     {allRawFiles === undefined ? (
                       <Loader2 className="animate-spin" />
                     ) : (
-                      "No raw files"
+                      t("no-raw-files-uploaded")
                     )}
                   </SelectItem>
                 )}
@@ -94,31 +82,13 @@ export function RawFileFormField({ form }: RawFileFormFieldInterface) {
             </Select>
           </FormControl>
           <FormDescription>
-            {(allRawFiles?.length || 0) >= 10
-              ? t.rich("raw-files-limit-exceed", {
-                  delete: () => (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="xs"
-                      className="font-bold text-primary"
-                      onClick={() => {
-                        router.push("/workspace/raw");
-                      }}
-                    >
-                      <span>❌ {t("delete")}</span>
-                    </Button>
-                  ),
-                })
-              : t.rich("select-or-create-raw", {
-                  create: () => (
-                    <RawFileCreationDialog
-                      onCreate={(id: Id<"rawFiles">) => {
-                        onChange(id);
-                      }}
-                    />
-                  ),
-                })}
+            {t.rich("select-or-create-raw", {
+              create: () => (
+                <RawFileCreationDialog
+                  onCreate={(id: Id<"rawFiles">) => onChange(id)}
+                />
+              ),
+            })}
           </FormDescription>
         </FormItem>
       )}

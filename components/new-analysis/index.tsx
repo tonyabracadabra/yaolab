@@ -1,17 +1,14 @@
 import { Accordion } from "@/components/ui/accordion";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-import { Form } from "@/components/ui/form";
-
 import { api } from "@/convex/_generated/api";
 import { AnalysisCreationInputSchema } from "@/convex/schema";
 import { AnalysisCreationInputType } from "@/lib/utils";
 import { useAuth } from "@clerk/nextjs";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction } from "convex/react";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Id } from "../../convex/_generated/dataModel";
 import ShimmerButton from "../magicui/shimmer-button";
@@ -30,7 +27,7 @@ export default function AnalysisCreation({
   onCreate,
 }: AnalysisCreationProps) {
   const t = useTranslations("New");
-  const form = useForm<AnalysisCreationInputType>({
+  const methods = useForm<AnalysisCreationInputType>({
     resolver: zodResolver(AnalysisCreationInputSchema),
     defaultValues: {
       rawFile: defaultAnalysis?.rawFile || "",
@@ -64,33 +61,35 @@ export default function AnalysisCreation({
       },
     },
   });
+
   const { getToken } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const triggerAnalysis = useAction(api.actions.triggerAnalysis);
-
   const [enableDrugSample, setEnableDrugSample] = useState(
     !!defaultAnalysis?.config.drugSample
   );
 
+  const rawFile = methods.watch("rawFile");
+
   const onSubmit = async (values: AnalysisCreationInputType) => {
     setIsSubmitting(true);
-    if (
-      values.config.bioSamples
-        .map((e) => e.sample.length === 0 || e.blank.length === 0)
-        .includes(true)
-    ) {
-      toast.error("Please fill in all the sample and blank groups");
-      setIsSubmitting(false);
-      return;
-    }
 
     try {
+      if (
+        values.config.bioSamples
+          .map((e) => e.sample.length === 0 || e.blank.length === 0)
+          .includes(true)
+      ) {
+        toast.error("Please fill in all the sample and blank groups");
+        return;
+      }
+
       const token = await getToken({ template: "convex", skipCache: true });
       if (!token) {
         toast.error("You need to be logged in to perform this action");
-        setIsSubmitting(false);
         return;
       }
+
       const { id } = await triggerAnalysis({
         reactionDb: values.reactionDb,
         rawFile: values.rawFile,
@@ -98,35 +97,37 @@ export default function AnalysisCreation({
         token,
       });
       onCreate(id);
-    } catch (e) {
+    } catch (error) {
       toast.error(
-        "Error occured while analyzing your data, please try again later"
+        "Error occurred while analyzing your data, please try again later"
       );
+    } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Form {...form}>
+    <FormProvider {...methods}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={methods.handleSubmit(onSubmit)}
         className="space-y-8 relative px-20 py-4 w-full h-[85vh] overflow-auto"
       >
         <div className="flex items-center gap-24">
-          <RawFileFormField form={form} />
-          <ReactionDbFormField form={form} />
+          <RawFileFormField />
+          <ReactionDbFormField />
         </div>
-        {form.watch("rawFile") && (
+
+        {rawFile && (
           <Accordion type="multiple" className="w-full">
             <SampleGroups
-              form={form}
-              id={form.getValues().rawFile}
+              id={rawFile}
               enableDrugSample={enableDrugSample}
               setEnableDrugSample={setEnableDrugSample}
             />
-            <AdvancedSetting form={form} />
+            <AdvancedSetting />
           </Accordion>
         )}
+
         <ShimmerButton
           disabled={isSubmitting}
           type="submit"
@@ -144,6 +145,6 @@ export default function AnalysisCreation({
           </span>
         </ShimmerButton>
       </form>
-    </Form>
+    </FormProvider>
   );
 }

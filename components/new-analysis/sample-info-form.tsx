@@ -14,21 +14,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { AnalysisCreationInputType } from "@/lib/utils";
 import { Beaker, Brain, FileText, Heart } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 
 interface SampleInfoFormProps {
-  form: UseFormReturn<AnalysisCreationInputType>;
   index: number;
 }
 
-export function SampleInfoForm({ form, index }: SampleInfoFormProps) {
+export function SampleInfoForm({ index }: SampleInfoFormProps) {
+  const { control } = useFormContext<AnalysisCreationInputType>();
+
   return (
     <Accordion type="single" collapsible className="w-full">
       <AccordionItem value="sample-info" className="border rounded-lg">
         <AccordionTrigger className="px-4 hover:no-underline [&[data-state=open]>div>div]:text-primary">
           <div className="flex items-center gap-4">
             <FormField
-              control={form.control}
+              control={control}
               name={`config.bioSamples.${index}.metadata.source`}
               render={({ field }) => (
                 <FormItem className="flex-1 flex-col flex items-start justify-start">
@@ -53,7 +54,7 @@ export function SampleInfoForm({ form, index }: SampleInfoFormProps) {
         <AccordionContent className="px-4 pb-4">
           <div className="grid grid-cols-2 gap-4 mt-2">
             <FormField
-              control={form.control}
+              control={control}
               name={`config.bioSamples.${index}.metadata.species`}
               render={({ field }) => (
                 <FormItem>
@@ -75,7 +76,7 @@ export function SampleInfoForm({ form, index }: SampleInfoFormProps) {
             />
 
             <FormField
-              control={form.control}
+              control={control}
               name={`config.bioSamples.${index}.metadata.age`}
               render={({ field }) => (
                 <FormItem>
@@ -98,7 +99,7 @@ export function SampleInfoForm({ form, index }: SampleInfoFormProps) {
             />
 
             <FormField
-              control={form.control}
+              control={control}
               name={`config.bioSamples.${index}.metadata.diseaseState`}
               render={({ field }) => (
                 <FormItem>
@@ -120,7 +121,7 @@ export function SampleInfoForm({ form, index }: SampleInfoFormProps) {
             />
 
             <FormField
-              control={form.control}
+              control={control}
               name={`config.bioSamples.${index}.metadata.notes`}
               render={({ field }) => (
                 <FormItem>

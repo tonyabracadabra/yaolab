@@ -6,17 +6,16 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 
+import { downloadDefaultReactions } from "@/actions/default-reactions";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { DownloadCloud, Loader2, Settings2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { UseFormReturn } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useFormContext } from "react-hook-form";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
-
-import { downloadDefaultReactions } from "@/actions/default-reactions";
-import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -27,19 +26,17 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
 import { ReactionDbCreationDialog } from "./dialog";
 
-interface RawFileFormFieldInterface {
-  form: UseFormReturn<any>;
-}
-
-export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
+export function ReactionDbFormField() {
   const t = useTranslations("New");
+  const { control, watch } = useFormContext();
   const allReactionDatabases = useQuery(api.reactions.getAll, {});
   const router = useRouter();
+  const reactionDb = watch("reactionDb");
 
   return (
     <div className="flex items-center justify-center gap-2">
       <FormField
-        control={form.control}
+        control={control}
         name="reactionDb"
         render={({ field: { onChange, value } }) => (
           <FormItem>
@@ -106,7 +103,7 @@ export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
           </FormItem>
         )}
       />
-      {form.watch("reactionDb").split("-")[0] === "default" && (
+      {reactionDb.split("-")[0] === "default" && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -119,16 +116,16 @@ export function ReactionDbFormField({ form }: RawFileFormFieldInterface) {
                 e.stopPropagation();
 
                 const { csv } = await downloadDefaultReactions(
-                  form.watch("reactionDb").split("-")[1] as "pos" | "neg"
+                  reactionDb.split("-")[1] as "pos" | "neg"
                 );
                 const blob = new Blob([csv], { type: "text/csv" });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = "default-reactions.csv"; // Sets the filename for the download
-                document.body.appendChild(a); // Append the link to the document
-                a.click(); // Trigger the download
-                document.body.removeChild(a); // Clean up and remove the link
+                a.download = "default-reactions.csv";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
                 URL.revokeObjectURL(url);
               }}
             >

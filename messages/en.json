@@ -31,6 +31,7 @@
     "delete": "Delete",
     "default-reactions-label": "Default Reactions (116 reactions)",
     "no-custom-reactions-created": "No custom reaction db created",
+    "no-raw-files-uploaded": "No raw files uploaded",
     "experiment-groups": "Configure Experiment Groups",
     "download-default-reactions": "Download Default Reactions",
     "start-analysis": "Start Analysis",
@@ -42,6 +43,7 @@
     "blank-groups": "Blank Groups",
     "select-or-create-reaction-db": "Select or <create></create> reaction database",
     "select-or-create-raw": "Select or <create></create> raw file",
+    "select-or-upload-raw-file": "Select or <upload></upload> raw file",
     "select-columns": "Select columns ...",
     "select-exp-or-create": "Select an experiment to configure or <create></create> a new experiment",
     "raw-files-limit-exceed": "Maximum of 10 raw files reached. Use existing or <delete>remove</delete> files to add new ones."

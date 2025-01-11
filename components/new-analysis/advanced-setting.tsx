@@ -1,6 +1,6 @@
 import { AnalysisCreationInputType } from "@/lib/utils";
 import { useTranslations } from "next-intl";
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { FormLabelWithTooltip } from "../form-label-tooltip";
 import {
   AccordionContent,
@@ -18,12 +18,9 @@ import {
 import { FormControl, FormField, FormItem } from "../ui/form";
 import { Input } from "../ui/input";
 
-interface AdvancedSettingInterface {
-  form: UseFormReturn<AnalysisCreationInputType>;
-}
-
-export function AdvancedSetting({ form }: AdvancedSettingInterface) {
+export function AdvancedSetting() {
   const t = useTranslations("New");
+  const { control } = useFormContext<AnalysisCreationInputType>();
 
   return (
     <AccordionItem value="advanced">
@@ -45,7 +42,7 @@ export function AdvancedSetting({ form }: AdvancedSettingInterface) {
           </CardHeader>
           <CardContent className="grid gap-4">
             <FormField
-              control={form.control}
+              control={control}
               name="config.minSignalThreshold"
               render={({ field: { onChange, value } }) => (
                 <FormItem>
@@ -67,7 +64,7 @@ export function AdvancedSetting({ form }: AdvancedSettingInterface) {
               )}
             />
             <FormField
-              control={form.control}
+              control={control}
               name="config.signalEnrichmentFactor"
               render={({ field: { onChange, value } }) => (
                 <FormItem>
@@ -101,14 +98,13 @@ export function AdvancedSetting({ form }: AdvancedSettingInterface) {
           </CardHeader>
           <CardContent className="grid gap-4">
             <FormField
-              control={form.control}
+              control={control}
               name="config.ms2SimilarityThreshold"
               render={({ field: { onChange, value } }) => (
                 <FormItem>
                   <FormLabelWithTooltip
                     tooltip="Set the threshold for MS2 similarity filtering. A default value of 0.7 is recommended. 
-                          The range of this value is between 0.5 and 1.
-                        "
+                          The range of this value is between 0.5 and 1."
                   >
                     {t("ms2-similarity-threshold")}
                   </FormLabelWithTooltip>
@@ -123,7 +119,7 @@ export function AdvancedSetting({ form }: AdvancedSettingInterface) {
               )}
             />
             <FormField
-              control={form.control}
+              control={control}
               name="config.mzErrorThreshold"
               render={({ field: { onChange, value } }) => (
                 <FormItem>
@@ -145,31 +141,21 @@ export function AdvancedSetting({ form }: AdvancedSettingInterface) {
                 </FormItem>
               )}
             />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">
-              {t("redundancy-identification")}
-            </CardTitle>
-            <CardDescription className="text-md">
-              {t("redundancy-identification-desc")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4">
             <FormField
-              control={form.control}
-              name="config.correlationThreshold"
-              defaultValue={0.95}
+              control={control}
+              name="config.rtTimeWindow"
               render={({ field: { onChange, value } }) => (
                 <FormItem>
-                  <FormLabelWithTooltip tooltip="Set the minimum acceptable correlation">
-                    {t("correlation-threshold")}
+                  <FormLabelWithTooltip
+                    tooltip="Set the retention time window for matching metabolite responses. 
+                          A value within 0.02 minutes is recommended for accurate matching."
+                  >
+                    {t("rt-time-window")}
                   </FormLabelWithTooltip>
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="10"
+                      placeholder="0.02"
                       onChange={(event) => onChange(+event.target.value)}
                       value={value}
                     />
@@ -177,25 +163,23 @@ export function AdvancedSetting({ form }: AdvancedSettingInterface) {
                 </FormItem>
               )}
             />
-
             <FormField
-              control={form.control}
-              name="config.rtTimeWindow"
+              control={control}
+              name="config.correlationThreshold"
               render={({ field: { onChange, value } }) => (
                 <FormItem>
                   <FormLabelWithTooltip
-                    tooltip="Define the time window in minutes (∆Rt) for redundancy
-                          checks. A default value of 0.02min helps in
-                          distinguishing redundant entries effectively."
+                    tooltip="Set the threshold for correlation filtering. A default value of 0.95 is recommended.
+                          The range of this value is between 0.5 and 1."
                   >
-                    {t("rt-time-window")}
+                    {t("correlation-threshold")}
                   </FormLabelWithTooltip>
                   <FormControl>
                     <Input
                       type="number"
+                      placeholder="0.95"
                       onChange={(event) => onChange(+event.target.value)}
                       value={value}
-                      placeholder={"0.02"}
                     />
                   </FormControl>
                 </FormItem>
