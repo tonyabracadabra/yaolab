@@ -3,8 +3,9 @@ from io import BytesIO
 from typing import Callable
 
 import pandas as pd
+
 from core.models.analysis import MSTool
-from core.utils.constants import MDialColumn, TargetIonsColumn
+from core.utils.constants import MSDialColumn, TargetIonsColumn
 
 
 def _preprocess_mzmine3(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
@@ -38,7 +39,7 @@ def _preprocess_mdial(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
     bytesIO.seek(0)
     df = pd.read_csv(bytesIO, sep="\t", skiprows=4)
     # retain rows with only MS/MS assigned
-    df = df[df[MDialColumn.MSMS_ASSIGNED]]
+    df = df[df[MSDialColumn.MSMS_ASSIGNED]]
     # Drop the selected columns
     df = df.drop(
         df.columns[
@@ -59,7 +60,7 @@ def _preprocess_mdial(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
 
     # all columns after MS/MS Spectrum are sample columns
     sample_cols = df.columns[
-        df.columns.get_loc(MDialColumn.MSMS_SPECTRUM) + 1 :
+        df.columns.get_loc(MSDialColumn.MSMS_SPECTRUM) + 1 :
     ].tolist()
 
     return df, sample_cols

@@ -54,7 +54,7 @@ export function RawFileCreationDialog({ onCreate }: RawFileCreationInterface) {
   const form = useForm<RawFileCreationInput>({
     defaultValues: {
       name: "My Raw File",
-      tool: "MDial",
+      tool: "MSDial",
     },
   });
   const t = useTranslations("New");
@@ -199,7 +199,7 @@ export function RawFileCreationDialog({ onCreate }: RawFileCreationInterface) {
             <FormField
               control={form.control}
               name="tool"
-              defaultValue="MDial"
+              defaultValue="MSDial"
               render={({ field: { onChange, value } }) => (
                 <FormItem>
                   <FormLabelWithTooltip tooltip="You can choose the raw file type here">
@@ -263,7 +263,7 @@ export function RawFileCreationDialog({ onCreate }: RawFileCreationInterface) {
                       Ion list File
                     </FormLabelWithTooltip>
                     <Input
-                      accept={form.watch("tool") === "MDial" ? ".txt" : ".csv"}
+                      accept={form.watch("tool") === "MSDial" ? ".txt" : ".csv"}
                       onChange={async (event) => {
                         const selectedFile =
                           event.target.files && event.target.files[0];

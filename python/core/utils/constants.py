@@ -49,7 +49,7 @@ class EdgeColumn(AutoValueEnumMeta):
     REDUNDANT_DATA = "redundantData"
 
 
-class MDialColumn(str, Enum):
+class MSDialColumn(str, Enum):
     MSMS_SPECTRUM = "MS/MS spectrum"
     MSMS_ASSIGNED = "MS/MS assigned"
 

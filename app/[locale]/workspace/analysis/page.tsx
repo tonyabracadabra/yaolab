@@ -44,7 +44,7 @@ type Analysis = {
   status: "running" | "complete" | "failed";
   rawFile: {
     name: string;
-    tool: "MZmine3" | "MDial";
+    tool: "MZmine3" | "MSDial";
     mgf: string;
     ions: string;
     sampleCols: string[];

@@ -95,7 +95,7 @@ export const calculateMass = zAction({
 export const preprocessIons = zAction({
   args: {
     targetedIons: z.string(),
-    tool: z.enum(["MZmine3", "MDial"]),
+    tool: z.enum(["MZmine3", "MSDial"]),
     token: z.string(),
   },
   handler: async ({ runAction }, { tool, targetedIons, token }) => {
