@@ -368,13 +368,13 @@ export function GraphVisualization({
 
   const getEdgeColor = (edge: ForceGraphEdge) => {
     if (edge.redundantData && highlightRedundant) {
-      return theme === "dark" ? "#ef4444" : "#dc2626"; // Red
+      return theme === "dark" ? "#f87171" : "#dc2626"; // Brighter red for dark mode
     }
     if (edge.isIsf && highlightIsf) {
-      return theme === "dark" ? "#8b5cf6" : "#7c3aed"; // Purple for ISF
+      return theme === "dark" ? "#a78bfa" : "#7c3aed"; // Brighter purple for dark mode
     }
-    // Increased opacity for better visibility in dark mode
-    return theme === "dark" ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.3)";
+    // Default edge color with better contrast in both modes
+    return theme === "dark" ? "rgba(255, 255, 255, 0.6)" : "rgba(0, 0, 0, 0.5)";
   };
 
   const getEdgeStyle = (edge: ForceGraphEdge) => {
