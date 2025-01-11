@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-
+import { DataTable } from "@/components/data-table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,24 +19,16 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { EnterIcon } from "@radix-ui/react-icons";
+import { ColumnDef } from "@tanstack/react-table";
 import Avatar from "boring-avatars";
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
   CheckIcon,
   Copy,
-  Loader2,
   MoreHorizontal,
   Plus,
   RefreshCcw,
@@ -87,12 +72,10 @@ export default function AnalysisList() {
         <Button
           variant="ghost"
           size="sm"
-          className="hover:bg-accent/40 transition-colors"
-          onClick={() => {
-            router.push(`${pathname}/${row.original.id}`);
-          }}
+          className="h-7 w-7 p-0 hover:bg-accent/40 transition-colors"
+          onClick={() => router.push(`${pathname}/${row.original.id}`)}
         >
-          <EnterIcon className="w-4 h-4 text-muted-foreground" />
+          <EnterIcon className="w-3.5 h-3.5 text-muted-foreground" />
         </Button>
       ),
     },
@@ -113,22 +96,22 @@ export default function AnalysisList() {
         const statusConfig = {
           running: {
             variant: "secondary" as const,
-            icon: <Loader2 className="w-3 h-3 animate-spin" />,
+            icon: <RefreshCcw className="w-3 h-3 animate-spin" />,
             label: "Running",
-            className: "px-2 py-0.5",
+            className: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
           },
           complete: {
             variant: "default" as const,
             icon: <CheckIcon className="w-3 h-3" />,
             label: "Complete",
             className:
-              "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 px-2 py-0.5",
+              "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20",
           },
           failed: {
             variant: "destructive" as const,
             icon: <XIcon className="w-3 h-3" />,
             label: "Failed",
-            className: "px-2 py-0.5",
+            className: "bg-red-500/10 text-red-500 hover:bg-red-500/20",
           },
         };
 
@@ -137,7 +120,7 @@ export default function AnalysisList() {
         return (
           <Badge
             variant={config.variant}
-            className={`inline-flex items-center gap-1 text-xs font-medium whitespace-nowrap ${config.className}`}
+            className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium ${config.className}`}
           >
             {config.icon}
             <span>{config.label}</span>
@@ -172,185 +155,121 @@ export default function AnalysisList() {
     {
       id: "actions",
       accessorKey: "_id",
-      header: () => (
-        <Button
-          size="sm"
-          variant="outline"
-          className="border-dashed"
-          onClick={() => {
-            router.push("/workspace/new");
-          }}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          New Analysis
-        </Button>
-      ),
+      header: () => <></>,
       cell: ({ row }) => (
-        <div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[160px]">
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-2 px-2 py-1.5 text-sm"
-                onClick={async () => {
-                  const token = await getToken({
-                    template: "convex",
-                    skipCache: true,
-                  });
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 hover:bg-accent/40"
+            >
+              <MoreHorizontal className="h-3.5 w-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[160px]">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2 px-2 py-1.5 text-sm"
+              onClick={async () => {
+                const token = await getToken({
+                  template: "convex",
+                  skipCache: true,
+                });
 
-                  if (!token) return;
+                if (!token) return;
 
-                  restart({ id: row.original.id, token });
-                }}
-              >
-                <RefreshCcw className="stroke-[1.2px] w-4 h-4" />
-                Restart
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full flex items-center justify-between gap-2"
-                onClick={() => {
-                  router.push(`/workspace/new?from=${row.original.id}`);
-                }}
-              >
-                <Copy className="stroke-[1.2px] w-4 h-4" />
-                Copy
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="w-full flex items-center justify-between gap-2"
+                restart({ id: row.original.id, token });
+              }}
+            >
+              <RefreshCcw className="stroke-[1.2px] w-4 h-4" />
+              Restart
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full flex items-center justify-between gap-2"
+              onClick={() => {
+                router.push(`/workspace/new?from=${row.original.id}`);
+              }}
+            >
+              <Copy className="stroke-[1.2px] w-4 h-4" />
+              Copy
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full flex items-center justify-between gap-2"
+                >
+                  <Trash2 className="stroke-[1.2px] w-4 h-4 stroke-red-500" />
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Are you sure you want to delete the analysis?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    your account and remove your data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive hover:bg-destructive text-white"
+                    onClick={async () => {
+                      await remove({ id: row.original.id });
+                      toast.success("Analysis deleted successfully");
+                    }}
                   >
-                    <Trash2 className="stroke-[1.2px] w-4 h-4 stroke-red-500" />
                     Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Are you sure you want to delete the analysis?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete
-                      your account and remove your data from our servers.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      className="bg-destructive hover:bg-destructive text-white"
-                      onClick={async () => {
-                        await remove({ id: row.original.id });
-                        toast.success("Analysis deleted successfully");
-                      }}
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ),
     },
   ];
 
-  const table = useReactTable({
-    data: analyses || [],
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: 8,
-      },
-    },
-  });
+  const emptyState = (
+    <div className="flex flex-col items-center justify-center gap-2">
+      <p className="text-sm text-muted-foreground">No analyses found</p>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => router.push("/workspace/new")}
+      >
+        <Plus className="w-3.5 h-3.5 mr-2" />
+        Create your first analysis
+      </Button>
+    </div>
+  );
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 flex flex-col min-h-0">
-        <Table>
-          <TableHeader>
-            <TableRow className="sticky top-0 bg-background z-10 hover:bg-background">
-              {table.getHeaderGroups()[0].headers.map((header, i) => (
-                <TableHead key={i}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {analyses === undefined ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  <Loader2 className="w-6 h-6 animate-spin mx-auto" />
-                </TableCell>
-              </TableRow>
-            ) : (
-              <>
-                {table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </>
-            )}
-          </TableBody>
-        </Table>
-        <div className="sticky bottom-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="max-w-7xl mx-auto px-8 py-2 flex justify-between items-center">
-            <div className="text-sm text-muted-foreground">
-              {analyses?.length} total results
-            </div>
-            <div className="flex items-center space-x-6">
-              <div className="text-sm text-muted-foreground">
-                Page {table.getState().pagination.pageIndex + 1} of{" "}
-                {table.getPageCount()}
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!table.getCanPreviousPage()}
-                  onClick={() => table.previousPage()}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!table.getCanNextPage()}
-                  onClick={() => table.nextPage()}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          </div>
+    <div className="h-full w-full p-6">
+      <div className="flex flex-col h-full space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold tracking-tight">Analyses</h2>
+          <Button
+            size="sm"
+            className="h-8"
+            onClick={() => router.push("/workspace/new")}
+          >
+            <Plus className="w-3.5 h-3.5 mr-2" />
+            New Analysis
+          </Button>
         </div>
+
+        <DataTable
+          columns={columns}
+          data={analyses}
+          pageSize={8}
+          emptyState={emptyState}
+        />
       </div>
     </div>
   );
