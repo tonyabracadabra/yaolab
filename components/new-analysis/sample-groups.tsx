@@ -3,8 +3,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import { AnalysisCreationInputType } from "@/lib/utils";
 import { useQuery } from "convex/react";
 import { useTranslations } from "next-intl";
-import { useCallback, useMemo } from "react";
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { useCallback } from "react";
+import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { MultiSelectCombobox } from "../multiselect-combobox";
 import {
@@ -37,27 +37,31 @@ const SampleGroupFieldArray = ({
   options,
 }: SampleGroupFieldArrayProps): JSX.Element => {
   const t = useTranslations("New");
-  const { setValue, watch } = useFormContext<AnalysisCreationInputType>();
+  const { setValue, control } = useFormContext<AnalysisCreationInputType>();
   const isBioSample = type !== "drug" && bioSampleIndex !== undefined;
 
-  // Memoize the watched values
-  const currentValues = useMemo(
-    () =>
-      isBioSample
-        ? watch(`config.bioSamples.${bioSampleIndex}.${type}`) || []
-        : watch("config.drugSample.groups") || [],
-    [isBioSample, bioSampleIndex, type, watch]
-  );
+  // Use useWatch instead of watch for better reactivity
+  const currentValues = isBioSample
+    ? (useWatch({
+        control,
+        name: `config.bioSamples.${bioSampleIndex}.${type}` as const,
+        defaultValue: [],
+      }) as string[])
+    : (useWatch({
+        control,
+        name: "config.drugSample.groups" as const,
+        defaultValue: [],
+      }) as string[]);
 
-  const otherValues = useMemo(
-    () =>
-      isBioSample
-        ? watch(
-            `config.bioSamples.${bioSampleIndex}.${type === "sample" ? "blank" : "sample"}`
-          ) || []
-        : [],
-    [isBioSample, bioSampleIndex, type, watch]
-  );
+  const otherValues = isBioSample
+    ? (useWatch({
+        control,
+        name: `config.bioSamples.${bioSampleIndex}.${
+          type === "sample" ? "blank" : "sample"
+        }` as const,
+        defaultValue: [],
+      }) as string[])
+    : [];
 
   const handleSelect = useCallback(
     (value: string) => {
@@ -71,17 +75,21 @@ const SampleGroupFieldArray = ({
           ? currentValues.filter((v: string) => v !== value)
           : [...currentValues, value];
 
-        setValue(`config.bioSamples.${bioSampleIndex}.${type}`, newValues, {
-          shouldDirty: true,
-          shouldTouch: true,
-          shouldValidate: true,
-        });
+        setValue(
+          `config.bioSamples.${bioSampleIndex}.${type}` as const,
+          newValues,
+          {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+          }
+        );
       } else {
         const newGroups = currentValues.includes(value)
           ? currentValues.filter((v: string) => v !== value)
           : [...currentValues, value];
 
-        setValue("config.drugSample.groups", newGroups, {
+        setValue("config.drugSample.groups" as const, newGroups, {
           shouldDirty: true,
           shouldTouch: true,
           shouldValidate: true,

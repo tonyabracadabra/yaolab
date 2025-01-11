@@ -1,12 +1,5 @@
 import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -16,6 +9,7 @@ import { Check, ChevronsUpDown, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { Badge } from "./ui/badge";
+import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
 
 interface SelectOption {
@@ -75,6 +69,7 @@ export function MultiSelectCombobox({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          type="button"
           variant="outline"
           role="combobox"
           aria-expanded={open}
@@ -109,18 +104,20 @@ export function MultiSelectCombobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
-        <Command shouldFilter={false}>
-          <CommandInput
+        <div className="flex flex-col">
+          <Input
             placeholder={t("search-columns")}
             value={searchQuery}
-            onValueChange={setSearchQuery}
-            className="h-9"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
-          <CommandEmpty className="py-2 px-3 text-sm text-muted-foreground">
-            {t("no-columns-found")}
-          </CommandEmpty>
-          <CommandGroup className="overflow-hidden">
-            <ScrollArea className="h-[200px] w-full">
+          {filteredOptions.length === 0 && (
+            <p className="py-2 px-3 text-sm text-muted-foreground">
+              {t("no-columns-found")}
+            </p>
+          )}
+          <ScrollArea className="h-[200px] w-full">
+            <div className="flex flex-col">
               {filteredOptions.map((option) => {
                 const isSelected = selectedValues.includes(option.value);
                 const isDisabled = otherGroupSelectedValues.includes(
@@ -128,13 +125,13 @@ export function MultiSelectCombobox({
                 );
 
                 return (
-                  <CommandItem
+                  <button
+                    type="button"
                     key={option.value}
-                    value={option.value}
                     disabled={isDisabled}
-                    onSelect={() => handleSelect(option.value)}
+                    onClick={() => handleSelect(option.value)}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 cursor-pointer aria-selected:bg-accent/50",
+                      "flex items-center gap-2 px-3 py-2 hover:bg-accent/50 text-left",
                       isDisabled && "opacity-50 cursor-not-allowed",
                       isSelected && "bg-accent"
                     )}
@@ -154,12 +151,12 @@ export function MultiSelectCombobox({
                     >
                       {option.label}
                     </span>
-                  </CommandItem>
+                  </button>
                 );
               })}
-            </ScrollArea>
-          </CommandGroup>
-        </Command>
+            </div>
+          </ScrollArea>
+        </div>
       </PopoverContent>
     </Popover>
   );

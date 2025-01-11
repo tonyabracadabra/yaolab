@@ -110,7 +110,7 @@ export default function AnalysisCreation({
     <FormProvider {...methods}>
       <form
         onSubmit={methods.handleSubmit(onSubmit)}
-        className="space-y-8 relative px-20 py-4 w-full h-[85vh] overflow-auto"
+        className="space-y-8 relative px-20 py-8 w-full h-[85vh] overflow-auto"
       >
         <div className="flex items-center gap-24">
           <RawFileFormField />
