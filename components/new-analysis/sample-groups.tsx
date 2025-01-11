@@ -37,8 +37,7 @@ const SampleGroupFieldArray = ({
   options,
 }: SampleGroupFieldArrayProps): JSX.Element => {
   const t = useTranslations("New");
-  const { control, setValue, watch } =
-    useFormContext<AnalysisCreationInputType>();
+  const { setValue, watch } = useFormContext<AnalysisCreationInputType>();
   const isBioSample = type !== "drug" && bioSampleIndex !== undefined;
 
   // Memoize the watched values
@@ -47,15 +46,7 @@ const SampleGroupFieldArray = ({
       isBioSample
         ? watch(`config.bioSamples.${bioSampleIndex}.${type}`) || []
         : watch("config.drugSample.groups") || [],
-    [
-      isBioSample,
-      bioSampleIndex,
-      type,
-      // Watch the actual values instead of the watch function
-      isBioSample
-        ? watch(`config.bioSamples.${bioSampleIndex}.${type}`)
-        : watch("config.drugSample.groups"),
-    ]
+    [isBioSample, bioSampleIndex, type, watch]
   );
 
   const otherValues = useMemo(
@@ -65,17 +56,7 @@ const SampleGroupFieldArray = ({
             `config.bioSamples.${bioSampleIndex}.${type === "sample" ? "blank" : "sample"}`
           ) || []
         : [],
-    [
-      isBioSample,
-      bioSampleIndex,
-      type,
-      // Watch the actual values
-      isBioSample
-        ? watch(
-            `config.bioSamples.${bioSampleIndex}.${type === "sample" ? "blank" : "sample"}`
-          )
-        : null,
-    ]
+    [isBioSample, bioSampleIndex, type, watch]
   );
 
   const handleSelect = useCallback(
