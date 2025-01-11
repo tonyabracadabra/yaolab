@@ -36,61 +36,64 @@ export function RawFileFormField() {
       control={control}
       name="rawFile"
       render={({ field: { onChange, value } }) => (
-        <FormItem>
-          <FormLabel className="flex items-center gap-2 text-md min-w-[250px]">
+        <FormItem className="w-full space-y-4">
+          <FormLabel className="flex items-center gap-2 text-base font-medium">
             <Badge variant="secondary">1</Badge> {t("choose-raw-file")}
           </FormLabel>
-          <FormControl>
-            <Select
-              onValueChange={(v) => {
-                if (!v) return;
-                onChange(v);
-              }}
-              value={value}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Raw File to be analyzed" />
-              </SelectTrigger>
-              <SelectContent
-                postViewportContent={
-                  <Button
-                    variant="ghost"
-                    className="px-8 gap-4 flex items-start justify-start"
-                    onClick={() => {
-                      router.push("/workspace/raw-files");
-                    }}
-                  >
-                    <Settings2 size={16} />
-                    Manage
-                  </Button>
-                }
+          <div className="w-full space-y-2">
+            <FormControl>
+              <Select
+                onValueChange={(v) => {
+                  if (!v) return;
+                  onChange(v);
+                }}
+                value={value}
               >
-                {allRawFiles?.map((file) => (
-                  <SelectItem key={file._id} value={file._id}>
-                    {file.name}
-                  </SelectItem>
-                ))}
-                {allRawFiles?.length === 0 && (
-                  <SelectItem key={"none"} disabled value="none">
-                    {allRawFiles === undefined ? (
-                      <Loader2 className="animate-spin" />
-                    ) : (
-                      t("no-raw-files-uploaded")
-                    )}
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          </FormControl>
-          <FormDescription>
-            {t.rich("select-or-create-raw", {
-              create: () => (
-                <RawFileCreationDialog
-                  onCreate={(id: Id<"rawFiles">) => onChange(id)}
-                />
-              ),
-            })}
-          </FormDescription>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Raw File to be analyzed" />
+                </SelectTrigger>
+                <SelectContent
+                  className="min-w-[300px]"
+                  postViewportContent={
+                    <Button
+                      variant="ghost"
+                      className="w-full px-4 py-2 gap-2 flex items-center justify-start hover:bg-accent/50"
+                      onClick={() => {
+                        router.push("/workspace/raw-files");
+                      }}
+                    >
+                      <Settings2 className="h-4 w-4" />
+                      <span>Manage Raw Files</span>
+                    </Button>
+                  }
+                >
+                  {allRawFiles?.map((file) => (
+                    <SelectItem key={file._id} value={file._id}>
+                      {file.name}
+                    </SelectItem>
+                  ))}
+                  {allRawFiles?.length === 0 && (
+                    <SelectItem key={"none"} disabled value="none">
+                      {allRawFiles === undefined ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        t("no-raw-files-uploaded")
+                      )}
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormDescription className="text-sm">
+              {t.rich("select-or-create-raw", {
+                create: () => (
+                  <RawFileCreationDialog
+                    onCreate={(id: Id<"rawFiles">) => onChange(id)}
+                  />
+                ),
+              })}
+            </FormDescription>
+          </div>
         </FormItem>
       )}
     />

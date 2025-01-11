@@ -110,40 +110,52 @@ export default function AnalysisCreation({
     <FormProvider {...methods}>
       <form
         onSubmit={methods.handleSubmit(onSubmit)}
-        className="space-y-8 relative px-20 py-8 w-full h-[85vh] overflow-auto"
+        className="flex flex-col h-full max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6"
       >
-        <div className="flex items-center gap-24">
-          <RawFileFormField />
-          <ReactionDbFormField />
+        <div className="flex-1 overflow-y-auto px-2">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+              <div className="w-full">
+                <RawFileFormField />
+              </div>
+              <div className="w-full">
+                <ReactionDbFormField />
+              </div>
+            </div>
+
+            {rawFile && (
+              <Accordion type="multiple" className="w-full">
+                <SampleGroups
+                  id={rawFile}
+                  enableDrugSample={enableDrugSample}
+                  setEnableDrugSample={setEnableDrugSample}
+                />
+                <AdvancedSetting />
+              </Accordion>
+            )}
+          </div>
         </div>
 
-        {rawFile && (
-          <Accordion type="multiple" className="w-full">
-            <SampleGroups
-              id={rawFile}
-              enableDrugSample={enableDrugSample}
-              setEnableDrugSample={setEnableDrugSample}
-            />
-            <AdvancedSetting />
-          </Accordion>
-        )}
-
-        <ShimmerButton
-          disabled={isSubmitting}
-          type="submit"
-          className="sticky bottom-[20px] hover:opacity-90 py-2 px-3 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-lg">
-            {isSubmitting ? (
-              <div className="flex items-center gap-2">
-                Initializing analysis
-                <Loader2 className="animate-spin" />
-              </div>
-            ) : (
-              t("start-analysis")
-            )}
-          </span>
-        </ShimmerButton>
+        <div className="sticky bottom-0 py-4 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="flex justify-center">
+            <ShimmerButton
+              disabled={isSubmitting}
+              type="submit"
+              className="hover:opacity-90 py-2.5 px-4 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-base">
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    Initializing analysis
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                ) : (
+                  t("start-analysis")
+                )}
+              </span>
+            </ShimmerButton>
+          </div>
+        </div>
       </form>
     </FormProvider>
   );

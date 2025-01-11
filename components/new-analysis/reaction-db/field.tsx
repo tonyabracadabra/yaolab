@@ -34,113 +34,114 @@ export function ReactionDbFormField() {
   const reactionDb = watch("reactionDb");
 
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div className="w-full">
       <FormField
         control={control}
         name="reactionDb"
         render={({ field: { onChange, value } }) => (
-          <FormItem>
-            <FormLabel className="flex items-center gap-2 text-md min-w-[250px]">
-              <Badge variant="secondary">2</Badge> {t("choose-reaction-db")}
-            </FormLabel>
-            <FormControl>
-              <Select
-                onValueChange={(v) => {
-                  if (!v) return;
-                  onChange(v);
-                }}
-                value={value}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Raw File to be analyzed" />
-                </SelectTrigger>
-                <SelectContent
-                  postViewportContent={
+          <FormItem className="w-full space-y-4">
+            <div className="flex items-center justify-between gap-2">
+              <FormLabel className="flex items-center gap-2 text-base font-medium">
+                <Badge variant="secondary">2</Badge> {t("choose-reaction-db")}
+              </FormLabel>
+              {reactionDb?.split("-")[0] === "default" && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
                     <Button
-                      variant="ghost"
-                      className="px-8 gap-4 flex items-start justify-start"
-                      onClick={() => {
-                        router.push("/workspace/reactions");
+                      size="xs"
+                      type="button"
+                      variant="secondary"
+                      className="flex items-center gap-2"
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        const { csv } = await downloadDefaultReactions(
+                          reactionDb.split("-")[1] as "pos" | "neg"
+                        );
+                        const blob = new Blob([csv], { type: "text/csv" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = "default-reactions.csv";
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
                       }}
                     >
-                      <Settings2 size={16} />
-                      Manage
+                      <DownloadCloud className="h-3 w-3" />
                     </Button>
-                  }
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-sm">{t("download-default-reactions")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+            <div className="w-full space-y-2">
+              <FormControl>
+                <Select
+                  onValueChange={(v) => {
+                    if (!v) return;
+                    onChange(v);
+                  }}
+                  value={value}
                 >
-                  {allReactionDatabases?.map((db) => (
-                    <SelectItem key={db._id} value={db._id}>
-                      {db.name}
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Reaction database to use" />
+                  </SelectTrigger>
+                  <SelectContent
+                    className="min-w-[300px]"
+                    postViewportContent={
+                      <Button
+                        variant="ghost"
+                        className="w-full px-4 py-2 gap-2 flex items-center justify-start hover:bg-accent/50"
+                        onClick={() => {
+                          router.push("/workspace/reactions");
+                        }}
+                      >
+                        <Settings2 className="h-4 w-4" />
+                        <span>Manage Reaction DBs</span>
+                      </Button>
+                    }
+                  >
+                    {allReactionDatabases?.map((db) => (
+                      <SelectItem key={db._id} value={db._id}>
+                        {db.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem key="default-pos" value="default-pos">
+                      Default 116 Reactions + Positive Ions
                     </SelectItem>
-                  ))}
-                  <SelectItem key="default-pos" value="default-pos">
-                    Default 116 Reactions + Positive Ions
-                  </SelectItem>
-                  <SelectItem key="default-neg" value="default-neg">
-                    Default 116 Reactions + Negative Ions
-                  </SelectItem>
-                  {allReactionDatabases?.length === 0 && (
-                    <SelectItem key={"none"} disabled value="none">
-                      {allReactionDatabases === undefined ? (
-                        <Loader2 className="animate-spin" />
-                      ) : (
-                        t("no-custom-reactions-created")
-                      )}
+                    <SelectItem key="default-neg" value="default-neg">
+                      Default 116 Reactions + Negative Ions
                     </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </FormControl>
-            <FormDescription>
-              {t.rich("select-or-create-reaction-db", {
-                create: () => (
-                  <ReactionDbCreationDialog
-                    onCreate={(id: Id<"reactionDatabases">) => onChange(id)}
-                  />
-                ),
-              })}
-            </FormDescription>
+                    {allReactionDatabases?.length === 0 && (
+                      <SelectItem key={"none"} disabled value="none">
+                        {allReactionDatabases === undefined ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          t("no-custom-reactions-created")
+                        )}
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormDescription className="text-sm">
+                {t.rich("select-or-create-reaction-db", {
+                  create: () => (
+                    <ReactionDbCreationDialog
+                      onCreate={(id: Id<"reactionDatabases">) => onChange(id)}
+                    />
+                  ),
+                })}
+              </FormDescription>
+            </div>
           </FormItem>
         )}
       />
-      {reactionDb.split("-")[0] === "default" && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="xs"
-              type="button"
-              variant="secondary"
-              className="flex items-center gap-2"
-              onClick={async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                const { csv } = await downloadDefaultReactions(
-                  reactionDb.split("-")[1] as "pos" | "neg"
-                );
-                const blob = new Blob([csv], { type: "text/csv" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "default-reactions.csv";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-              }}
-            >
-              <DownloadCloud size={12} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <div className="p-4 bg-white dark:bg-slate-900 rounded-lg shadow-lg">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                {t("download-default-reactions")}
-              </p>
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      )}
     </div>
   );
 }
