@@ -189,29 +189,29 @@ function Flow({ progress, log }: WorkflowInterface) {
     []
   );
 
+  // Update nodes and edges when progress changes
   useEffect(() => {
-    setNodes(
-      nodes.map((node) => {
-        const status = progress?.find((step) => step.step === node.id)?.status;
-        return {
-          ...node,
-          type: status || "notStarted",
-        };
-      })
-    );
-    // set the animation for the edges
-    setEdges(
-      edges.map((edge) => {
-        const targetStatus = progress?.find(
-          (step) => step.step === edge.target
-        )?.status;
-        return {
-          ...edge,
-          animated: targetStatus === "running",
-        };
-      })
-    );
-  }, [edges, nodes, progress, setEdges, setNodes]);
+    const updatedNodes = baseNodes.map((node) => {
+      const status = progress?.find((step) => step.step === node.id)?.status;
+      return {
+        ...node,
+        type: status || "notStarted",
+      };
+    });
+
+    const updatedEdges = baseEdges.map((edge) => {
+      const targetStatus = progress?.find(
+        (step) => step.step === edge.target
+      )?.status;
+      return {
+        ...edge,
+        animated: targetStatus === "running",
+      };
+    });
+
+    setNodes(updatedNodes);
+    setEdges(updatedEdges);
+  }, [progress, setNodes, setEdges]);
 
   return (
     <div className="h-[60vh] w-[50vh] -left-2 pt-4">

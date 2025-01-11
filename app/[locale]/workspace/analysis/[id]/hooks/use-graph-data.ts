@@ -276,12 +276,13 @@ export function useGraphData(
           (id) => !prototypeNodes.includes(id)
         );
         remainingNodes.forEach((nodeId) => {
-          const connectedProtos = prototypeNodes.filter((protoId) =>
-            state.filtered!.edges.some(
-              (e) =>
-                (e.id1 === nodeId && e.id2 === protoId) ||
-                (e.id2 === nodeId && e.id1 === protoId)
-            )
+          const connectedProtos = prototypeNodes.filter(
+            (protoId) =>
+              state.filtered?.edges?.some(
+                (e) =>
+                  (e.id1 === nodeId && e.id2 === protoId) ||
+                  (e.id2 === nodeId && e.id1 === protoId)
+              ) ?? false
           );
 
           if (connectedProtos.length > 0) {
@@ -314,7 +315,7 @@ export function useGraphData(
 
       return positions;
     },
-    []
+    [state.filtered]
   );
 
   // Update the graphsWithPrototype useMemo to include layoutComponents
