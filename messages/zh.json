@@ -46,6 +46,9 @@
     "select-or-create-raw": "选择或<create></create>原始文件",
     "select-columns": "选择列...",
     "select-exp-or-create": "选择一个实验进行配置或<create></create>一个新的实验",
-    "raw-files-limit-exceed": "最多只能添加10个原始文件。请使用现有文件或<delete></delete>删除文件以添加新文件。"
+    "raw-files-limit-exceed": "最多只能添加10个原始文件。请使用现有文件或<delete></delete>删除文件以添加新文件。",
+    "search-columns": "搜索列...",
+    "no-columns-found": "未找到列",
+    "no-columns-available": "未找到列。您可能需要从其他字段中删除列。"
   }
 }

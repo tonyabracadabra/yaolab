@@ -3,6 +3,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { AnalysisCreationInputType } from "@/lib/utils";
 import { useQuery } from "convex/react";
 import { useTranslations } from "next-intl";
+import { useCallback, useMemo } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 import { MultiSelectCombobox } from "../multiselect-combobox";
@@ -30,15 +31,84 @@ interface SampleGroupFieldArrayProps {
   bioSampleIndex?: number;
 }
 
-const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
+const SampleGroupFieldArray = ({
   bioSampleIndex,
   type,
   options,
-}) => {
+}: SampleGroupFieldArrayProps): JSX.Element => {
   const t = useTranslations("New");
   const { control, setValue, watch } =
     useFormContext<AnalysisCreationInputType>();
   const isBioSample = type !== "drug" && bioSampleIndex !== undefined;
+
+  // Memoize the watched values
+  const currentValues = useMemo(
+    () =>
+      isBioSample
+        ? watch(`config.bioSamples.${bioSampleIndex}.${type}`) || []
+        : watch("config.drugSample.groups") || [],
+    [
+      isBioSample,
+      bioSampleIndex,
+      type,
+      // Watch the actual values instead of the watch function
+      isBioSample
+        ? watch(`config.bioSamples.${bioSampleIndex}.${type}`)
+        : watch("config.drugSample.groups"),
+    ]
+  );
+
+  const otherValues = useMemo(
+    () =>
+      isBioSample
+        ? watch(
+            `config.bioSamples.${bioSampleIndex}.${type === "sample" ? "blank" : "sample"}`
+          ) || []
+        : [],
+    [
+      isBioSample,
+      bioSampleIndex,
+      type,
+      // Watch the actual values
+      isBioSample
+        ? watch(
+            `config.bioSamples.${bioSampleIndex}.${type === "sample" ? "blank" : "sample"}`
+          )
+        : null,
+    ]
+  );
+
+  const handleSelect = useCallback(
+    (value: string) => {
+      if (isBioSample && bioSampleIndex !== undefined) {
+        if (otherValues.includes(value)) {
+          toast.error("Sample group and blank group cannot have same values");
+          return;
+        }
+
+        const newValues = currentValues.includes(value)
+          ? currentValues.filter((v: string) => v !== value)
+          : [...currentValues, value];
+
+        setValue(`config.bioSamples.${bioSampleIndex}.${type}`, newValues, {
+          shouldDirty: true,
+          shouldTouch: true,
+          shouldValidate: true,
+        });
+      } else {
+        const newGroups = currentValues.includes(value)
+          ? currentValues.filter((v: string) => v !== value)
+          : [...currentValues, value];
+
+        setValue("config.drugSample.groups", newGroups, {
+          shouldDirty: true,
+          shouldTouch: true,
+          shouldValidate: true,
+        });
+      }
+    },
+    [isBioSample, bioSampleIndex, type, setValue, currentValues, otherValues]
+  );
 
   return (
     <div className="flex flex-col gap-2 items-start justify-start h-full">
@@ -52,55 +122,9 @@ const SampleGroupFieldArray: React.FC<SampleGroupFieldArrayProps> = ({
           value: option,
           label: option,
         }))}
-        onSelect={async (val: string) => {
-          if (isBioSample && bioSampleIndex !== undefined) {
-            const currBioSample = watch(`config.bioSamples.${bioSampleIndex}`);
-            const other = type === "sample" ? "blank" : "sample";
-
-            if (currBioSample[other].includes(val)) {
-              toast.error(
-                "Sample group and blank group cannot have same values"
-              );
-              return;
-            }
-
-            if (currBioSample[type].includes(val)) {
-              setValue(
-                `config.bioSamples.${bioSampleIndex}.${type}`,
-                currBioSample[type].filter((v: string) => v !== val)
-              );
-            } else {
-              setValue(`config.bioSamples.${bioSampleIndex}.${type}`, [
-                ...currBioSample[type],
-                val,
-              ]);
-            }
-          } else {
-            const groups = watch("config.drugSample.groups") || [];
-            if (groups.includes(val)) {
-              setValue(
-                "config.drugSample.groups",
-                groups.filter((v: string) => v !== val)
-              );
-            } else {
-              setValue("config.drugSample.groups", [...groups, val]);
-            }
-          }
-        }}
-        selectedValues={
-          isBioSample && bioSampleIndex !== undefined
-            ? watch(`config.bioSamples.${bioSampleIndex}.${type}`) || []
-            : watch("config.drugSample.groups") || []
-        }
-        otherGroupSelectedValues={
-          isBioSample && bioSampleIndex !== undefined
-            ? watch(
-                `config.bioSamples.${bioSampleIndex}.${
-                  type === "sample" ? "blank" : "sample"
-                }`
-              ) || []
-            : []
-        }
+        onSelect={handleSelect}
+        selectedValues={currentValues}
+        otherGroupSelectedValues={otherValues}
       />
     </div>
   );

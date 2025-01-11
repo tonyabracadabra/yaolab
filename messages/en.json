@@ -44,8 +44,11 @@
     "select-or-create-reaction-db": "Select or <create></create> reaction database",
     "select-or-create-raw": "Select or <create></create> raw file",
     "select-or-upload-raw-file": "Select or <upload></upload> raw file",
-    "select-columns": "Select columns ...",
     "select-exp-or-create": "Select an experiment to configure or <create></create> a new experiment",
-    "raw-files-limit-exceed": "Maximum of 10 raw files reached. Use existing or <delete>remove</delete> files to add new ones."
+    "raw-files-limit-exceed": "Maximum of 10 raw files reached. Use existing or <delete>remove</delete> files to add new ones.",
+    "select-columns": "Select columns...",
+    "search-columns": "Search columns...",
+    "no-columns-found": "No columns found",
+    "no-columns-available": "No columns found. You may want to remove columns from other fields."
   }
 }

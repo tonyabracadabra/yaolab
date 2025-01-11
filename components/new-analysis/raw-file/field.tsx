@@ -8,6 +8,7 @@ import {
 
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { AnalysisCreationInputType } from "@/lib/utils";
 import { useQuery } from "convex/react";
 import { Loader2, Settings2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -26,7 +27,7 @@ import { RawFileCreationDialog } from "./dialog";
 
 export function RawFileFormField() {
   const t = useTranslations("New");
-  const { control } = useFormContext();
+  const { control } = useFormContext<AnalysisCreationInputType>();
   const allRawFiles = useQuery(api.rawFiles.getAll, {});
   const router = useRouter();
 
