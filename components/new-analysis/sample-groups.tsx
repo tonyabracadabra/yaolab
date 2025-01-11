@@ -3,8 +3,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import { AnalysisCreationInputType } from "@/lib/utils";
 import { useQuery } from "convex/react";
 import { useTranslations } from "next-intl";
-import { useCallback } from "react";
-import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { useCallback, useMemo } from "react";
+import { Path, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { MultiSelectCombobox } from "../multiselect-combobox";
 import {
@@ -40,28 +40,49 @@ const SampleGroupFieldArray = ({
   const { setValue, control } = useFormContext<AnalysisCreationInputType>();
   const isBioSample = type !== "drug" && bioSampleIndex !== undefined;
 
-  // Use useWatch instead of watch for better reactivity
-  const currentValues = isBioSample
-    ? (useWatch({
-        control,
-        name: `config.bioSamples.${bioSampleIndex}.${type}` as const,
-        defaultValue: [],
-      }) as string[])
-    : (useWatch({
-        control,
-        name: "config.drugSample.groups" as const,
-        defaultValue: [],
-      }) as string[]);
+  // 使用 Path 类型来确保类型安全
+  const bioSamplePath =
+    bioSampleIndex !== undefined
+      ? (`config.bioSamples.${bioSampleIndex}.${type}` as Path<AnalysisCreationInputType>)
+      : undefined;
 
-  const otherValues = isBioSample
-    ? (useWatch({
-        control,
-        name: `config.bioSamples.${bioSampleIndex}.${
-          type === "sample" ? "blank" : "sample"
-        }` as const,
-        defaultValue: [],
-      }) as string[])
-    : [];
+  const otherTypePath =
+    bioSampleIndex !== undefined
+      ? (`config.bioSamples.${bioSampleIndex}.${type === "sample" ? "blank" : "sample"}` as Path<AnalysisCreationInputType>)
+      : undefined;
+
+  const bioSampleValues = useWatch({
+    control,
+    name:
+      bioSamplePath ||
+      (`config.bioSamples.0.${type}` as Path<AnalysisCreationInputType>),
+    defaultValue: [],
+  }) as string[];
+
+  const drugSampleValues = useWatch({
+    control,
+    name: "config.drugSample.groups" as Path<AnalysisCreationInputType>,
+    defaultValue: [],
+  }) as string[];
+
+  const otherTypeValues = useWatch({
+    control,
+    name:
+      otherTypePath ||
+      (`config.bioSamples.0.${type === "sample" ? "blank" : "sample"}` as Path<AnalysisCreationInputType>),
+    defaultValue: [],
+  }) as string[];
+
+  // Use useMemo to handle the actual values we want to use
+  const currentValues = useMemo(() => {
+    if (!bioSamplePath && type !== "drug") return [];
+    return isBioSample ? bioSampleValues : drugSampleValues;
+  }, [isBioSample, bioSampleValues, drugSampleValues, bioSamplePath, type]);
+
+  const otherValues = useMemo(() => {
+    if (!otherTypePath) return [];
+    return isBioSample ? otherTypeValues : [];
+  }, [isBioSample, otherTypeValues, otherTypePath]);
 
   const handleSelect = useCallback(
     (value: string) => {
@@ -76,7 +97,7 @@ const SampleGroupFieldArray = ({
           : [...currentValues, value];
 
         setValue(
-          `config.bioSamples.${bioSampleIndex}.${type}` as const,
+          `config.bioSamples.${bioSampleIndex}.${type}` as Path<AnalysisCreationInputType>,
           newValues,
           {
             shouldDirty: true,
@@ -89,11 +110,15 @@ const SampleGroupFieldArray = ({
           ? currentValues.filter((v: string) => v !== value)
           : [...currentValues, value];
 
-        setValue("config.drugSample.groups" as const, newGroups, {
-          shouldDirty: true,
-          shouldTouch: true,
-          shouldValidate: true,
-        });
+        setValue(
+          "config.drugSample.groups" as Path<AnalysisCreationInputType>,
+          newGroups,
+          {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+          }
+        );
       }
     },
     [isBioSample, bioSampleIndex, type, setValue, currentValues, otherValues]

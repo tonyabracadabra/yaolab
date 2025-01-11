@@ -131,8 +131,9 @@ export function MultiSelectCombobox({
                     disabled={isDisabled}
                     onClick={() => handleSelect(option.value)}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 hover:bg-accent/50 text-left",
-                      isDisabled && "opacity-50 cursor-not-allowed",
+                      "flex items-center gap-2 px-3 py-2 text-left",
+                      isDisabled && "bg-muted/50 cursor-not-allowed",
+                      !isDisabled && "hover:bg-accent/50",
                       isSelected && "bg-accent"
                     )}
                   >
@@ -147,10 +148,19 @@ export function MultiSelectCombobox({
                       {isSelected && <Check className="h-3 w-3" />}
                     </div>
                     <span
-                      className={cn("text-sm", isSelected && "font-medium")}
+                      className={cn(
+                        "text-sm",
+                        isSelected && "font-medium",
+                        isDisabled && "text-muted-foreground line-through"
+                      )}
                     >
                       {option.label}
                     </span>
+                    {isDisabled && (
+                      <span className="text-xs text-muted-foreground ml-auto italic">
+                        Selected in other group
+                      </span>
+                    )}
                   </button>
                 );
               })}
