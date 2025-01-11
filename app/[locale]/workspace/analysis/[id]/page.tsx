@@ -43,23 +43,27 @@ interface LoadingStateProps {
 
 function LoadingState({ message }: LoadingStateProps) {
   return (
-    <div className="flex items-center justify-center flex-1 gap-2">
-      <Loader2 className="h-4 w-4 animate-spin" />
-      <span className="text-muted-foreground">{message}</span>
+    <div className="flex-1 flex items-center justify-center">
+      <div className="flex items-center gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span className="text-muted-foreground">{message}</span>
+      </div>
     </div>
   );
 }
 
 function ErrorState({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="flex items-center justify-center flex-1 gap-2 flex-col">
-      <FileWarning size={48} className="stroke-destructive" />
-      <span className="text-muted-foreground">
-        An error occurred while processing the analysis
-      </span>
-      <Button variant="outline" className="mt-4" onClick={onRetry}>
-        Try again
-      </Button>
+    <div className="flex-1 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-2">
+        <FileWarning size={48} className="stroke-destructive" />
+        <span className="text-muted-foreground">
+          An error occurred while processing the analysis
+        </span>
+        <Button variant="outline" className="mt-4" onClick={onRetry}>
+          Try again
+        </Button>
+      </div>
     </div>
   );
 }
@@ -151,115 +155,132 @@ export default function Page({ params }: PageProps) {
 
   if (!analysis) {
     return (
-      <div className="flex flex-col h-[calc(100vh-4rem)]">
+      <div className="flex flex-col h-full w-full">
         <LoadingState message="Loading analysis..." />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 h-[calc(100vh-4rem)] overflow-hidden">
-      <AnalysisHeader
-        rawFileName={analysis.rawFile?.name}
-        reactionDb={analysis.reactionDb}
-        config={analysis.config}
-      />
+    <div className="flex flex-col gap-4 p-4 w-full h-full">
+      <div className="flex flex-col gap-4 flex-shrink-0">
+        <AnalysisHeader
+          rawFileName={analysis.rawFile?.name}
+          reactionDb={analysis.reactionDb}
+          config={analysis.config}
+        />
 
-      <AnalysisStatus
-        status={analysis.status}
-        progress={analysis.progress}
-        log={analysis.log}
-        creationTime={analysis._creationTime}
-      />
+        <AnalysisStatus
+          status={analysis.status}
+          progress={analysis.progress}
+          log={analysis.log}
+          creationTime={analysis._creationTime}
+        />
+      </div>
 
-      {analysis.status === "running" && (
-        <Card className="flex-1 flex items-center justify-center">
-          <LoadingState message="Analysis in progress..." />
-        </Card>
-      )}
+      <div className="flex-1 min-h-0">
+        {analysis.status === "running" && (
+          <Card className="h-full flex items-center justify-center">
+            <LoadingState message="Analysis in progress..." />
+          </Card>
+        )}
 
-      {analysis.status === "failed" && (
-        <Card className="flex-1 flex items-center justify-center">
-          <ErrorState onRetry={handleRetry} />
-        </Card>
-      )}
+        {analysis.status === "failed" && (
+          <Card className="h-full flex items-center justify-center">
+            <ErrorState onRetry={handleRetry} />
+          </Card>
+        )}
 
-      {analysis.status === "complete" && (
-        <Card className="flex-1 relative overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm">
-          <GraphControls
-            nodeLabel={nodeLabel}
-            setNodeLabel={setNodeLabel}
-            edgeLabel={edgeLabel}
-            setEdgeLabel={setEdgeLabel}
-            nodeSize={nodeSize}
-            setNodeSize={setNodeSize}
-            hideEndogenousSubgraphs={hideEndogenousSubgraphs}
-            setHideEndogenousSubgraphs={setHideEndogenousSubgraphs}
-            ratioModeEnabled={ratioModeEnabled}
-            setRatioModeEnabled={setRatioModeEnabled}
-            highlightRedundant={highlightRedundant}
-            setHighlightRedundant={setHighlightRedundant}
-            colorScheme={colorScheme}
-            setColorScheme={setColorScheme}
-            graphData={graphData}
-            hasDrugSample={!!analysis.config.drugSample}
-            downloading={downloading}
-            {...downloadHandlers}
-            activeFilter={activeFilter}
-            onFilterApply={applyFilter}
-            onFilterClear={clearFilter}
-            highlightIsf={highlightIsf}
-            setHighlightIsf={setHighlightIsf}
-          />
-          <GraphLegend
-            highlightRedundant={highlightRedundant}
-            ratioModeEnabled={ratioModeEnabled}
-            ratioColColors={ratioColColors}
-            ionMzFilterValues={activeFilter}
-            colorScheme={colorScheme}
-            setColorScheme={setColorScheme}
-            highlightIsf={highlightIsf}
-          />
-          {graphError ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <ErrorState onRetry={handleGraphDataUpdate} />
-            </div>
-          ) : !graphData ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <LoadingState message="Preparing visualization..." />
-            </div>
-          ) : graphData.edges.length === 0 && graphData.nodes.length === 0 ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="flex flex-col items-center gap-2">
-                <FileWarning className="h-8 w-8 text-muted-foreground" />
-                <span className="text-muted-foreground">
-                  No data to display
-                </span>
+        {analysis.status === "complete" && (
+          <Card className="h-full relative overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm">
+            <div className="absolute inset-0 flex flex-col">
+              <div className="flex-shrink-0">
+                <GraphControls
+                  nodeLabel={nodeLabel}
+                  setNodeLabel={setNodeLabel}
+                  edgeLabel={edgeLabel}
+                  setEdgeLabel={setEdgeLabel}
+                  nodeSize={nodeSize}
+                  setNodeSize={setNodeSize}
+                  hideEndogenousSubgraphs={hideEndogenousSubgraphs}
+                  setHideEndogenousSubgraphs={setHideEndogenousSubgraphs}
+                  ratioModeEnabled={ratioModeEnabled}
+                  setRatioModeEnabled={setRatioModeEnabled}
+                  highlightRedundant={highlightRedundant}
+                  setHighlightRedundant={setHighlightRedundant}
+                  colorScheme={colorScheme}
+                  setColorScheme={setColorScheme}
+                  graphData={graphData}
+                  hasDrugSample={!!analysis.config.drugSample}
+                  downloading={downloading}
+                  {...downloadHandlers}
+                  activeFilter={activeFilter}
+                  onFilterApply={applyFilter}
+                  onFilterClear={clearFilter}
+                  highlightIsf={highlightIsf}
+                  setHighlightIsf={setHighlightIsf}
+                />
+              </div>
+
+              <div className="flex-shrink-0">
+                <GraphLegend
+                  highlightRedundant={highlightRedundant}
+                  ratioModeEnabled={ratioModeEnabled}
+                  ratioColColors={ratioColColors}
+                  ionMzFilterValues={activeFilter}
+                  colorScheme={colorScheme}
+                  setColorScheme={setColorScheme}
+                  highlightIsf={highlightIsf}
+                />
+              </div>
+
+              <div className="flex-1 relative min-h-0">
+                {graphError ? (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <ErrorState onRetry={handleGraphDataUpdate} />
+                  </div>
+                ) : !graphData ? (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <LoadingState message="Preparing visualization..." />
+                  </div>
+                ) : graphData.edges.length === 0 &&
+                  graphData.nodes.length === 0 ? (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <FileWarning className="h-8 w-8 text-muted-foreground" />
+                      <span className="text-muted-foreground">
+                        No data to display
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <Suspense
+                    fallback={
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <LoadingState message="Loading graph..." />
+                      </div>
+                    }
+                  >
+                    <div className="absolute inset-0">
+                      <GraphVisualization
+                        graphData={graphData}
+                        nodeLabel={nodeLabel}
+                        edgeLabel={edgeLabel}
+                        nodeIdtoSizes={nodeIdtoSizes ?? new Map()}
+                        ratioModeEnabled={ratioModeEnabled}
+                        ratioColColors={ratioColColors}
+                        highlightRedundant={highlightRedundant}
+                        connectedComponents={connectedComponents}
+                        highlightIsf={highlightIsf}
+                      />
+                    </div>
+                  </Suspense>
+                )}
               </div>
             </div>
-          ) : (
-            <Suspense
-              fallback={
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <LoadingState message="Loading graph..." />
-                </div>
-              }
-            >
-              <GraphVisualization
-                graphData={graphData}
-                nodeLabel={nodeLabel}
-                edgeLabel={edgeLabel}
-                nodeIdtoSizes={nodeIdtoSizes ?? new Map()}
-                ratioModeEnabled={ratioModeEnabled}
-                ratioColColors={ratioColColors}
-                highlightRedundant={highlightRedundant}
-                connectedComponents={connectedComponents}
-                highlightIsf={highlightIsf}
-              />
-            </Suspense>
-          )}
-        </Card>
-      )}
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
