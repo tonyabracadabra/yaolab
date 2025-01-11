@@ -33,7 +33,7 @@ export function AdvancedSetting({ form }: AdvancedSettingInterface) {
           {t("advanced-settings")}
         </div>
       </AccordionTrigger>
-      <AccordionContent className="flex gap-4 px-1">
+      <AccordionContent className="flex gap-4 px-1 overflow-auto">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">

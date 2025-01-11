@@ -353,14 +353,6 @@ export function GraphControls({
               <div className="flex-1 overflow-y-auto">
                 <TabsContent value="display" className="p-4 mt-0">
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      </div>
-                      <h5 className="text-sm font-medium">
-                        Node & Edge Display
-                      </h5>
-                    </div>
                     <div className="grid grid-cols-3 gap-4 pl-6">
                       <div className="space-y-2">
                         <Label
