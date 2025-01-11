@@ -37,7 +37,7 @@ export default async function LocaleLayout(props: {
     <html lang={locale} suppressHydrationWarning>
       <NextIntlClientProvider locale={locale} messages={messages}>
         <body
-          className={`h-full ${GeistSans.variable} ${GeistMono.variable} ${inter.className} ${urbanist.className}`}
+          className={`h-screen overflow-hidden ${GeistSans.variable} ${GeistMono.variable} ${inter.className} ${urbanist.className}`}
           suppressHydrationWarning
         >
           <ConvexClerkClientProvider>
@@ -49,11 +49,7 @@ export default async function LocaleLayout(props: {
               storageKey="yaolab-theme"
             >
               <SiteHeader />
-              <TooltipProvider>
-                <main className="h-[calc(100vh-68px)] overflow-auto">
-                  {children}
-                </main>
-              </TooltipProvider>
+              <TooltipProvider>{children}</TooltipProvider>
               <Toaster position="top-center" />
             </ThemeProvider>
             <Analytics />

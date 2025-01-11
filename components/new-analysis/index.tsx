@@ -110,21 +110,21 @@ export default function AnalysisCreation({
     <FormProvider {...methods}>
       <form
         onSubmit={methods.handleSubmit(onSubmit)}
-        className="flex flex-col h-full max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6"
+        className="flex flex-col w-full"
       >
-        <div className="flex-1 overflow-y-auto px-2">
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-              <div className="w-full">
+        <div className="flex-1 overflow-y-auto">
+          <div className="space-y-8 p-8 pb-24">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-2">
                 <RawFileFormField />
               </div>
-              <div className="w-full">
+              <div className="space-y-2">
                 <ReactionDbFormField />
               </div>
             </div>
 
             {rawFile && (
-              <Accordion type="multiple" className="w-full">
+              <Accordion type="multiple" className="w-full space-y-4">
                 <SampleGroups
                   id={rawFile}
                   enableDrugSample={enableDrugSample}
@@ -136,14 +136,14 @@ export default function AnalysisCreation({
           </div>
         </div>
 
-        <div className="sticky bottom-0 py-4 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="absolute bottom-4 right-4 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
           <div className="flex justify-center">
             <ShimmerButton
               disabled={isSubmitting}
               type="submit"
-              className="hover:opacity-90 py-2.5 px-4 disabled:cursor-not-allowed disabled:opacity-50"
+              className="px-8 py-2.5 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-base">
+              <span className="text-sm font-medium text-white">
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
                     Initializing analysis
