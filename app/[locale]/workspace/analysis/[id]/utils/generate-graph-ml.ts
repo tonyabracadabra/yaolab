@@ -77,7 +77,7 @@ ${attributes}
   const edgesXml = edges
     .map((edge: Edge, index: number) => {
       const attributes = Object.entries(edge)
-        .filter(([key]) => !["source", "target"].includes(key))
+        .filter(([key]) => !["id1", "id2", "source", "target"].includes(key))
         .map(([key, value]) => {
           if (value === null || value === undefined) return "";
           return `    <data key="${key}">${escapeXml(String(value))}</data>`;
@@ -85,7 +85,7 @@ ${attributes}
         .filter(Boolean)
         .join("\n");
 
-      return `  <edge id="e${index}" source="n${edge.source}" target="n${edge.target}">
+      return `  <edge id="e${index}" source="n${edge.id1}" target="n${edge.id2}">
 ${attributes}
   </edge>`;
     })

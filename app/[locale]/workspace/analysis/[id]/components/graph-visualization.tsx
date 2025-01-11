@@ -359,12 +359,13 @@ export function GraphVisualization({
 
   const getEdgeColor = (edge: ForceGraphEdge) => {
     if (edge.redundantData && highlightRedundant) {
-      return theme === "dark" ? "#ef4444" : "#dc2626";
+      return theme === "dark" ? "#ef4444" : "#dc2626"; // Red
     }
     if (edge.isIsf && highlightIsf) {
       return theme === "dark" ? "#8b5cf6" : "#7c3aed"; // Purple for ISF
     }
-    return theme === "dark" ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.2)";
+    // Increased opacity for better visibility in dark mode
+    return theme === "dark" ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.3)";
   };
 
   const getEdgeStyle = (edge: ForceGraphEdge) => {
@@ -409,7 +410,8 @@ export function GraphVisualization({
           ctx.moveTo(link.source.x ?? 0, link.source.y ?? 0);
           ctx.lineTo(link.target.x ?? 0, link.target.y ?? 0);
           ctx.strokeStyle = getEdgeColor(link);
-          ctx.lineWidth = 1;
+          // Slightly thicker lines in dark mode for better visibility
+          ctx.lineWidth = theme === "dark" ? 1.5 : 1;
           ctx.stroke();
           ctx.setLineDash([]); // Reset dash pattern
 
