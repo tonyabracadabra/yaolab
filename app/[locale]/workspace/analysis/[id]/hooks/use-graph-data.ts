@@ -28,14 +28,17 @@ export function useGraphData(
     components?: string[][];
     graphsWithPrototype?: GraphData;
     lastFilteredData?: GraphData;
-  }>({});
+    parsedData: { [key: string]: GraphData };
+  }>({
+    parsedData: {},
+  });
 
   const processGraphData = useCallback(
     async (edgesText: string, nodesText: string): Promise<GraphData> => {
       // Add parsing cache
       const cacheKey = `${edgesText.length}-${nodesText.length}`;
-      if (computationCacheRef.current[cacheKey]) {
-        return computationCacheRef.current[cacheKey];
+      if (computationCacheRef.current.parsedData[cacheKey]) {
+        return computationCacheRef.current.parsedData[cacheKey];
       }
 
       const parseConfig = {
@@ -104,12 +107,12 @@ export function useGraphData(
         });
 
       // Cache the result
-      computationCacheRef.current[cacheKey] = {
+      computationCacheRef.current.parsedData[cacheKey] = {
         nodes: Array.from(nodesMap.values()),
         edges: validatedEdges,
       };
 
-      return computationCacheRef.current[cacheKey];
+      return computationCacheRef.current.parsedData[cacheKey];
     },
     []
   );
@@ -228,11 +231,93 @@ export function useGraphData(
     return components;
   }, [state.filtered]);
 
-  // Memoize graphsWithPrototype computation
+  // Add this helper function for component layout
+  const layoutComponents = (
+    components: string[][],
+    nodes: Node[]
+  ): Map<string, { x: number; y: number; forceStrength: number }> => {
+    const positions = new Map<
+      string,
+      { x: number; y: number; forceStrength: number }
+    >();
+    const spacing = 600; // Increased spacing between components
+
+    const sortedComponents = [...components].sort(
+      (a, b) => b.length - a.length
+    );
+    const cols = Math.ceil(Math.sqrt(sortedComponents.length));
+    const rows = Math.ceil(sortedComponents.length / cols);
+
+    sortedComponents.forEach((component, componentIndex) => {
+      const row = Math.floor(componentIndex / cols);
+      const col = componentIndex % cols;
+      const centerX = (col - cols / 2) * spacing;
+      const centerY = (row - rows / 2) * spacing;
+
+      // Position prototype nodes with very light constraints
+      const prototypeNodes = component.filter(
+        (id) => nodes.find((n) => n.id === id)?.isPrototype
+      );
+
+      prototypeNodes.forEach((nodeId, index) => {
+        // More random initial positions for prototypes
+        const angle = (index / prototypeNodes.length) * 2 * Math.PI;
+        const radius = 30 + Math.random() * 20;
+        positions.set(nodeId, {
+          x: centerX + Math.cos(angle) * radius,
+          y: centerY + Math.sin(angle) * radius,
+          forceStrength: 0.2, // Light fixing for prototypes
+        });
+      });
+
+      // Position other nodes with very weak constraints
+      const remainingNodes = component.filter(
+        (id) => !prototypeNodes.includes(id)
+      );
+      remainingNodes.forEach((nodeId) => {
+        const connectedProtos = prototypeNodes.filter((protoId) =>
+          state.filtered!.edges.some(
+            (e) =>
+              (e.id1 === nodeId && e.id2 === protoId) ||
+              (e.id2 === nodeId && e.id1 === protoId)
+          )
+        );
+
+        if (connectedProtos.length > 0) {
+          // Position near connected prototypes with more randomness
+          const avgPos = connectedProtos.reduce(
+            (acc, protoId) => {
+              const pos = positions.get(protoId)!;
+              return { x: acc.x + pos.x, y: acc.y + pos.y };
+            },
+            { x: 0, y: 0 }
+          );
+
+          positions.set(nodeId, {
+            x: avgPos.x / connectedProtos.length + (Math.random() - 0.5) * 40,
+            y: avgPos.y / connectedProtos.length + (Math.random() - 0.5) * 40,
+            forceStrength: 0.1, // Very weak fixing for connected nodes
+          });
+        } else {
+          // Random position within component area
+          const radius = 50 + Math.random() * 30;
+          const angle = Math.random() * 2 * Math.PI;
+          positions.set(nodeId, {
+            x: centerX + Math.cos(angle) * radius,
+            y: centerY + Math.sin(angle) * radius,
+            forceStrength: 0.05, // Almost no fixing for unconnected nodes
+          });
+        }
+      });
+    });
+
+    return positions;
+  };
+
+  // Update graphsWithPrototype to use force strengths
   const graphsWithPrototype = useMemo(() => {
     if (!state.filtered?.nodes || !state.filtered?.edges) return;
 
-    // Return cached result if nothing has changed
     if (
       computationCacheRef.current.graphsWithPrototype &&
       computationCacheRef.current.lastFilteredData === state.filtered
@@ -240,7 +325,6 @@ export function useGraphData(
       return computationCacheRef.current.graphsWithPrototype;
     }
 
-    // Find components with prototype nodes
     const componentsWithPrototype = connectedComponents.filter((component) =>
       state.filtered!.nodes.some(
         (node) => component.includes(node.id) && node.isPrototype
@@ -252,23 +336,42 @@ export function useGraphData(
       return state.filtered;
     }
 
-    // Create efficient lookup using Set
+    const positions = layoutComponents(
+      componentsWithPrototype,
+      state.filtered.nodes
+    );
     const nodeIds = new Set(componentsWithPrototype.flat());
+
     const result = {
-      nodes: state.filtered.nodes.filter((node) => nodeIds.has(node.id)),
+      nodes: state.filtered.nodes
+        .map((node) => {
+          const pos = positions.get(node.id);
+          return {
+            ...node,
+            x: pos?.x ?? 0,
+            y: pos?.y ?? 0,
+            // Only very lightly fix positions
+            fx: pos?.forceStrength ? pos.x : undefined,
+            fy: pos?.forceStrength ? pos.y : undefined,
+            // Add very weak force strength
+            forceStrength: pos?.forceStrength ?? 0.05,
+          };
+        })
+        .filter((node) => nodeIds.has(node.id)),
       edges: state.filtered.edges.filter(
         (edge) => nodeIds.has(edge.id1) && nodeIds.has(edge.id2)
       ),
     };
 
-    // Cache the result
     computationCacheRef.current.graphsWithPrototype = result;
     return result;
   }, [state.filtered, connectedComponents]);
 
   // Reset cache when data changes
   useEffect(() => {
-    computationCacheRef.current = {};
+    computationCacheRef.current = {
+      parsedData: {},
+    };
   }, [result]);
 
   const setGraphData = useCallback((newData: GraphData | undefined) => {
