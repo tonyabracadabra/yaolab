@@ -3,6 +3,8 @@
     "dbaeumer.vscode-eslint",
     "mikestead.dotenv",
     "christian-kohler.npm-intellisense",
-    "esbenp.prettier-vscode"
+    "esbenp.prettier-vscode",
+    "inlang.vs-code-extension",
+    "lokalise.i18n-ally"
   ]
 }
