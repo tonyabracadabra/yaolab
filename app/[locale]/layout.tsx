@@ -20,13 +20,16 @@ export const metadata: Metadata = {
   description: "Discovering the unknowns",
 };
 
-export default async function LocaleLayout({
-  children,
-  params: { locale },
-}: {
+export default async function LocaleLayout(props: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const params = await props.params;
+
+  const { locale } = params;
+
+  const { children } = props;
+
   setRequestLocale(locale);
   const messages = await getMessages();
 
