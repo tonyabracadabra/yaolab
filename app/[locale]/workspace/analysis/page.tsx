@@ -115,20 +115,20 @@ export default function AnalysisList() {
             variant: "secondary" as const,
             icon: <Loader2 className="w-3 h-3 animate-spin" />,
             label: "Running",
-            className: "",
+            className: "px-2 py-0.5",
           },
           complete: {
             variant: "default" as const,
             icon: <CheckIcon className="w-3 h-3" />,
             label: "Complete",
             className:
-              "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25",
+              "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 px-2 py-0.5",
           },
           failed: {
             variant: "destructive" as const,
             icon: <XIcon className="w-3 h-3" />,
             label: "Failed",
-            className: "",
+            className: "px-2 py-0.5",
           },
         };
 
@@ -137,7 +137,7 @@ export default function AnalysisList() {
         return (
           <Badge
             variant={config.variant}
-            className={`flex items-center gap-1.5 ${config.className || ""}`}
+            className={`inline-flex items-center gap-1 text-xs font-medium whitespace-nowrap ${config.className}`}
           >
             {config.icon}
             <span>{config.label}</span>
