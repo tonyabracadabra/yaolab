@@ -28,44 +28,52 @@ export function AnalysisStatus({
   creationTime,
 }: AnalysisStatusProps) {
   return (
-    <div className="w-full flex justify-end gap-4">
-      <Tooltip>
-        <TooltipTrigger>
-          <div className="flex flex-col items-start justify-center gap-1">
-            <div className="flex items-center justify-center gap-24">
-              <div className="flex items-center justify-center gap-2">
-                <LucideWorkflow size={16} />
-                {status === "running" ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="animate-spin" size={14} />
-                    {progress.find((p) => p.status === "running")?.step}
-                  </div>
-                ) : status === "failed" ? (
-                  <Badge className="flex items-center justify-center gap-2 bg-destructive text-red-50 hover:bg-destructive/80">
-                    <XIcon size={12} />
-                    Failed
-                  </Badge>
-                ) : (
-                  <Badge className="flex items-center justify-center gap-2 text-green-50 bg-green-400 hover:opacity-80 hover:bg-green-400">
-                    <BadgeCheck size={12} />
-                    Completed
-                  </Badge>
-                )}
-              </div>
-              <div className="flex items-center justify-center gap-4 text-xs max-w-[200px]">
-                <TimerIcon size={16} />
-                {new Date(creationTime).toString().split("GMT")[0]}
-              </div>
+    <Tooltip>
+      <TooltipTrigger className="w-full px-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <LucideWorkflow className="text-muted-foreground" size={18} />
+              <span className="font-medium">Status</span>
             </div>
-            <div className="text-muted-foreground text-xs">
-              * Hover to view the workflow
-            </div>
+
+            {status === "running" ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="animate-spin text-primary" size={16} />
+                <span className="text-sm text-muted-foreground">
+                  {progress.find((p) => p.status === "running")?.step}
+                </span>
+              </div>
+            ) : status === "failed" ? (
+              <Badge
+                variant="destructive"
+                className="flex items-center gap-1.5"
+              >
+                <XIcon size={12} />
+                Failed
+              </Badge>
+            ) : (
+              <Badge
+                variant="default"
+                className="bg-green-500 hover:bg-green-500/90 flex items-center gap-1.5"
+              >
+                <BadgeCheck size={12} />
+                Completed
+              </Badge>
+            )}
           </div>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" className="-left-12">
-          <Workflow progress={progress} log={log} />
-        </TooltipContent>
-      </Tooltip>
-    </div>
+
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <TimerIcon size={16} />
+            <time dateTime={new Date(creationTime).toISOString()}>
+              {new Date(creationTime).toLocaleString()}
+            </time>
+          </div>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" align="start" className="w-[400px]">
+        <Workflow progress={progress} log={log} />
+      </TooltipContent>
+    </Tooltip>
   );
 }
