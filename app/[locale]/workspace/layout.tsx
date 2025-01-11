@@ -55,7 +55,7 @@ export default function WorkspaceLayout({
 
       <div className="flex-1 overflow-auto bg-background/50">
         {isAuthenticated ? (
-          <div className="h-full p-6">{children}</div>
+          <div className="h-full">{children}</div>
         ) : (
           <div className="flex items-center justify-center h-full">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
