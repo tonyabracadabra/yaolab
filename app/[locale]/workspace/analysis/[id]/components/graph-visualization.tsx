@@ -297,26 +297,19 @@ export function GraphVisualization({
     if (!fgRef.current) return;
 
     // Configure forces for a more natural and clustered layout
-    fgRef.current
-      .d3Force("charge")
-      .strength(-200) // Stronger repulsion between nodes
-      .distanceMax(200); // Larger max distance for better spread
+    fgRef.current.d3Force("charge").strength(-200).distanceMax(200);
 
     fgRef.current
       .d3Force("link")
       .distance((link: ForceGraphEdge) => {
-        // Shorter distances for connected nodes
         return link.redundantData || link.isIsf ? 40 : 60;
       })
       .strength((link: ForceGraphEdge) => {
-        // Stronger attraction for special edges
         return link.redundantData || link.isIsf ? 2 : 1;
       });
 
-    // Stronger centering force
     fgRef.current.d3Force("center").strength(1);
 
-    // Add collision force to prevent node overlap
     fgRef.current.d3Force(
       "collision",
       d3
@@ -325,11 +318,17 @@ export function GraphVisualization({
         .strength(0.8)
     );
 
-    // Initial positioning
-    setTimeout(() => {
-      fgRef.current.zoomToFit(400, 50);
-      handleRenderMinimap();
-    }, 250);
+    // Wrap the initial zoom in both setTimeout and requestAnimationFrame
+    const timer = setTimeout(() => {
+      requestAnimationFrame(() => {
+        if (fgRef.current) {
+          fgRef.current.zoomToFit(400, 50);
+          handleRenderMinimap();
+        }
+      });
+    }, 500); // Increased timeout to ensure graph is ready
+
+    return () => clearTimeout(timer);
   }, [graphData, handleRenderMinimap, nodeIdtoSizes]);
 
   // Add zoom level control
@@ -338,24 +337,34 @@ export function GraphVisualization({
     fgRef.current.zoom(zoomLevel);
   }, [zoomLevel]);
 
-  const handleNodeClick = (node: ForceGraphNode, event: MouseEvent) => {
-    if (!node.id || !fgRef.current) return;
+  const handleNodeClick = useCallback(
+    (node: ForceGraphNode, event: MouseEvent) => {
+      if (!node.id || !fgRef.current) return;
 
-    setSelectedNode(node);
-    setSelectedEdge(null);
+      setSelectedNode(node);
+      setSelectedEdge(null);
 
-    const zoomDuration = 1000;
-    const padding = 50;
+      // Wrap zoom operation in requestAnimationFrame
+      requestAnimationFrame(() => {
+        if (!fgRef.current) return;
 
-    if (connectedComponents?.length) {
-      const component = connectedComponents.find((cc) => cc.includes(node.id));
-      fgRef.current.zoomToFit(zoomDuration, padding, (n: { id: string }) =>
-        component?.includes(n.id)
-      );
-    } else {
-      fgRef.current.zoomToFit(zoomDuration, padding);
-    }
-  };
+        const zoomDuration = 1000;
+        const padding = 50;
+
+        if (connectedComponents?.length) {
+          const component = connectedComponents.find((cc) =>
+            cc.includes(node.id)
+          );
+          fgRef.current.zoomToFit(zoomDuration, padding, (n: { id: string }) =>
+            component?.includes(n.id)
+          );
+        } else {
+          fgRef.current.zoomToFit(zoomDuration, padding);
+        }
+      });
+    },
+    [connectedComponents]
+  );
 
   const getEdgeColor = (edge: ForceGraphEdge) => {
     if (edge.redundantData && highlightRedundant) {
