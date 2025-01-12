@@ -48,7 +48,7 @@ class AnalysisStatus(AutoValueEnumMeta):
 
 class MSTool(str, Enum):
     MZmine3 = "MZmine3"
-    MDial = "MDial"
+    MSDial = "MSDial"
 
 
 class Reaction(BaseModel):

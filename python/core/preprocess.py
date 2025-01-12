@@ -31,7 +31,7 @@ def _preprocess_mzmine3(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
     return df, sample_cols
 
 
-def _preprocess_mdial(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
+def _preprocess_msdial(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
     # Read the first row to get the columns with NA values
     na_cols_mask = pd.read_csv(bytesIO, sep="\t", nrows=1).columns.str.contains(
         "NA", na=False
@@ -68,7 +68,7 @@ def _preprocess_mdial(bytesIO: BytesIO) -> tuple[pd.DataFrame, list[str]]:
 
 preprocessors: dict[MSTool, Callable[[BytesIO], tuple[pd.DataFrame, list[str]]]] = {
     MSTool.MZmine3: _preprocess_mzmine3,
-    MSTool.MDial: _preprocess_mdial,
+    MSTool.MSDial: _preprocess_msdial,
 }
 
 

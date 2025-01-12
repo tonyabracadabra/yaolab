@@ -124,3 +124,4 @@ async def preprocess_ions(
         raise HTTPException(status_code=400, detail=str(e))
     finally:
         convex.action("actions:removeFile", {"storageId": input.targetedIons})
+        convex.action("actions:removeFile", {"storageId": input.targetedIons})
