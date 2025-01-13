@@ -37,6 +37,7 @@ import {
   Download,
   MinusCircle,
   MoreHorizontal,
+  Plus,
   PlusCircle,
   Trash2,
 } from "lucide-react";
@@ -217,7 +218,12 @@ export default function ReactionDBList() {
       action={
         <ReactionDbCreationDialog
           onCreate={() => {}}
-          trigger={<Button>Create Reaction Database</Button>}
+          trigger={
+            <Button size="sm" className="h-8">
+              <Plus className="w-3.5 h-3.5 mr-2" />
+              Create Reaction Database
+            </Button>
+          }
         />
       }
     >

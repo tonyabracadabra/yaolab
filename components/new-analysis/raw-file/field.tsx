@@ -100,7 +100,7 @@ export function RawFileFormField() {
                         type="button"
                         variant="outline"
                         size="xs"
-                        className="font-bold text-primary px-2"
+                        className="font-bold text-primary mx-1"
                       >
                         <span>✨ {t("create")}</span>
                       </Button>

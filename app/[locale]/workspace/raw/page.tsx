@@ -27,7 +27,7 @@ import { useUser } from "@clerk/nextjs";
 import { ColumnDef } from "@tanstack/react-table";
 import Avatar from "boring-avatars";
 import { useAction, useQuery } from "convex/react";
-import { MoreHorizontal, Trash2 } from "lucide-react";
+import { MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -132,7 +132,12 @@ export default function RawfileList() {
       action={
         <RawFileCreationDialog
           onCreate={() => {}}
-          trigger={<Button>Create Raw File</Button>}
+          trigger={
+            <Button size="sm" className="h-8">
+              <Plus className="w-3.5 h-3.5 mr-2" />
+              Create Raw File
+            </Button>
+          }
         />
       }
     >
