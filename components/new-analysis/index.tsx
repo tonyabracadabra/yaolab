@@ -128,7 +128,7 @@ export default function AnalysisCreation({
         onSubmit={methods.handleSubmit(onSubmit)}
         className="flex flex-col w-full"
       >
-        <div className="space-y-8 p-8">
+        <div className="space-y-8 p-8 overflow-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-2">
               <RawFileFormField />
