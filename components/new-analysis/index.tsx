@@ -1,5 +1,6 @@
 import ShimmerButton from "@/components/magicui/shimmer-button";
 import { Accordion } from "@/components/ui/accordion";
+import { Card } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
@@ -11,7 +12,7 @@ import { AnalysisCreationInputType } from "@/lib/utils";
 import { useAuth } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction } from "convex/react";
-import { Loader2 } from "lucide-react";
+import { ArrowRight, Database, FileText, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -127,18 +128,83 @@ export default function AnalysisCreation({
         onSubmit={methods.handleSubmit(onSubmit)}
         className="flex flex-col w-full"
       >
-        <div className="flex-1 overflow-y-auto">
-          <div className="space-y-8 p-8 pb-24">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <RawFileFormField />
-              </div>
-              <div className="space-y-2">
-                <ReactionDbFormField />
-              </div>
+        <div className="space-y-8 p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <RawFileFormField />
             </div>
+            <div className="space-y-2">
+              <ReactionDbFormField />
+            </div>
+          </div>
 
-            {rawFile && (
+          {!rawFile || !reactionDb ? (
+            <div className="mt-8">
+              <Card className="p-6 border border-dashed">
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h3 className="text-sm font-medium mb-1">
+                      Getting Started with Your Analysis
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Follow these steps to begin analyzing your mass
+                      spectrometry data
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="p-3 rounded-lg border bg-card/50 transition-colors hover:bg-card">
+                      <div className="flex gap-2.5">
+                        <FileText className="h-4 w-4 text-primary mt-0.5" />
+                        <div>
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <h4 className="text-xs font-medium">
+                              Select Raw File
+                            </h4>
+                            <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 leading-4 rounded">
+                              Step 1
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">
+                            Choose your mass spectrometry data file (mzML/mzXML)
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-lg border bg-card/50 transition-colors hover:bg-card">
+                      <div className="flex gap-2.5">
+                        <Database className="h-4 w-4 text-primary mt-0.5" />
+                        <div>
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <h4 className="text-xs font-medium">
+                              Choose Reaction Database
+                            </h4>
+                            <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 leading-4 rounded">
+                              Step 2
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">
+                            Select a reaction database to identify potential
+                            reactions
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-2 text-[11px] text-muted-foreground">
+                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground animate-pulse" />
+                    <span>
+                      Configure sample groups and advanced settings after
+                      selection
+                    </span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          ) : (
+            rawFile && (
               <Accordion type="multiple" className="w-full space-y-4">
                 <SampleGroups
                   id={rawFile}
@@ -147,8 +213,8 @@ export default function AnalysisCreation({
                 />
                 <AdvancedSetting />
               </Accordion>
-            )}
-          </div>
+            )
+          )}
         </div>
 
         <div className="absolute bottom-4 right-4 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">

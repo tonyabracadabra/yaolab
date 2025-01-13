@@ -65,7 +65,6 @@ const ReactionForm = ({ onReactionAdd }: ReactionFormInterface) => {
           <span className="text-sm text-gray-400">(e.g. C6H12O6)</span>
         </FormLabel>
         <Input
-          defaultValue=""
           value={formulaChange}
           onChange={(e) => setFormulaChange(e.target.value)}
         />
@@ -78,7 +77,6 @@ const ReactionForm = ({ onReactionAdd }: ReactionFormInterface) => {
           </span>
         </FormLabel>
         <Input
-          defaultValue=""
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
@@ -303,11 +301,7 @@ export function ReactionDbCreationDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Name</FormLabel>
-                  <Input
-                    defaultValue="My Reaction Database"
-                    type="text"
-                    {...field}
-                  />
+                  <Input type="text" {...field} />
                 </FormItem>
               )}
             />
