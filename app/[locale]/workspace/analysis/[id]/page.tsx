@@ -162,7 +162,7 @@ export default function Page({ params }: PageProps) {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 w-full h-[calc(100vh-4rem)]">
+    <div className="flex flex-col gap-4 p-4 w-full h-full">
       <div className="flex flex-col gap-4 flex-shrink-0">
         <AnalysisHeader
           rawFileName={analysis.rawFile?.name}
