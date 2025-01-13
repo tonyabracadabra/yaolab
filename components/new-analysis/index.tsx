@@ -1,4 +1,10 @@
+import ShimmerButton from "@/components/magicui/shimmer-button";
 import { Accordion } from "@/components/ui/accordion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { api } from "@/convex/_generated/api";
 import { AnalysisCreationInputSchema } from "@/convex/schema";
 import { AnalysisCreationInputType } from "@/lib/utils";
@@ -11,7 +17,6 @@ import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Id } from "../../convex/_generated/dataModel";
-import ShimmerButton from "../magicui/shimmer-button";
 import { AdvancedSetting } from "./advanced-setting";
 import { RawFileFormField } from "./raw-file/field";
 import { ReactionDbFormField } from "./reaction-db/field";
@@ -70,6 +75,16 @@ export default function AnalysisCreation({
   );
 
   const rawFile = methods.watch("rawFile");
+  const reactionDb = methods.watch("reactionDb");
+  const bioSamples = methods.watch("config.bioSamples");
+
+  const isFormValid = () => {
+    if (!rawFile || !reactionDb) return false;
+
+    return bioSamples.some(
+      (sample) => sample.sample.length > 0 && sample.blank.length > 0
+    );
+  };
 
   const onSubmit = async (values: AnalysisCreationInputType) => {
     setIsSubmitting(true);
@@ -138,22 +153,53 @@ export default function AnalysisCreation({
 
         <div className="absolute bottom-4 right-4 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
           <div className="flex justify-center">
-            <ShimmerButton
-              disabled={isSubmitting}
-              type="submit"
-              className="px-8 py-2.5 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <span className="text-sm font-medium text-white">
-                {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    Initializing analysis
-                    <Loader2 className="h-4 w-4 animate-spin" />
+            {isSubmitting || !isFormValid() ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <ShimmerButton
+                      disabled
+                      onClick={methods.handleSubmit(onSubmit)}
+                      shimmerColor="#666666"
+                      className="px-8 text-foreground/70 cursor-not-allowed hover:no-underline font-medium"
+                    >
+                      {isSubmitting ? (
+                        <div className="flex items-center gap-2">
+                          Initializing analysis
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        </div>
+                      ) : (
+                        t("start-analysis")
+                      )}
+                    </ShimmerButton>
                   </div>
-                ) : (
-                  t("start-analysis")
-                )}
-              </span>
-            </ShimmerButton>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  align="center"
+                  className="max-w-[300px]"
+                >
+                  {!isFormValid() && (
+                    <p>
+                      Please fill in all required fields: raw file, reaction
+                      database, and at least one sample group with both sample
+                      and blank files.
+                    </p>
+                  )}
+                  {isSubmitting && (
+                    <p>Analysis is being initialized, please wait...</p>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <ShimmerButton
+                onClick={methods.handleSubmit(onSubmit)}
+                shimmerColor="#ffffff"
+                className="px-8 text-foreground font-medium"
+              >
+                {t("start-analysis")}
+              </ShimmerButton>
+            )}
           </div>
         </div>
       </form>

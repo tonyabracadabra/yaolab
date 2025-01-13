@@ -59,7 +59,7 @@ export function RawFileFormField() {
                       variant="ghost"
                       className="w-full px-4 py-2 gap-2 flex items-center justify-start hover:bg-accent/50"
                       onClick={() => {
-                        router.push("/workspace/raw-files");
+                        router.push("/workspace/raw");
                       }}
                     >
                       <Settings2 className="h-4 w-4" />
