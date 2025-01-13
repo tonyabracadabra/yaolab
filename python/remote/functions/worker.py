@@ -1,10 +1,9 @@
 import modal
-from remote.image import image
-
 from core.analysis import AnalysisWorker
-from core.models.analysis import AnalysisResult, AnalysisTriggerInput
+from core.models.analysis import AnalysisResult, AnalysisStatus, AnalysisTriggerInput
 from core.utils.convex import ConvexClient, get_convex
 from core.utils.rprint import rlog as log
+from remote.image import image
 
 app = modal.App("analysis-worker")
 
@@ -38,8 +37,8 @@ async def run_analysis_workflow(
     Returns:
         AnalysisResult containing nodes and edges
     """
+    convex: ConvexClient = get_convex(convex_token)
     try:
-        convex: ConvexClient = get_convex(convex_token)
         worker = AnalysisWorker(
             id=input.id,
             convex=convex,
@@ -48,4 +47,8 @@ async def run_analysis_workflow(
 
     except Exception as e:
         log(f"Analysis workflow failed: {str(e)}")
+        convex.mutation(
+            "analyses:updateStepStatus",
+            {"id": input.id, "step": "start", "status": AnalysisStatus.FAILED},
+        )
         raise

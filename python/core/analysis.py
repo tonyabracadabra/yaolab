@@ -2,12 +2,12 @@ from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
+from core.models.analysis import Analysis, AnalysisStatus
+from core.utils.constants import TargetIonsColumn
 from pydantic import BaseModel
 from scipy.sparse import coo_matrix
 
 from convex import ConvexClient
-from core.models.analysis import Analysis, AnalysisStatus
-from core.utils.constants import TargetIonsColumn
 
 
 class AnalysisWorker(BaseModel):
@@ -53,6 +53,9 @@ class AnalysisWorker(BaseModel):
         analysis_raw = self.convex.query("analyses:get", {"id": self.id})
 
         try:
+            if analysis_raw["rawFile"]["tool"] == "MDial":
+                analysis_raw["rawFile"]["tool"] = "MSDial"
+
             analysis = Analysis(**analysis_raw)
             config = analysis.config
             spectra, targeted_ions_df, samples_df, reaction_df = await self._run_step(
