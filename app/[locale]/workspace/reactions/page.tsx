@@ -2,6 +2,8 @@
 
 import { downloadDefaultReactions } from "@/actions/default-reactions";
 import { DataTable } from "@/components/data-table";
+import { DataTablePageLayout } from "@/components/data-table-page-layout";
+import { ReactionDbCreationDialog } from "@/components/new-analysis/reaction-db/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -210,15 +212,21 @@ export default function ReactionDBList() {
   );
 
   return (
-    <div className="flex flex-col h-full max-w-screen-xl mx-auto px-8 py-4">
-      <div className="flex-1 flex flex-col min-h-0">
-        <DataTable
-          columns={columns}
-          data={reactionDbs}
-          pageSize={10}
-          footerContent={footerContent}
+    <DataTablePageLayout
+      title="Reaction Databases"
+      action={
+        <ReactionDbCreationDialog
+          onCreate={() => {}}
+          trigger={<Button>Create Reaction Database</Button>}
         />
-      </div>
-    </div>
+      }
+    >
+      <DataTable
+        columns={columns}
+        data={reactionDbs}
+        pageSize={10}
+        footerContent={footerContent}
+      />
+    </DataTablePageLayout>
   );
 }

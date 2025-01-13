@@ -42,6 +42,7 @@ import {
 
 interface RawFileCreationInterface {
   onCreate: (id: Id<"rawFiles">) => void;
+  trigger?: React.ReactNode;
 }
 
 const LocalRawFileInputSchema = RawFileCreationInputSchema.extend({
@@ -50,7 +51,10 @@ const LocalRawFileInputSchema = RawFileCreationInputSchema.extend({
 });
 type RawFileCreationInput = z.infer<typeof LocalRawFileInputSchema>;
 
-export function RawFileCreationDialog({ onCreate }: RawFileCreationInterface) {
+export function RawFileCreationDialog({
+  onCreate,
+  trigger,
+}: RawFileCreationInterface) {
   const form = useForm<RawFileCreationInput>({
     defaultValues: {
       name: "My Raw File",
@@ -145,16 +149,7 @@ export function RawFileCreationDialog({ onCreate }: RawFileCreationInterface) {
         }
       }}
     >
-      <DialogTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="xs"
-          className="font-bold text-primary"
-        >
-          <span>✨ {t("create")}</span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
         onInteractOutside={(e) => {
           e.preventDefault();

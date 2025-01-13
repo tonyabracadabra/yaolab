@@ -134,6 +134,16 @@ export function ReactionDbFormField() {
                   create: () => (
                     <ReactionDbCreationDialog
                       onCreate={(id: Id<"reactionDatabases">) => onChange(id)}
+                      trigger={
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="xs"
+                          className="font-bold text-primary px-2"
+                        >
+                          <span>✨ {t("create")}</span>
+                        </Button>
+                      }
                     />
                   ),
                 })}

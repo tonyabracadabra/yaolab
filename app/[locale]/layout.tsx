@@ -1,4 +1,3 @@
-import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,7 +8,6 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { Inter, Urbanist } from "next/font/google";
-import "./globals.css";
 import ConvexClerkClientProvider from "./provider";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -48,7 +46,6 @@ export default async function LocaleLayout(props: {
               disableTransitionOnChange
               storageKey="yaolab-theme"
             >
-              <SiteHeader />
               <TooltipProvider>{children}</TooltipProvider>
               <Toaster position="top-center" />
             </ThemeProvider>

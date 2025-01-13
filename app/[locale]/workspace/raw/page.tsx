@@ -1,6 +1,8 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
+import { DataTablePageLayout } from "@/components/data-table-page-layout";
+import { RawFileCreationDialog } from "@/components/new-analysis/raw-file/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +27,7 @@ import { useUser } from "@clerk/nextjs";
 import { ColumnDef } from "@tanstack/react-table";
 import Avatar from "boring-avatars";
 import { useAction, useQuery } from "convex/react";
-import { Download, MoreHorizontal, Trash2 } from "lucide-react";
+import { MoreHorizontal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -124,44 +126,17 @@ export default function RawfileList() {
     },
   ];
 
-  const footerContent = (
-    <div className="flex items-center justify-between gap-8">
-      <div className="flex-1 max-w-2xl">
-        <h4 className="text-sm font-medium mb-1">Download Sample Raw File</h4>
-        <p className="text-sm text-muted-foreground">
-          Download a sample raw file to understand the format and structure
-          required for analysis. This will help you prepare your own data files
-          correctly.
-        </p>
-      </div>
-      <Button
-        size="lg"
-        onClick={() => {
-          const a = document.createElement("a");
-          a.href = "/files/sample-raw.csv";
-          a.download = "sample-raw.csv";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        }}
-        className="flex items-center gap-2 min-w-[200px]"
-      >
-        <Download className="h-4 w-4" />
-        Download Sample
-      </Button>
-    </div>
-  );
-
   return (
-    <div className="flex flex-col h-full max-w-screen-xl mx-auto px-8 py-4">
-      <div className="flex-1 flex flex-col min-h-0">
-        <DataTable
-          columns={columns}
-          data={rawFiles}
-          pageSize={10}
-          footerContent={footerContent}
+    <DataTablePageLayout
+      title="Raw Files"
+      action={
+        <RawFileCreationDialog
+          onCreate={() => {}}
+          trigger={<Button>Create Raw File</Button>}
         />
-      </div>
-    </div>
+      }
+    >
+      <DataTable columns={columns} data={rawFiles} pageSize={10} />
+    </DataTablePageLayout>
   );
 }

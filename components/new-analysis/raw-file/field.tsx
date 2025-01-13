@@ -89,6 +89,16 @@ export function RawFileFormField() {
                 create: () => (
                   <RawFileCreationDialog
                     onCreate={(id: Id<"rawFiles">) => onChange(id)}
+                    trigger={
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="xs"
+                        className="font-bold text-primary px-2"
+                      >
+                        <span>✨ {t("create")}</span>
+                      </Button>
+                    }
                   />
                 ),
               })}

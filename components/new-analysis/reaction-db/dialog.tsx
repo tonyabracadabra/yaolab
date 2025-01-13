@@ -232,14 +232,15 @@ const ReactionsFieldsArray = ({
 
 interface ReactionDbCreationInterface {
   onCreate: (id: Id<"reactionDatabases">) => void;
+  trigger?: React.ReactNode;
 }
 
 export function ReactionDbCreationDialog({
   onCreate,
+  trigger,
 }: ReactionDbCreationInterface) {
   const form = useForm<ReactionDatabaseInput>({
     defaultValues: {
-      // random name with date
       name: `My Reaction Database ${new Date().toLocaleDateString()}`,
       ionMode: "pos",
     },
@@ -280,16 +281,7 @@ export function ReactionDbCreationDialog({
         }
       }}
     >
-      <DialogTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="xs"
-          className="font-bold text-primary"
-        >
-          <span>✨ {t("create")} </span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
         onInteractOutside={(e) => {
           e.preventDefault();
