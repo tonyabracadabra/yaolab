@@ -12,6 +12,7 @@
     "@aws-sdk/client-s3": "^3.726.1",
     "@aws-sdk/s3-request-presigner": "^3.726.1",
     "@clerk/nextjs": "^4.31.6",
+    "@convex-dev/migrations": "^0.2.2",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
