@@ -158,10 +158,11 @@ export function SampleGroups({
   const { control, setValue, watch } =
     useFormContext<AnalysisCreationInputType>();
 
-  const sampleCols =
-    useQuery(api.rawFiles.get, {
-      id,
-    })?.sampleCols || [];
+  const rawFileData = useQuery(api.rawFiles.get, { id });
+  const sampleCols = useMemo(
+    () => rawFileData?.sampleCols || [],
+    [rawFileData?.sampleCols]
+  );
 
   const {
     fields: bioSampleFields,

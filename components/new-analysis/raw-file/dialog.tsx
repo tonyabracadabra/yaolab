@@ -105,7 +105,7 @@ export function RawFileCreationDialog({ onCreate }: RawFileCreationInterface) {
 
       const { storageId: processedId, sampleCols } = await preprocessIons({
         targetedIons: targetedIonsId,
-        tool: values.tool,
+        tool: values.tool as "MSDial" | "MZmine3",
         token,
       });
 
