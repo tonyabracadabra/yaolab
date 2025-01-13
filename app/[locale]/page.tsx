@@ -265,7 +265,7 @@ const features = [
 
 export default function Home() {
   return (
-    <div className="p-8 px-8 h-full w-full sm:px-16 xl:px-32 font-sans overflow-auto">
+    <div className="p-8 px-8 h-full w-full sm:px-16 xl:px-32 font-sans overflow-auto mt-12">
       <BentoGrid className="relative">
         <div
           className="z-10 flex items-start w-full justify-start pb-4 absolute left-6 top-6"
