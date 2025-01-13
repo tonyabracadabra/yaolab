@@ -15,7 +15,6 @@ import type {
 } from "convex/server";
 import type * as actions from "../actions.js";
 import type * as analyses from "../analyses.js";
-import type * as migrations_0000_update_mdial_to_msdial from "../migrations/0000_update_mdial_to_msdial.js";
 import type * as rawFiles from "../rawFiles.js";
 import type * as reactions from "../reactions.js";
 import type * as utils from "../utils.js";
@@ -31,7 +30,6 @@ import type * as utils from "../utils.js";
 declare const fullApi: ApiFromModules<{
   actions: typeof actions;
   analyses: typeof analyses;
-  "migrations/0000_update_mdial_to_msdial": typeof migrations_0000_update_mdial_to_msdial;
   rawFiles: typeof rawFiles;
   reactions: typeof reactions;
   utils: typeof utils;
