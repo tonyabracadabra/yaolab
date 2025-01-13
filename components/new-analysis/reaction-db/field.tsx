@@ -89,7 +89,13 @@ export function ReactionDbFormField() {
                   value={value}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Reaction database to use" />
+                    <SelectValue
+                      placeholder={
+                        <span className="text-muted-foreground">
+                          Reaction database to use
+                        </span>
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent
                     className="min-w-[300px]"

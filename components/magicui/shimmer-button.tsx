@@ -19,7 +19,7 @@ const ShimmerButton = React.forwardRef<HTMLButtonElement, ShimmerButtonProps>(
       shimmerSize = "0.05em",
       shimmerDuration = "3s",
       borderRadius = "100px",
-      background = "rgba(0, 0, 0, 1)",
+      background,
       className,
       disabled,
       children,
@@ -36,12 +36,16 @@ const ShimmerButton = React.forwardRef<HTMLButtonElement, ShimmerButtonProps>(
             "--radius": borderRadius,
             "--speed": shimmerDuration,
             "--cut": shimmerSize,
-            "--bg": disabled ? "rgba(0, 0, 0, 0.5)" : background,
+            "--bg": disabled
+              ? "rgba(0, 0, 0, 0.5)"
+              : background || "var(--background)",
           } as CSSProperties
         }
         className={cn(
-          "group relative z-0 flex cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap border border-white/10 px-6 py-3 text-white [background:var(--bg)] [border-radius:var(--radius)] dark:text-black",
-          "transform-gpu transition-transform duration-300 ease-in-out active:translate-y-[1px]",
+          "group relative z-0 flex cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap px-6 py-3",
+          "border border-border/50 dark:border-border/30",
+          "text-foreground bg-background dark:bg-muted [border-radius:var(--radius)]",
+          "transform-gpu transition-all duration-300 ease-in-out hover:border-border/80 dark:hover:border-border/50 active:translate-y-[1px]",
           disabled &&
             "cursor-not-allowed opacity-50 hover:no-underline active:translate-y-0",
           className
@@ -61,14 +65,14 @@ const ShimmerButton = React.forwardRef<HTMLButtonElement, ShimmerButtonProps>(
             </div>
 
             {/* Highlight */}
-            <div className="insert-0 absolute h-full w-full rounded-2xl px-4 py-1.5 text-sm font-medium shadow-[inset_0_-8px_10px_#ffffff1f] transform-gpu transition-all duration-300 ease-in-out group-hover:shadow-[inset_0_-6px_10px_#ffffff3f] group-active:shadow-[inset_0_-10px_10px_#ffffff3f]" />
+            <div className="insert-0 absolute h-full w-full rounded-2xl px-4 py-1.5 text-sm font-medium shadow-[inset_0_-8px_10px_#ffffff1f] transform-gpu transition-all duration-300 ease-in-out group-hover:shadow-[inset_0_-6px_10px_#ffffff3f] group-active:shadow-[inset_0_-10px_10px_#ffffff3f] dark:shadow-[inset_0_-8px_10px_#ffffff0f] dark:group-hover:shadow-[inset_0_-6px_10px_#ffffff1f] dark:group-active:shadow-[inset_0_-10px_10px_#ffffff1f]" />
           </>
         )}
 
         {children}
 
         {/* backdrop */}
-        <div className="absolute -z-20 [background:var(--bg)] [border-radius:var(--radius)] [inset:var(--cut)]" />
+        <div className="absolute -z-20 bg-background dark:bg-muted [border-radius:var(--radius)] [inset:var(--cut)]" />
       </button>
     );
   }

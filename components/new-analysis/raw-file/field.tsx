@@ -50,7 +50,13 @@ export function RawFileFormField() {
                 value={value}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Raw File to be analyzed" />
+                  <SelectValue
+                    placeholder={
+                      <span className="text-muted-foreground">
+                        Raw File to be analyzed
+                      </span>
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent
                   className="min-w-[300px]"
