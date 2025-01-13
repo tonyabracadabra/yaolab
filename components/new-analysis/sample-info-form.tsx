@@ -25,7 +25,7 @@ export function SampleInfoForm({ index }: SampleInfoFormProps) {
 
   return (
     <Accordion type="single" collapsible className="w-full">
-      <AccordionItem value="sample-info" className="border rounded-lg">
+      <AccordionItem value="sample-info" className="border-none">
         <AccordionTrigger className="px-4 hover:no-underline [&[data-state=open]>div>div]:text-primary">
           <div className="flex items-center gap-4">
             <FormField

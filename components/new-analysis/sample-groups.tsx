@@ -1,7 +1,9 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { AnalysisCreationInputType } from "@/lib/utils";
+import { CrossCircledIcon } from "@radix-ui/react-icons";
 import { useQuery } from "convex/react";
+import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo } from "react";
 import { Path, useFieldArray, useFormContext, useWatch } from "react-hook-form";
@@ -209,65 +211,86 @@ export function SampleGroups({
           <Badge variant="secondary">3</Badge> Sample Groups Configuration
         </div>
       </AccordionTrigger>
-      <AccordionContent className="dark:bg-gray-900/80 bg-gray-100/80 rounded-xl p-4">
-        <div className="space-y-6">
+      <AccordionContent className="pt-4">
+        <div className="space-y-6 px-1">
           {bioSampleFields.map((field, index) => (
-            <div key={field.id} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">
-                  Sample Group {index + 1}
-                </h3>
+            <div
+              key={field.id}
+              className="group relative rounded-xl border border-border/40 bg-card transition-all hover:border-border/80"
+            >
+              <div className="absolute right-4 top-4">
                 {index > 0 && (
                   <Button
-                    variant="destructive"
-                    size="sm"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => removeBioSample(index)}
+                    className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200"
                   >
-                    Remove Group
+                    <CrossCircledIcon className="h-4 w-4" />
                   </Button>
                 )}
               </div>
 
-              <FormField
-                control={control}
-                name={`config.bioSamples.${index}.name`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Group Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex items-center gap-4 mt-4">
-                <SampleGroupFieldArray
-                  options={sampleCols}
-                  bioSampleIndex={index}
-                  type="sample"
-                />
-                <div className="flex h-full items-center justify-center translate-y-2">
-                  vs
+              <div className="flex flex-col gap-6 p-6">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                    <span className="text-sm font-medium text-primary">
+                      {index + 1}
+                    </span>
+                  </div>
+                  <FormField
+                    control={control}
+                    name={`config.bioSamples.${index}.name`}
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormControl>
+                          <Input
+                            {...field}
+                            className="h-9 bg-transparent px-0 text-base font-medium border-0 border-b border-border/40 rounded-none hover:border-border/80 focus-visible:border-primary focus-visible:ring-0 transition-colors"
+                            placeholder="Enter group name..."
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-                <SampleGroupFieldArray
-                  options={sampleCols}
-                  bioSampleIndex={index}
-                  type="blank"
-                />
+
+                <div className="grid grid-cols-[1fr,auto,1fr] items-start gap-4">
+                  <div className="space-y-1">
+                    <SampleGroupFieldArray
+                      options={sampleCols}
+                      bioSampleIndex={index}
+                      type="sample"
+                    />
+                  </div>
+                  <div className="flex h-full items-center justify-center pt-4">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      vs
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <SampleGroupFieldArray
+                      options={sampleCols}
+                      bioSampleIndex={index}
+                      type="blank"
+                    />
+                  </div>
+                </div>
+
+                <SampleInfoForm index={index} />
               </div>
-              <SampleInfoForm index={index} />
             </div>
           ))}
 
-          <div className="flex justify-end gap-4">
+          <div className="flex items-center justify-between gap-4 pt-4">
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => {
                 appendBioSample({
-                  name: `new sample ${bioSampleFields.length + 1}`,
+                  name: `Sample Group ${bioSampleFields.length + 1}`,
                   sample: [],
                   blank: [],
                   metadata: {
@@ -283,8 +306,10 @@ export function SampleGroups({
                   "New sample group added, please configure sample groups and blank groups"
                 );
               }}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             >
-              Add Sample Group
+              <Plus className="h-4 w-4" />
+              <span>Add Sample Group</span>
             </Button>
 
             <div className="flex items-center gap-2">
@@ -302,20 +327,25 @@ export function SampleGroups({
                   }
                 }}
               />
-              <span className="text-sm">Enable Drug Sample</span>
+              <span className="text-sm text-muted-foreground">
+                Enable Drug Sample
+              </span>
             </div>
           </div>
 
           {enableDrugSample && (
-            <div className="space-y-4 mt-6 p-4 border rounded-lg">
+            <div className="group relative rounded-xl border border-border/40 bg-card p-6 transition-all hover:border-border/80">
               <FormField
                 control={control}
                 name="config.drugSample.name"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Drug Sample Name</FormLabel>
+                  <FormItem className="mb-6">
                     <FormControl>
-                      <Input {...field} />
+                      <Input
+                        {...field}
+                        className="h-9 bg-transparent px-0 text-base font-medium border-0 border-b border-border/40 rounded-none hover:border-border/80 focus-visible:border-primary focus-visible:ring-0 transition-colors"
+                        placeholder="Enter drug sample name..."
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
