@@ -266,7 +266,14 @@ export default function AnalysisList() {
 
         <DataTable
           columns={columns}
-          data={analyses}
+          data={analyses?.map((analysis) => ({
+            ...analysis,
+            tool:
+              analysis.rawFile.tool === "MDial"
+                ? "MSDial"
+                : analysis.rawFile.tool,
+            rawFile: analysis.rawFile as any,
+          }))}
           pageSize={8}
           emptyState={emptyState}
         />
