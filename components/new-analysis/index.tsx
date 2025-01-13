@@ -160,8 +160,6 @@ export default function AnalysisCreation({
                     <ShimmerButton
                       disabled
                       onClick={methods.handleSubmit(onSubmit)}
-                      shimmerColor="#666666"
-                      className="px-8 text-foreground/70 cursor-not-allowed hover:no-underline font-medium"
                     >
                       {isSubmitting ? (
                         <div className="flex items-center gap-2">
@@ -192,11 +190,7 @@ export default function AnalysisCreation({
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <ShimmerButton
-                onClick={methods.handleSubmit(onSubmit)}
-                shimmerColor="#ffffff"
-                className="px-8 text-foreground font-medium"
-              >
+              <ShimmerButton onClick={methods.handleSubmit(onSubmit)}>
                 {t("start-analysis")}
               </ShimmerButton>
             )}

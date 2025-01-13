@@ -48,7 +48,7 @@ export function DataTable<TData>({
 
   const defaultLoadingState = (
     <div className="flex flex-col items-center justify-center gap-2">
-      <Loader2 className="w-6 h-6 animate-spin" />
+      <Loader2 className="w-6 h-6 animate-spin text-primary" />
       <span className="text-sm text-muted-foreground">Loading...</span>
     </div>
   );
@@ -60,15 +60,15 @@ export function DataTable<TData>({
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 rounded-lg border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50 overflow-hidden">
+    <div className="flex-1 flex flex-col min-h-0 rounded-lg border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50 overflow-hidden shadow-sm">
       <div className="flex-1 overflow-auto">
         <Table>
           <TableHeader>
-            <TableRow className="sticky top-0 bg-background hover:bg-background z-10 border-b">
+            <TableRow className="sticky top-0 bg-card hover:bg-muted/50 z-10 border-b">
               {table.getHeaderGroups()[0].headers.map((header, i) => (
                 <TableHead
                   key={i}
-                  className={`bg-background h-10 font-medium text-muted-foreground ${
+                  className={`bg-card h-10 font-medium text-primary ${
                     i === 0 ? "rounded-tl-lg" : ""
                   } ${
                     i === table.getHeaderGroups()[0].headers.length - 1
@@ -107,9 +107,12 @@ export function DataTable<TData>({
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} className="hover:bg-muted/50">
+                <TableRow
+                  key={row.id}
+                  className="hover:bg-muted/30 transition-colors border-b border-border/50"
+                >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="text-foreground/90">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -137,7 +140,7 @@ export function DataTable<TData>({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 px-3"
+                className="h-7 px-3 hover:bg-primary/10 hover:text-primary"
                 disabled={!table.getCanPreviousPage()}
                 onClick={() => table.previousPage()}
               >
@@ -146,7 +149,7 @@ export function DataTable<TData>({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 px-3"
+                className="h-7 px-3 hover:bg-primary/10 hover:text-primary"
                 disabled={!table.getCanNextPage()}
                 onClick={() => table.nextPage()}
               >
@@ -156,7 +159,7 @@ export function DataTable<TData>({
           </div>
         </div>
         {footerContent && (
-          <div className="border-t">
+          <div className="border-t border-border/50">
             <div className="p-4 flex flex-col gap-4">{footerContent}</div>
           </div>
         )}
