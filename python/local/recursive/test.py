@@ -92,6 +92,14 @@ class TestRecursiveAnalyzer(unittest.TestCase):
             )
             print(f"neighbors_df: {neighbors_df}")
             print(f"n products: {len(products)} on {len(node_products_map)} nodes")
+            print(
+                "matched ms1 ions",
+                self.analyzer.ms1_df[
+                    self.analyzer.ms1_df["id"]
+                    .astype(str)
+                    .isin(node_products_map.keys())
+                ].head(),
+            )
             # Basic checks
             self.assertIsInstance(neighbors_df, pd.DataFrame)
             self.assertIsInstance(products, list)
