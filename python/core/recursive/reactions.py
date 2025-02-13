@@ -73,7 +73,10 @@ def _preprocess_reaction_row(row: dict) -> dict:
             if pd.isna(row[field]):
                 row[field] = []
             elif isinstance(row[field], str):
-                row[field] = [item.strip() for item in row[field].split(" // ")]
+                # Split on " // " and filter out empty strings and whitespace-only strings
+                row[field] = [
+                    item.strip() for item in row[field].split(" // ") if item.strip()
+                ]
             else:
                 row[field] = []
 

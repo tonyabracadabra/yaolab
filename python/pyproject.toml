@@ -1,15 +1,17 @@
 [project]
-name = "python"
+name = "ms-tool"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.12"
+description = "Mass Spectrometry Analysis Tool"
+authors = [
+    { name = "Yao Lab", email = "contact@example.com" }
+]
 dependencies = [
     "aiohttp>=3.11.11",
     "async-lru>=2.0.4",
     "convex>=0.7.0",
     "fastapi>=0.115.6",
     "fastparquet>=2024.11.0",
+    "gradio>=5.16.0",
     "matchms>=0.28.2",
     "modal>=0.71.11",
     "pandas>=2.2.3",
@@ -19,12 +21,30 @@ dependencies = [
     "redis>=5.2.1",
     "scipy>=1.15.0",
     "uvicorn>=0.34.0",
+    "pyteomics>=4.6.0",
+]
+requires-python = ">=3.12"
+
+[project.optional-dependencies]
+dev = [
+    "gradio>=5.16.0",
+    "openpyxl>=3.1.5",
 ]
 
-[tool.poetry.dependencies]
-pyteomics = "^4.6.0"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+packages = ["core"]
+include = [
+    "core/**/*.py",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["core"]
 
 [dependency-groups]
 dev = [
-    "openpyxl>=3.1.5",
+    "plotly>=6.0.0",
 ]
