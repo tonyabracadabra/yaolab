@@ -1,0 +1,2 @@
+python/asset/test/**/*.mgf filter=lfs diff=lfs merge=lfs -text
+python/asset/test/**/*.txt filter=lfs diff=lfs merge=lfs -text
