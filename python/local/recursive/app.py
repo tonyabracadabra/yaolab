@@ -1,47 +1,445 @@
-import io
+import logging
+import sys
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Optional, Set, Tuple
+from typing import Dict, List, Optional
 
-import gradio as gr
-import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import streamlit as st
+from matchms.importing import load_from_mgf
+from matchms.Spectrum import Spectrum
+
+# Add python directory to Python path
+current_dir = Path(__file__).resolve().parent
+python_dir = current_dir.parent
+sys.path.append(str(python_dir))
+
 from core.models.analysis import MSTool
 from core.preprocess import preprocess_targeted_ions_file
 from core.recursive.run import RecursiveAnalysisConfig, RecursiveAnalyzer
-from matchms.importing import load_from_mgf
+from core.utils.constants import TargetIonsColumn
+
+# Page config
+st.set_page_config(
+    layout="wide",
+    page_title="Recursive Analysis",
+    page_icon="🧬",
+    initial_sidebar_state="collapsed",
+)
+
+# Custom CSS for refined dark mode styling
+st.markdown(
+    """
+    <style>
+    /* Color Variables */
+    :root {
+        --bg-primary: #0e1117;
+        --bg-secondary: #1e2329;
+        --bg-tertiary: #262b33;
+        --text-primary: #fafafa;
+        --text-secondary: #e0e0e0;
+        --text-muted: #a3a8b4;
+        --border-color: rgba(250, 250, 250, 0.1);
+        --accent-primary: #ff4b4b;
+        --accent-secondary: #ff2b2b;
+        --accent-gradient: linear-gradient(45deg, #ff4b4b, #ff2b2b);
+        --hover-overlay: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Global Styles */
+    .main {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        padding: 0 1rem;
+    }
+    .block-container {
+        padding: 3rem 2rem;
+    }
+    
+    /* Panel Styles */
+    .control-panel, .results-panel {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 2rem;
+        height: 100%;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    /* Button Styles */
+    .stButton>button {
+        width: 100%;
+        margin-top: 1.5rem;
+        padding: 0.875rem 1.5rem;
+        background: var(--accent-primary);
+        color: var(--text-primary);
+        border: none;
+        border-radius: 0.75rem;
+        font-weight: 500;
+        font-size: 0.9375rem;
+        letter-spacing: 0.025em;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .stButton>button:hover {
+        background: var(--accent-secondary);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 75, 75, 0.2);
+    }
+    
+    /* Progress Styles */
+    .stProgress {
+        margin: 1rem 0;
+    }
+    .stProgress > div > div > div > div {
+        background: var(--accent-primary);
+        border-radius: 1rem;
+    }
+    .stProgress > div > div > div {
+        background-color: var(--bg-tertiary);
+        border-radius: 1rem;
+        height: 0.5rem;
+    }
+    
+    /* Results Panel Styles */
+    .results-panel {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        height: 100%;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Metrics Grid */
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .metric-card {
+        background-color: var(--bg-tertiary);
+        padding: 1.25rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--border-color);
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .metric-label {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+    
+    /* Tab Container */
+    .stTabs {
+        background: transparent;
+        padding: 0;
+        margin-top: 0;
+    }
+    
+    .stTabs [data-baseweb="tab-list"] {
+        background-color: transparent;
+        padding: 0;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        border-radius: 0;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        padding: 0.75rem 1rem;
+        margin: 0 1rem 0 0;
+        border-radius: 0;
+        border-bottom: 2px solid transparent;
+        background: transparent;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background: transparent;
+        border-bottom: 2px solid var(--text-muted);
+    }
+    
+    .stTabs [data-baseweb="tab"][aria-selected="true"] {
+        background: transparent;
+        border-bottom: 2px solid var(--text-primary);
+        color: var(--text-primary);
+    }
+    
+    /* Content Sections */
+    .content-section {
+        background-color: var(--bg-tertiary);
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* DataFrame Styles */
+    .dataframe {
+        background-color: var(--bg-tertiary);
+        border: none;
+        border-radius: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .dataframe th {
+        background-color: var(--bg-secondary);
+        padding: 0.75rem !important;
+        font-size: 0.813rem;
+    }
+    
+    .dataframe td {
+        padding: 0.75rem !important;
+        font-size: 0.813rem;
+    }
+    
+    /* Plot Container */
+    .plot-container {
+        background-color: var(--bg-tertiary);
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .js-plotly-plot {
+        padding: 0;
+        background: transparent;
+        border: none;
+        margin: 0;
+    }
+    
+    .js-plotly-plot:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    /* Section Headers */
+    h2 {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.025em;
+    }
+    h3 {
+        color: var(--text-muted);
+        font-weight: 500;
+        font-size: 1.125rem;
+        margin: 2rem 0 1rem;
+        letter-spacing: -0.025em;
+    }
+    
+    /* Info Messages */
+    .stAlert {
+        background-color: var(--bg-secondary);
+        color: var(--text-muted);
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        font-size: 0.875rem;
+    }
+    
+    /* Input Styles */
+    .stTextInput > div {
+        margin-top: 0.5rem;
+    }
+    .stTextInput > div > div > input {
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        padding: 0.75rem 1rem;
+        transition: all 0.2s ease;
+    }
+    .stTextInput > div > div > input:focus {
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    
+    /* Slider Styles */
+    .stSlider > div > div > div {
+        background-color: var(--bg-tertiary);
+    }
+    .stSlider > div > div > div > div {
+        background: var(--accent-gradient);
+    }
+    </style>
+""",
+    unsafe_allow_html=True,
+)
 
 
-class LayerStats(NamedTuple):
-    """Statistics for each network layer."""
+def create_network_graph(
+    neighbors_df: pd.DataFrame, node_products_map: Dict
+) -> go.Figure:
+    """Create an interactive network visualization."""
+    G = nx.Graph()
 
-    layer: int
-    initial_nodes: int
-    new_neighbors: int
-    processed: int
-    total_visited: int
-    new_products: int
+    # Add nodes
+    for node_id in node_products_map.keys():
+        G.add_node(node_id)
+
+    # Add edges from neighbors_df
+    for _, row in neighbors_df.iterrows():
+        G.add_edge(str(row["source"]), str(row["target"]), weight=row["similarity"])
+
+    # Calculate layout
+    pos = nx.spring_layout(G, k=1 / np.sqrt(len(G.nodes())), iterations=50)
+
+    # Create edge trace
+    edge_x = []
+    edge_y = []
+    edge_text = []
+
+    for edge in G.edges(data=True):
+        x0, y0 = pos[edge[0]]
+        x1, y1 = pos[edge[1]]
+        edge_x.extend([x0, x1, None])
+        edge_y.extend([y0, y1, None])
+        edge_text.append(f"Similarity: {edge[2]['weight']:.2f}")
+
+    edge_trace = go.Scatter(
+        x=edge_x,
+        y=edge_y,
+        line=dict(width=0.5, color="#888"),
+        hoverinfo="none",
+        mode="lines",
+        showlegend=False,
+    )
+
+    # Create node trace
+    node_x = []
+    node_y = []
+    node_text = []
+    node_size = []
+
+    for node in G.nodes():
+        x, y = pos[node]
+        node_x.append(x)
+        node_y.append(y)
+        degree = G.degree(node)
+        node_size.append(10 + degree * 2)
+        node_text.append(f"ID: {node}<br>Connections: {degree}")
+
+    node_trace = go.Scatter(
+        x=node_x,
+        y=node_y,
+        mode="markers",
+        hoverinfo="text",
+        text=node_text,
+        marker=dict(
+            showscale=True,
+            colorscale="Reds",
+            size=node_size,
+            color=[G.degree(node) for node in G.nodes()],
+            line_width=2,
+            line=dict(color="#fff", width=0.5),
+        ),
+        showlegend=False,
+    )
+
+    # Create figure
+    fig = go.Figure(
+        data=[edge_trace, node_trace],
+        layout=go.Layout(
+            template="plotly_dark",
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            showlegend=False,
+            hovermode="closest",
+            margin=dict(b=20, l=5, r=5, t=40),
+            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            title=dict(
+                text="Metabolic Network Visualization",
+                x=0.5,
+                y=0.95,
+                font=dict(size=16, color="#e0e0e0"),
+            ),
+        ),
+    )
+
+    return fig
 
 
-class DataLoader:
-    """Handles data loading and preprocessing operations."""
+def create_similarity_distribution(neighbors_df: pd.DataFrame) -> go.Figure:
+    """Create a histogram of similarity scores."""
+    fig = go.Figure()
 
-    @staticmethod
-    def load_ms1_data(file_path: Path) -> pd.DataFrame:
-        """Load and preprocess MS1 data with index fixing through temporary parquet."""
+    fig.add_trace(
+        go.Histogram(
+            x=neighbors_df["similarity"],
+            nbinsx=30,
+            name="Similarity Distribution",
+            marker_color="#ff4b4b",
+        )
+    )
+
+    fig.update_layout(
+        template="plotly_dark",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        title=dict(
+            text="Similarity Score Distribution",
+            x=0.5,
+            y=0.95,
+            font=dict(size=16, color="#e0e0e0"),
+        ),
+        xaxis_title="Similarity Score",
+        yaxis_title="Count",
+        bargap=0.1,
+    )
+
+    return fig
+
+
+def create_degree_distribution(neighbors_df: pd.DataFrame) -> go.Figure:
+    """Create a visualization of node degree distribution."""
+    # Calculate node degrees from the ID column
+    all_nodes = neighbors_df[TargetIonsColumn.ID]
+    degree_counts = all_nodes.value_counts()
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Bar(x=degree_counts.index, y=degree_counts.values, marker_color="#ff4b4b")
+    )
+
+    fig.update_layout(
+        template="plotly_dark",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        title=dict(
+            text="Node Degree Distribution",
+            x=0.5,
+            y=0.95,
+            font=dict(size=16, color="#e0e0e0"),
+        ),
+        xaxis_title="Node ID",
+        yaxis_title="Number of Connections",
+        showlegend=False,
+    )
+
+    return fig
+
+
+def load_ms1_data(file_path: Path) -> pd.DataFrame:
+    """Load and preprocess MS1 data with index fixing through temporary parquet."""
+    try:
         with open(file_path, "rb") as f:
             ms1_data = f.read()
-
         ms1_df, _ = preprocess_targeted_ions_file(ms1_data, MSTool.MSDial)
         ms1_df = ms1_df.reset_index(drop=True)
 
-        buffer = io.BytesIO()
-        ms1_df.to_parquet(buffer, index=True)
-        buffer.seek(0)
-        ms1_df = pd.read_parquet(buffer)
-
+        # Convert MultiIndex columns to regular Index if needed
         if isinstance(ms1_df.columns, pd.MultiIndex):
             ms1_df.columns = [
                 col[1] if col[0] == "" else f"{col[0]}_{col[1]}"
@@ -49,581 +447,542 @@ class DataLoader:
             ]
 
         return ms1_df
-
-    @staticmethod
-    def load_ms2_data(file_path: Path) -> List:
-        """Load MS2 spectra from MGF file."""
-        return list(load_from_mgf(str(file_path)))
+    except Exception as e:
+        st.error(f"Error loading MS1 data: {str(e)}")
+        return pd.DataFrame()
 
 
-class NetworkVisualizer:
-    """Handles network visualization and updates."""
-
+class RecursiveAnalysisUI:
     def __init__(self):
-        self.G = nx.Graph()
-        self.pos = None
-        self.node_colors = {}
-        self.node_sizes = {}
-        self.layer_nodes = {}
-        self.all_edges = []
+        self.ms2_spectra: Optional[list[Spectrum]] = None
+        self.ms1_df: Optional[pd.DataFrame] = None
+        self.analyzer: Optional[RecursiveAnalyzer] = None
+        self.current_layer: int = 0
+        self.total_nodes: int = 0
+        self.processed_nodes: int = 0
+        self.layer_stats: List[Dict] = []
+        self.progress_container = None
+        self.log_placeholder = None
+        self.current_log = []
+        self.is_running: bool = False
+        self.stop_analysis: bool = False
 
-    def update_graph(
-        self, nodes: List[str], edges: List[Tuple[str, str]], current_layer: int
-    ) -> None:
-        """Update graph with new nodes and edges, tracking layer information."""
-        # Add new nodes and track their layer
-        new_nodes = set(nodes) - set(self.G.nodes())
-        self.G.add_nodes_from(nodes)
-        self.layer_nodes[current_layer] = new_nodes
+    def render_controls(self):
+        # Create main layout
+        control_col, results_col = st.columns([1, 2])
 
-        # Update node colors and sizes based on layer
-        for node in new_nodes:
-            self.node_colors[node] = f"C{current_layer - 1}"
-            self.node_sizes[node] = 800 - (current_layer * 50)
+        with control_col:
+            with st.container():
+                st.markdown(
+                    """
+                    <div class="control-panel">
+                        <h2>🧬 Recursive Analysis</h2>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
 
-        # Filter and add valid edges
-        valid_edges = [
-            (src, tgt)
-            for src, tgt in edges
-            if src in self.G.nodes() and tgt in self.G.nodes()
-        ]
-        self.G.add_edges_from(valid_edges)
-        self.all_edges.extend(valid_edges)
+                # Input Files Section
+                st.markdown("### 📁 Input Files")
 
-        # Update layout if needed
-        if self.pos is None or len(new_nodes) > 0:
-            self.pos = nx.spring_layout(
-                self.G,
-                k=1.5,
-                iterations=50,
-                pos=self.pos,
-                weight=None,
-                fixed=None if self.pos is None else list(self.G.nodes() - new_nodes),
-            )
+                # Default test files
+                default_ms2 = (
+                    current_dir.parent.parent / "asset/test/S2_FreshGinger_MS2_File.mgf"
+                )
+                default_ms1 = (
+                    current_dir.parent.parent / "asset/test/S2_FreshGinger_MS1_List.txt"
+                )
 
-    def draw_graph(self, layer_num: int, stats: LayerStats) -> plt.Figure:
-        """Draw the network graph with layer information and statistics."""
-        plt.ioff()  # Turn off interactive mode
-        fig = plt.figure(figsize=(16, 8), dpi=100, facecolor="white")
-        fig.patch.set_facecolor("white")
-
-        # Network graph subplot
-        ax1 = plt.subplot2grid((1, 5), (0, 0), colspan=3)
-        ax1.set_facecolor("white")
-
-        # Draw valid edges first (lowest visual layer)
-        valid_edges = [
-            (src, tgt)
-            for src, tgt in self.all_edges
-            if src in self.pos and tgt in self.pos
-        ]
-        if valid_edges:
-            edge_pos = np.asarray(
-                [(self.pos[e[0]], self.pos[e[1]]) for e in valid_edges]
-            )
-            ax1.plot(
-                edge_pos[:, :, 0].T,
-                edge_pos[:, :, 1].T,
-                "-",
-                color="gray",
-                alpha=0.5,
-                linewidth=1,
-            )
-
-        # Draw nodes layer by layer (middle visual layer)
-        for layer in range(1, layer_num + 1):
-            layer_nodes = list(self.layer_nodes.get(layer, set()))
-            if layer_nodes:
-                valid_nodes = [n for n in layer_nodes if n in self.pos]
-                if valid_nodes:
-                    nx.draw_networkx_nodes(
-                        self.G,
-                        self.pos,
-                        nodelist=valid_nodes,
-                        node_color=f"C{layer - 1}",
-                        node_size=[self.node_sizes[n] for n in valid_nodes],
-                        alpha=0.7,
-                        label=f"Layer {layer}",
-                        ax=ax1,
+                # Create a form to disable all inputs during analysis
+                with st.form("analysis_form"):
+                    ms2_file = st.text_input(
+                        "MS2 MGF File",
+                        value=str(default_ms2),
+                        help="Select your MS2 MGF format file",
+                    )
+                    ms1_file = st.text_input(
+                        "MS1 List File",
+                        value=str(default_ms1),
+                        help="Select your MS1 list format file",
                     )
 
-        # Draw labels (top visual layer)
-        valid_nodes = {n: p for n, p in self.pos.items() if n in self.G.nodes()}
-        if valid_nodes:
-            nx.draw_networkx_labels(
-                self.G, valid_nodes, font_size=8, font_weight="bold", ax=ax1
+                    # Analysis Parameters Section
+                    st.markdown("### ⚙️ Analysis Parameters")
+                    min_cosine = st.slider(
+                        "Min Cosine Similarity",
+                        0.0,
+                        1.0,
+                        0.7,
+                        help="Minimum cosine similarity threshold for spectral matching",
+                    )
+                    max_mass_diff = st.number_input(
+                        "Max Mass Difference",
+                        0.0,
+                        100.0,
+                        17.0,
+                        help="Maximum mass difference allowed between features",
+                    )
+
+                    # Run Analysis Button
+                    submitted = st.form_submit_button(
+                        "🚀 Start Analysis",
+                        use_container_width=True,
+                        disabled=self.is_running,
+                    )
+
+                    if submitted:
+                        try:
+                            # Initialize analyzer
+                            config = RecursiveAnalysisConfig(
+                                min_cosine=min_cosine,
+                                max_mass_diff=max_mass_diff,
+                            )
+
+                            # Run analysis in the results column
+                            with results_col:
+                                self.run_analysis_with_progress(
+                                    ms2_file, ms1_file, config
+                                )
+
+                        except Exception as e:
+                            st.error(f"❌ Error: {str(e)}")
+                            st.info(
+                                "Please check your input files and parameters and try again."
+                            )
+
+        # Results Panel
+        with results_col:
+            st.markdown(
+                """
+                <div class="results-panel">
+                    <h2>📊 Results & Progress</h2>
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
 
-        # Add title and legend for network graph
-        ax1.set_title(f"Network Evolution - Layer {layer_num}", fontsize=14, pad=20)
-        legend = ax1.legend(
-            loc="center left",
-            bbox_to_anchor=(1, 0.5),
-            frameon=True,
-            facecolor="white",
-            edgecolor="gray",
-            fontsize=10,
+            # Show stop button during analysis
+            if self.is_running:
+                if st.button("⏹️ Stop Analysis", use_container_width=True):
+                    self.stop_analysis = True
+                    st.warning("Stopping analysis...")
+
+            # Show only progress log initially
+            if self.analyzer is None:
+                st.info("Start analysis to see progress")
+            else:
+                self.render_results()
+
+    def render_progress_log(self, container):
+        """Render the progress log with live updates."""
+        # Overall progress
+        if self.total_nodes > 0:
+            progress = self.processed_nodes / self.total_nodes
+            container.progress(progress)
+
+        # Update the log display
+        log_html = ""
+        for msg in self.current_log:
+            log_html += f"""
+            <div class="log-entry">
+                <span class="log-time">{msg.get("time", "")}</span>
+                <span class="log-message">{msg.get("message", "")}</span>
+            </div>
+            """
+
+        if self.log_placeholder is None:
+            self.log_placeholder = container.empty()
+
+        self.log_placeholder.markdown(
+            f"""
+            <div class="log-container">
+                {log_html}
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
-        # Remove axis for network plot
-        ax1.set_xticks([])
-        ax1.set_yticks([])
+    def add_log_message(self, message: str):
+        """Add a new log message and update the display."""
+        timestamp = pd.Timestamp.now().strftime("%H:%M:%S")
 
-        # Statistics visualization subplot
-        ax2 = plt.subplot2grid((1, 5), (0, 3), colspan=2)
-        ax2.set_facecolor("white")
+        # Format layer information if present
+        if "Layer" in message:
+            try:
+                layer_num = message.split("Layer ")[1].split(":")[0]
+                processed_info = message.split(": ")[1]
+                formatted_message = (
+                    f'<span class="log-layer">Layer {layer_num}</span> {processed_info}'
+                )
+            except:
+                formatted_message = message
+        else:
+            formatted_message = message
 
-        # Create bar chart for statistics
-        metrics = [
-            "Initial Nodes",
-            "New Neighbors",
-            "Processed",
-            "Total Visited",
-            "New Products",
-        ]
-        values = [
-            stats.initial_nodes,
-            stats.new_neighbors,
-            stats.processed,
-            stats.total_visited,
-            stats.new_products,
-        ]
-        colors = ["#2ecc71", "#3498db", "#e74c3c", "#f1c40f", "#9b59b6"]
+        self.current_log.append({"time": timestamp, "message": formatted_message})
+        if self.progress_container and self.log_placeholder:
+            self.render_progress_log(self.progress_container)
 
-        bars = ax2.bar(metrics, values, color=colors)
-        ax2.set_title(f"Layer {stats.layer} Statistics", fontsize=14, pad=20)
-        ax2.tick_params(axis="x", rotation=45, labelsize=8)
-        ax2.tick_params(axis="y", labelsize=8)
-        ax2.grid(True, axis="y", linestyle="--", alpha=0.3)
+    def analyze(self):
+        """Run the metabolic network analysis with live progress tracking."""
+        if not self.analyzer:
+            return None, None, None
 
-        # Add value labels on top of bars
-        for bar in bars:
-            height = bar.get_height()
-            ax2.text(
-                bar.get_x() + bar.get_width() / 2.0,
-                height,
-                f"{int(height)}",
-                ha="center",
-                va="bottom",
-                fontsize=8,
-            )
+        try:
+            self.add_log_message("Starting analysis...")
 
-        # Adjust layout
-        plt.tight_layout()
-        return fig
+            # Set up logging handler to capture detailed statistics
+            class ProgressHandler(logging.Handler):
+                def __init__(self, ui_instance):
+                    super().__init__()
+                    self.ui = ui_instance
 
+                def emit(self, record):
+                    msg = record.getMessage()
+                    if "Layer" in msg and "processed=" in msg:
+                        try:
+                            layer_num = int(msg.split("Layer ")[1].split(":")[0])
+                            processed = int(msg.split("processed=")[1].split(",")[0])
+                            new_neighbors = int(
+                                msg.split("new_neighbors=")[1].split(",")[0]
+                            )
+                            new_products = int(
+                                msg.split("new_products=")[1].split(")")[0]
+                            )
 
-class MS1Visualizer:
-    """Handles MS1 data visualization."""
+                            # Add the log message
+                            self.ui.add_log_message(
+                                f"Layer {layer_num}: processed={processed}, "
+                                f"new_neighbors={new_neighbors}, new_products={new_products}"
+                            )
 
-    @staticmethod
-    def create_visualization(
-        ms1_df: pd.DataFrame, node_products_map: Dict
-    ) -> go.Figure:
-        """Create an interactive MS1 visualization with product information."""
-        # Prepare hover text with product information
-        hover_text = []
-        for idx, row in ms1_df.iterrows():
-            ion_id = str(row["id"])
-            products = node_products_map.get(ion_id, [])
-            product_text = "<br>".join(products) if products else "No products found"
-            hover_text.append(
-                f"ID: {ion_id}<br>"
-                f"m/z: {row['mz']:.4f}<br>"
-                f"RT: {row['rt']:.2f}<br>"
-                f"Products:<br>{product_text}"
-            )
+                            # Update progress
+                            self.ui.update_progress(
+                                layer_num,
+                                "Processing",
+                                processed + new_neighbors,
+                                processed,
+                                new_neighbors,
+                                new_products,
+                            )
+                        except (ValueError, IndexError):
+                            self.ui.add_log_message(msg)
 
-        # Create the scatter plot
-        fig = go.Figure()
+            # Add the custom handler to the logger
+            logger = logging.getLogger("core.recursive.run")
+            progress_handler = ProgressHandler(self)
+            logger.addHandler(progress_handler)
 
-        fig.add_trace(
-            go.Scatter(
-                x=ms1_df["rt"],
-                y=ms1_df["mz"],
-                mode="markers",
-                marker=dict(
-                    size=8,
-                    color=ms1_df["area"] if "area" in ms1_df.columns else None,
-                    colorscale="Viridis",
-                    showscale=True,
-                    colorbar=dict(title="Area"),
-                ),
-                text=hover_text,
-                hoverinfo="text",
-                name="MS1 Data",
-            )
-        )
+            # Run the analysis
+            result = self.analyzer.explore_metabolic_network()
+            neighbors_df, products, node_products_map = result
 
-        # Update layout with better configuration for Gradio
-        fig.update_layout(
-            title=dict(text="MS1 Data Visualization", x=0.5, xanchor="center"),
-            xaxis=dict(
-                title="Retention Time (min)",
-                showgrid=True,
-                gridwidth=1,
-                gridcolor="rgba(0,0,0,0.1)",
+            # Remove the custom handler
+            logger.removeHandler(progress_handler)
+
+            if neighbors_df is not None and node_products_map is not None:
+                self.add_log_message("✅ Analysis complete!")
+
+            return neighbors_df, products, node_products_map
+
+        except Exception as e:
+            error_msg = f"❌ Error during analysis: {str(e)}"
+            self.add_log_message(error_msg)
+            st.error(error_msg)
+            return None, None, None
+
+    def render_results(self, neighbors_df=None, products=None, node_products_map=None):
+        """Render results in a grid layout without tabs."""
+        # If no data is provided, show only the progress log
+        if neighbors_df is None and products is None and node_products_map is None:
+            self.render_progress_log(st)
+            return
+
+        # Create a proper neighbors DataFrame with source and target columns
+        neighbors_list = []
+        for node_id, node_products in node_products_map.items():
+            for product in node_products:
+                neighbors_list.append(
+                    {
+                        "source": node_id,
+                        "target": product,
+                    }
+                )
+        neighbors_df_expanded = pd.DataFrame(neighbors_list)
+
+        # Create products DataFrame
+        products_df = pd.DataFrame({"product_id": list(products)})
+
+        # Show metrics grid
+        st.markdown(
+            """
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">{}</div>
+                    <div class="metric-label">Total Products</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">{}</div>
+                    <div class="metric-label">Total Nodes</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">{}</div>
+                    <div class="metric-label">Total Connections</div>
+                </div>
+            </div>
+            """.format(
+                len(products), len(node_products_map), len(neighbors_df_expanded)
             ),
-            yaxis=dict(
-                title="m/z", showgrid=True, gridwidth=1, gridcolor="rgba(0,0,0,0.1)"
-            ),
-            template="plotly_white",
-            hovermode="closest",
-            width=800,
-            height=600,
-            showlegend=True,
-            legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
-            margin=dict(l=80, r=80, t=100, b=80),
-            paper_bgcolor="white",
-            plot_bgcolor="white",
+            unsafe_allow_html=True,
         )
 
-        # Add better interactivity configuration
-        fig.update_traces(
-            hoverlabel=dict(bgcolor="white", font_size=12, font_family="Arial")
+        # Data Tables with Download Buttons
+        st.markdown("### 📊 Analysis Results")
+
+        # Products
+        st.markdown("#### Products")
+        st.download_button(
+            "⬇️ Download Products (CSV)",
+            products_df.to_csv(index=False),
+            "products.csv",
+            "text/csv",
+            use_container_width=True,
+        )
+        st.dataframe(
+            products_df,
+            use_container_width=True,
+            height=300,
         )
 
-        return fig
+        # Neighbor Relationships
+        st.markdown("#### Neighbor Relationships")
+        st.download_button(
+            "⬇️ Download Neighbor Relationships (CSV)",
+            neighbors_df_expanded.to_csv(index=False),
+            "neighbor_relationships.csv",
+            "text/csv",
+            use_container_width=True,
+        )
+        st.dataframe(
+            neighbors_df_expanded,
+            use_container_width=True,
+            height=300,
+        )
 
+        # Matched MS1 Ions
+        if self.analyzer:
+            st.markdown("#### Matched MS1 Ions")
+            matched_ions = self.analyzer.ms1_df[
+                self.analyzer.ms1_df[TargetIonsColumn.ID]
+                .astype(str)
+                .isin(node_products_map.keys())
+            ]
+            st.download_button(
+                "⬇️ Download Matched MS1 Ions (CSV)",
+                matched_ions.to_csv(index=False),
+                "matched_ms1_ions.csv",
+                "text/csv",
+                use_container_width=True,
+            )
+            st.dataframe(
+                matched_ions,
+                use_container_width=True,
+                height=300,
+            )
 
-class NetworkAnalyzer:
-    """Handles network analysis and processing."""
-
-    def __init__(
-        self, config: RecursiveAnalysisConfig, ms1_df: pd.DataFrame, ms2_spectra: List
+    def run_analysis_with_progress(
+        self, ms2_file: str, ms1_file: str, config: RecursiveAnalysisConfig
     ):
-        self.analyzer = RecursiveAnalyzer(
-            config=config,
-            ms2_spectra=ms2_spectra,
-            ms1_df=ms1_df,
-            seed_metabolites=[str(ms1_df["id"].iloc[0])],
-        )
-        self.visualizer = NetworkVisualizer()
-        self.visited_nodes: Set[str] = set()
-        self.nodes_to_process: Set[str] = set(self.analyzer.seed_metabolites)
-        self.current_layer = 0
-        self.node_products_map: Dict[str, List[str]] = {}
+        """Run analysis with live progress tracking."""
+        self.is_running = True
+        self.stop_analysis = False
+        self.current_log = []  # Reset log messages
 
-    def process_layer(self) -> Tuple[plt.Figure, go.Figure, str]:
-        """Process a single layer of the network and return visualizations."""
-        self.current_layer += 1
-        initial_nodes = len(self.nodes_to_process)
+        try:
+            # Create containers for status and results
+            status_container = st.empty()
+            progress_container = st.container()
+            self.progress_container = progress_container
 
-        new_neighbors, products, processed, layer_products_map = (
-            self.analyzer._process_layer(
-                self.nodes_to_process,
-                self.visited_nodes,
-                self.analyzer.config.max_iterations,
+            # Load data with progress updates
+            with st.spinner("Loading MS2 spectra..."):
+                self.ms2_spectra = list(load_from_mgf(ms2_file))
+                self.add_log_message(f"✅ Loaded {len(self.ms2_spectra)} MS2 spectra")
+
+                if self.stop_analysis:
+                    raise InterruptedError("Analysis stopped by user")
+
+            with st.spinner("Loading MS1 data..."):
+                self.ms1_df = load_ms1_data(Path(ms1_file))
+                self.add_log_message(f"✅ Loaded {len(self.ms1_df)} MS1 features")
+
+                if self.stop_analysis:
+                    raise InterruptedError("Analysis stopped by user")
+
+            # Initialize analyzer
+            self.analyzer = RecursiveAnalyzer(
+                config=config,
+                ms2_spectra=self.ms2_spectra,
+                ms1_df=self.ms1_df,
+                seed_metabolites=[str(self.ms1_df["id"].iloc[0])],
             )
-        )
 
-        # Create layer statistics
-        stats = LayerStats(
-            layer=self.current_layer,
-            initial_nodes=initial_nodes,
-            new_neighbors=len(new_neighbors),
-            processed=len(processed),
-            total_visited=len(self.visited_nodes) + len(processed),
-            new_products=len(set(products)),
-        )
+            # Add spinner CSS and updated container styles
+            st.markdown(
+                """
+                <style>
+                .analysis-status-container {
+                    display: flex;
+                    flex-direction: column;
+                    height: calc(100vh - 200px);
+                    margin: -1rem;
+                }
+                
+                .running-status {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 2rem;
+                }
+                
+                .progress-log {
+                    padding: 1rem;
+                }
+                
+                .spinner {
+                    display: inline-block;
+                    width: 24px;
+                    height: 24px;
+                    margin-right: 12px;
+                    border: 3px solid var(--text-muted);
+                    border-radius: 50%;
+                    border-top-color: var(--accent-primary);
+                    animation: spin 1s linear infinite;
+                }
+                
+                @keyframes spin {
+                    to {transform: rotate(360deg);}
+                }
+                
+                .log-entry {
+                    padding: 8px 12px;
+                    margin: 4px 0;
+                    background: var(--bg-tertiary);
+                    border-radius: 6px;
+                    font-family: monospace;
+                    display: flex;
+                    align-items: center;
+                }
+                
+                .log-time {
+                    color: var(--text-muted);
+                    margin-right: 12px;
+                    font-size: 0.9em;
+                }
+                
+                .log-message {
+                    color: var(--text-primary);
+                }
+                
+                .log-layer {
+                    color: var(--accent-primary);
+                    font-weight: 500;
+                    margin-right: 8px;
+                }
+                
+                .log-container {
+                    max-height: 400px;
+                    overflow-y: auto;
+                    padding: 1rem;
+                    background: var(--bg-secondary);
+                    border-radius: 8px;
+                    border: 1px solid var(--border-color);
+                }
+                </style>
+                """,
+                unsafe_allow_html=True,
+            )
 
-        # Update visualization
-        current_nodes = list(self.visited_nodes | new_neighbors)
-        edges = [(node, neighbor) for node in processed for neighbor in new_neighbors]
-        self.visualizer.update_graph(current_nodes, edges, self.current_layer)
+            # Show running status
+            status_container.markdown(
+                """
+                <div class="analysis-status-container">
+                    <div class="running-status">
+                        <div style="text-align: center;">
+                            <span class="spinner"></span>
+                            Running network analysis...
+                        </div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-        # Generate visualization
-        network_fig = self.visualizer.draw_graph(self.current_layer, stats)
+            neighbors_df, products, node_products_map = self.analyze()
 
-        # Update node_products_map and create visualizations
-        self.node_products_map.update(layer_products_map)
-        ms1_plot = MS1Visualizer.create_visualization(
-            self.analyzer.ms1_df, self.node_products_map
-        )
-        products_markdown = self._create_products_markdown()
+            if neighbors_df is not None:
+                # Clear the status container before showing results
+                status_container.empty()
+                progress_container.empty()
+                # Show results in grid layout
+                self.render_results(neighbors_df, products, node_products_map)
 
-        # Update state for next iteration
-        self.visited_nodes.update(processed)
-        self.nodes_to_process = new_neighbors
+        except InterruptedError as e:
+            st.warning(str(e))
+        except Exception as e:
+            st.error(f"❌ Error: {str(e)}")
+        finally:
+            self.is_running = False
+            # Ensure status container is cleared in case of errors
+            if "status_container" in locals():
+                status_container.empty()
 
-        return network_fig, ms1_plot, products_markdown
+    def update_progress(
+        self,
+        layer: int,
+        status: str,
+        total: int,
+        processed: int = 0,
+        new_neighbors: int = 0,
+        new_products: int = 0,
+    ):
+        """Update progress information for the current layer with detailed statistics."""
+        self.current_layer = layer
+        progress = (processed / total * 100) if total > 0 else 0
 
-    def _create_products_markdown(self) -> str:
-        """Create markdown text for products list."""
-        all_products = []
-        for products_list in self.node_products_map.values():
-            all_products.extend(products_list)
-        unique_products = sorted(set(all_products))
-        product_counts = {
-            product: all_products.count(product) for product in unique_products
+        # Update or add layer statistics with detailed information
+        layer_info = {
+            "layer": layer,
+            "status": status,
+            "total": total,
+            "processed": processed,
+            "progress": progress,
+            "new_neighbors": new_neighbors,
+            "new_products": new_products,
         }
 
-        products_markdown = "### Discovered Products\n\n"
-        products_markdown += "| Product | Count |\n|---------|-------|\n"
-        for product, count in sorted(
-            product_counts.items(), key=lambda x: (-x[1], x[0])
-        ):
-            products_markdown += f"| {product} | {count} |\n"
+        # Update existing layer or add new one
+        layer_exists = False
+        for i, existing_layer in enumerate(self.layer_stats):
+            if existing_layer["layer"] == layer:
+                self.layer_stats[i] = layer_info
+                layer_exists = True
+                break
 
-        return products_markdown
+        if not layer_exists:
+            self.layer_stats.append(layer_info)
 
-    @property
-    def has_more_layers(self) -> bool:
-        """Check if there are more layers to process."""
-        return bool(
-            self.nodes_to_process
-            and self.current_layer < self.analyzer.config.max_iterations
-        )
+        # Update overall progress
+        self.total_nodes = sum(layer["total"] for layer in self.layer_stats)
+        self.processed_nodes = sum(layer["processed"] for layer in self.layer_stats)
 
 
-def analyze_network(
-    use_default_files: bool = True,
-    ms1_file: Optional[str] = None,
-    ms2_file: Optional[str] = None,
-    max_iterations: int = 3,
-    modcos_threshold: float = 0.7,
-    delta_mz_threshold: float = 0.01,
-    progress=gr.Progress(),
-) -> Tuple[plt.Figure, go.Figure, str]:
-    """Main analysis function that processes the network and returns visualizations."""
-    current_dir = Path(__file__).resolve().parent
-
-    try:
-        # Set up file paths
-        if use_default_files:
-            ms1_path = (
-                current_dir.parent.parent / "asset/test/S2_FreshGinger_MS1_List.txt"
-            )
-            ms2_path = (
-                current_dir.parent.parent / "asset/test/S2_FreshGinger_MS2_File.mgf"
-            )
-        else:
-            if not ms1_file or not ms2_file:
-                raise ValueError(
-                    "Please provide both MS1 and MS2 files or use default files"
-                )
-            ms1_path = current_dir.parent.parent / "asset/test" / ms1_file.name
-            ms2_path = current_dir.parent.parent / "asset/test" / ms2_file.name
-
-        # Load data
-        ms1_df = DataLoader.load_ms1_data(ms1_path)
-        ms2_spectra = DataLoader.load_ms2_data(ms2_path)
-
-        # Initialize analyzer
-        config = RecursiveAnalysisConfig(
-            max_iterations=max_iterations,
-            modcos_threshold=modcos_threshold,
-            delta_mz_threshold=delta_mz_threshold,
-        )
-
-        analyzer = NetworkAnalyzer(config, ms1_df, ms2_spectra)
-        last_network_fig = None
-        last_ms1_plot = None
-        last_products_md = None
-
-        # Process each layer
-        while analyzer.has_more_layers:
-            # Update progress before processing
-            progress(
-                analyzer.current_layer / max_iterations,
-                f"Processing layer {analyzer.current_layer + 1}/{max_iterations}",
-            )
-
-            # Process layer and get results
-            network_fig, ms1_plot, products_md = analyzer.process_layer()
-
-            # Store results
-            if last_network_fig is not None:
-                plt.close(last_network_fig)
-            last_network_fig = network_fig
-            last_ms1_plot = ms1_plot
-            last_products_md = products_md
-
-            # Yield results
-            yield network_fig, ms1_plot, products_md
-
-        # Ensure final state is shown
-        if last_network_fig is not None:
-            progress(1.0, f"Analysis complete - {max_iterations} layers processed")
-            yield last_network_fig, last_ms1_plot, last_products_md
-            plt.close(last_network_fig)
-
-    except Exception as e:
-        import traceback
-
-        error_msg = f"Error during analysis: {str(e)}\n{traceback.format_exc()}"
-        print(error_msg)
-        raise gr.Error(error_msg)
-
-
-def create_interface() -> gr.Blocks:
-    """Create the Gradio interface."""
-
-    # Custom CSS for better styling
-    custom_css = """
-    .gradio-container { max-width: 1400px !important; }
-    #main-container { margin: 0 auto; padding: 2rem; }
-    .header-text { text-align: center; margin-bottom: 2.5rem; }
-    .header-text h1 { font-size: 2.2rem !important; margin-bottom: 0.5rem !important; }
-    .header-text p { font-size: 1.1rem; opacity: 0.8; }
-    .control-panel {
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-    .control-panel h3 {
-        font-size: 1.2rem;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    }
-    .visualization-panel {
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        border-radius: 10px;
-        padding: 1.5rem;
-        min-height: 700px;
-    }
-    .footer-text {
-        text-align: center;
-        margin-top: 2rem;
-        opacity: 0.7;
-        font-size: 0.9rem;
-    }
-    """
-
-    with gr.Blocks(css=custom_css, theme=gr.themes.Default()) as app:
-        with gr.Column(elem_id="main-container"):
-            # Header
-            with gr.Column(elem_classes="header-text"):
-                gr.Markdown(
-                    """
-                    # Metabolic Network Analysis Visualizer
-                    Interactive tool for exploring and visualizing metabolic networks with customizable parameters
-                    """
-                )
-
-            with gr.Row(equal_height=True):
-                # Left column - Controls
-                with gr.Column(scale=1):
-                    # File Selection Panel
-                    with gr.Group(elem_classes="control-panel") as file_controls:
-                        gr.Markdown("### Input Data Selection")
-                        use_default = gr.Checkbox(
-                            label="Use Default Test Files",
-                            value=True,
-                            info="Use S2_FreshGinger test files for demonstration",
-                        )
-                        with gr.Column(visible=False) as file_inputs:
-                            ms1_file = gr.File(
-                                label="MS1 Data File",
-                                file_types=[".txt"],
-                                interactive=True,
-                                elem_classes="file-input",
-                            )
-                            ms2_file = gr.File(
-                                label="MS2 Data File",
-                                file_types=[".mgf"],
-                                interactive=True,
-                                elem_classes="file-input",
-                            )
-
-                    # Parameters Panel
-                    with gr.Group(elem_classes="control-panel") as parameter_controls:
-                        gr.Markdown("### Analysis Configuration")
-                        with gr.Row():
-                            max_iterations = gr.Slider(
-                                minimum=1,
-                                maximum=10,
-                                value=3,
-                                step=1,
-                                label="Maximum Iterations",
-                                info="Number of network exploration steps",
-                            )
-                        with gr.Row():
-                            modcos_threshold = gr.Slider(
-                                minimum=0.1,
-                                maximum=1.0,
-                                value=0.7,
-                                step=0.1,
-                                label="ModCos Threshold",
-                                info="Modified Cosine Similarity threshold for matching",
-                            )
-                        with gr.Row():
-                            delta_mz_threshold = gr.Slider(
-                                minimum=0.001,
-                                maximum=0.1,
-                                value=0.01,
-                                step=0.001,
-                                label="Delta m/z Threshold",
-                                info="Mass difference tolerance for matching",
-                            )
-
-                    # Analysis Button
-                    with gr.Row(elem_classes="control-panel"):
-                        analyze_btn = gr.Button(
-                            "▶ Start Analysis",
-                            variant="primary",
-                            scale=1,
-                            min_width=200,
-                            size="lg",
-                        )
-
-                # Right column - Visualization
-                with gr.Column(scale=2):
-                    with gr.Group(elem_classes="visualization-panel") as visualization:
-                        with gr.Tabs() as tabs:
-                            with gr.Tab("Network Evolution", id="network_tab"):
-                                network_plot = gr.Plot(
-                                    label="Network Evolution Visualization",
-                                    show_label=True,
-                                    every=1,
-                                    container=True,
-                                )
-                            with gr.Tab("MS1 Data", id="ms1_tab"):
-                                ms1_plot = gr.Plot(
-                                    label="MS1 Data Visualization",
-                                    show_label=True,
-                                    every=1,
-                                    container=True,
-                                )
-                            with gr.Tab("Products List", id="products_tab"):
-                                products_md = gr.Markdown()
-
-            # Footer
-            gr.Markdown(
-                "© 2024 Yao Lab - Metabolic Network Analysis Tool",
-                elem_classes="footer-text",
-            )
-
-        def toggle_file_inputs(use_default: bool) -> Dict:
-            return gr.Column.update(visible=not use_default)
-
-        use_default.change(
-            fn=toggle_file_inputs,
-            inputs=[use_default],
-            outputs=[file_inputs],
-        )
-
-        analyze_btn.click(
-            fn=analyze_network,
-            inputs=[
-                use_default,
-                ms1_file,
-                ms2_file,
-                max_iterations,
-                modcos_threshold,
-                delta_mz_threshold,
-            ],
-            outputs=[network_plot, ms1_plot, products_md],
-            show_progress=True,
-            queue=True,  # Enable queuing for better handling of updates
-        )
-
-    return app
+def main():
+    app = RecursiveAnalysisUI()
+    app.render_controls()
 
 
 if __name__ == "__main__":
-    app = create_interface()
-    app.launch(share=True)
+    main()
