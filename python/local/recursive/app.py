@@ -1,4 +1,6 @@
+import copy
 import logging
+import os
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -18,7 +20,11 @@ sys.path.append(str(python_dir))
 
 from core.models.analysis import MSTool
 from core.preprocess import preprocess_targeted_ions_file
-from core.recursive.run import RecursiveAnalysisConfig, RecursiveAnalyzer
+from core.recursive.run import (
+    AnalysisConstants,
+    RecursiveAnalysisConfig,
+    RecursiveAnalyzer,
+)
 from core.utils.constants import TargetIonsColumn
 
 # Page config
@@ -482,54 +488,90 @@ class RecursiveAnalysisUI:
                     unsafe_allow_html=True,
                 )
 
-                # Input Files Section
-                st.markdown("### 📁 Input Files")
-
-                # Default test files
-                default_ms2 = (
-                    current_dir.parent.parent / "asset/test/S2_FreshGinger_MS2_File.mgf"
-                )
-                default_ms1 = (
-                    current_dir.parent.parent / "asset/test/S2_FreshGinger_MS1_List.txt"
-                )
-
                 # Create a form to disable all inputs during analysis
                 with st.form("analysis_form"):
-                    ms2_file = st.text_input(
-                        "MS2 MGF File",
-                        value=str(default_ms2),
-                        help="Select your MS2 MGF format file",
-                    )
-                    ms1_file = st.text_input(
-                        "MS1 List File",
-                        value=str(default_ms1),
-                        help="Select your MS1 list format file",
-                    )
+                    # Input Files Section
+                    with st.expander("📁 Input Files", expanded=True):
+                        # Default test files
+                        default_ms2 = (
+                            current_dir.parent.parent
+                            / "asset/test/S2_FreshGinger_MS2_File.mgf"
+                        )
+                        default_ms1 = (
+                            current_dir.parent.parent
+                            / "asset/test/S2_FreshGinger_MS1_List.txt"
+                        )
+
+                        ms2_file = st.text_input(
+                            "MS2 MGF File",
+                            value=str(default_ms2),
+                            help="Select your MS2 MGF format file",
+                        )
+                        ms1_file = st.text_input(
+                            "MS1 List File",
+                            value=str(default_ms1),
+                            help="Select your MS1 list format file",
+                        )
 
                     # Analysis Parameters Section
                     st.markdown("### ⚙️ Analysis Parameters")
-                    min_cosine = st.slider(
-                        "Min Cosine Similarity",
-                        0.0,
-                        1.0,
-                        0.7,
-                        help="Minimum cosine similarity threshold for spectral matching",
-                    )
-                    max_mass_diff = st.number_input(
-                        "Max Mass Difference",
-                        0.0,
-                        100.0,
-                        17.0,
-                        help="Maximum mass difference allowed between features",
-                    )
 
-                    max_iterations = st.number_input(
-                        "Max Iterations",
-                        1,
-                        10,
-                        3,
-                        help="Maximum number of recursive iterations",
-                    )
+                    with st.expander("Core Parameters", expanded=True):
+                        min_cosine = st.slider(
+                            "Min Cosine Similarity",
+                            0.0,
+                            1.0,
+                            AnalysisConstants.MODCOS_THRESHOLD,
+                            help="Minimum cosine similarity threshold for spectral matching",
+                        )
+                        max_mass_diff = st.number_input(
+                            "Max Mass Difference (Da)",
+                            0.0,
+                            100.0,
+                            AnalysisConstants.DELTA_MZ_THRESHOLD,
+                            help="Maximum mass difference allowed between features",
+                        )
+                        max_iterations = st.number_input(
+                            "Max Iterations",
+                            1,
+                            10,
+                            AnalysisConstants.DEFAULT_MAX_ITERATIONS,
+                            help="Maximum number of recursive iterations",
+                        )
+
+                    with st.expander("Advanced Settings", expanded=False):
+                        tolerance = st.number_input(
+                            "Mass Tolerance",
+                            0.0,
+                            1.0,
+                            AnalysisConstants.TOLERANCE,
+                            format="%.4f",
+                            help="Tolerance for mass matching in spectral similarity calculation",
+                        )
+                        seed_size = st.number_input(
+                            "Seed Size",
+                            1,
+                            100,
+                            AnalysisConstants.DEFAULT_SEED_SIZE,
+                            help="Number of initial seed metabolites to start with",
+                        )
+                        batch_size = st.number_input(
+                            "Batch Size",
+                            10,
+                            1000,
+                            AnalysisConstants.MAX_BATCH_SIZE,
+                            help="Maximum size of node batches for parallel processing",
+                        )
+                        max_workers = st.number_input(
+                            "Max Workers",
+                            1,
+                            32,
+                            min(
+                                AnalysisConstants.MAX_WORKERS,
+                                (os.cpu_count() or 1) * 2,
+                            ),
+                            help="Maximum number of parallel workers for processing",
+                        )
 
                     # Run Analysis Button
                     submitted = st.form_submit_button(
@@ -540,11 +582,15 @@ class RecursiveAnalysisUI:
 
                     if submitted:
                         try:
-                            # Initialize analyzer
+                            # Initialize analyzer with all parameters
                             config = RecursiveAnalysisConfig(
-                                min_cosine=min_cosine,
-                                max_mass_diff=max_mass_diff,
+                                modcos_threshold=min_cosine,
+                                delta_mz_threshold=max_mass_diff,
                                 max_iterations=max_iterations,
+                                tolerance=tolerance,
+                                seed_size=seed_size,
+                                batch_size=batch_size,
+                                max_workers=max_workers,
                             )
 
                             # Run analysis in the results column
@@ -558,29 +604,6 @@ class RecursiveAnalysisUI:
                             st.info(
                                 "Please check your input files and parameters and try again."
                             )
-
-        # Results Panel
-        with results_col:
-            st.markdown(
-                """
-                <div class="results-panel">
-                    <h2>📊 Results & Progress</h2>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-            # Show stop button during analysis
-            if self.is_running:
-                if st.button("⏹️ Stop Analysis", use_container_width=True):
-                    self.stop_analysis = True
-                    st.warning("Stopping analysis...")
-
-            # Show only progress log initially
-            if self.analyzer is None:
-                st.info("Start analysis to see progress")
-            else:
-                self.render_results()
 
     def render_progress_log(self, container):
         """Render the progress log with live updates."""
@@ -635,7 +658,7 @@ class RecursiveAnalysisUI:
     def analyze(self):
         """Run the metabolic network analysis with live progress tracking."""
         if not self.analyzer:
-            return None, None, None
+            return None
 
         try:
             self.add_log_message("Starting analysis...")
@@ -683,44 +706,81 @@ class RecursiveAnalysisUI:
             logger.addHandler(progress_handler)
 
             # Run the analysis
-            result = self.analyzer.explore_metabolic_network()
-            neighbors_df, products, node_products_map = result
+            network_data = self.analyzer.explore_metabolic_network()
 
             # Remove the custom handler
             logger.removeHandler(progress_handler)
 
-            if neighbors_df is not None and node_products_map is not None:
+            if network_data is not None:
                 self.add_log_message("✅ Analysis complete!")
 
-            return neighbors_df, products, node_products_map
+            return network_data
 
         except Exception as e:
             error_msg = f"❌ Error during analysis: {str(e)}"
             self.add_log_message(error_msg)
             st.error(error_msg)
-            return None, None, None
+            return None
 
-    def render_results(self, neighbors_df=None, products=None, node_products_map=None):
+    def create_cytoscape_files(self, network_data) -> tuple[str, str]:
+        """Create Cytoscape-compatible node and edge CSV files."""
+        # Create nodes CSV content
+        nodes_data = []
+        for node in network_data.nodes:
+            node_data = {
+                "id": node.get("id", ""),
+                "mz": node.get("mz", ""),
+                "layer": node.get("layer", ""),
+                "products": ",".join(
+                    network_data.node_products_map.get(str(node.get("id", "")), [])
+                ),
+            }
+            nodes_data.append(node_data)
+        nodes_df = pd.DataFrame(nodes_data)
+        nodes_csv = nodes_df.to_csv(index=False)
+
+        # Create edges CSV content
+        edges_data = []
+        for edge in network_data.edges:
+            edge_data = {
+                "source": edge.get("source", ""),
+                "target": edge.get("target", ""),
+                "products": ",".join(edge.get("products", [])),
+                "layer": edge.get("layer", ""),
+            }
+            edges_data.append(edge_data)
+        edges_df = pd.DataFrame(edges_data)
+        edges_csv = edges_df.to_csv(index=False)
+
+        return nodes_csv, edges_csv
+
+    def render_results(self, network_data=None):
         """Render results in a grid layout without tabs."""
         # If no data is provided, show only the progress log
-        if neighbors_df is None and products is None and node_products_map is None:
+        if network_data is None:
             self.render_progress_log(st)
             return
 
-        # Create a proper neighbors DataFrame with source and target columns
-        neighbors_list = []
-        for node_id, node_products in node_products_map.items():
-            for product in node_products:
-                neighbors_list.append(
-                    {
-                        "source": node_id,
-                        "target": product,
-                    }
-                )
-        neighbors_df_expanded = pd.DataFrame(neighbors_list)
+        # Create a deep copy of network data to avoid modifying the original
+        network_data_copy = copy.deepcopy(network_data)
 
-        # Create products DataFrame
-        products_df = pd.DataFrame({"product_id": list(products)})
+        # Calculate node positions using a spring layout
+        G = nx.Graph()
+
+        # Add nodes to the graph
+        for node in network_data_copy.nodes:
+            node_id = node.get("id", "")
+            G.add_node(node_id, **{k: v for k, v in node.items() if k != "id"})
+
+        # Add edges to the graph
+        for edge in network_data_copy.edges:
+            source = edge.get("source", "")
+            target = edge.get("target", "")
+            G.add_edge(
+                source,
+                target,
+                **{k: v for k, v in edge.items() if k not in ["source", "target"]},
+            )
 
         # Show metrics grid
         st.markdown(
@@ -728,63 +788,96 @@ class RecursiveAnalysisUI:
             <div class="metrics-grid">
                 <div class="metric-card">
                     <div class="metric-value">{}</div>
-                    <div class="metric-label">Total Products</div>
+                    <div class="metric-label">MS1 Features</div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-value">{}</div>
-                    <div class="metric-label">Total Nodes</div>
+                    <div class="metric-label">Connections</div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-value">{}</div>
-                    <div class="metric-label">Total Connections</div>
+                    <div class="metric-label">Unique Products</div>
                 </div>
             </div>
             """.format(
-                len(products), len(node_products_map), len(neighbors_df_expanded)
+                len(G.nodes()),
+                len(G.edges()),
+                len(network_data_copy.products) if network_data_copy.products else 0,
             ),
             unsafe_allow_html=True,
         )
 
-        # Data Tables with Download Buttons
-        st.markdown("### 📊 Analysis Results")
+        # Network Export Section
+        st.markdown("### 🔬 Network Export")
 
-        # Products
-        st.markdown("#### Products")
-        st.download_button(
-            "⬇️ Download Products (CSV)",
-            products_df.to_csv(index=False),
-            "products.csv",
-            "text/csv",
-            use_container_width=True,
-        )
-        st.dataframe(
-            products_df,
-            use_container_width=True,
-            height=300,
+        # Create Cytoscape files
+        nodes_csv, edges_csv = self.create_cytoscape_files(network_data_copy)
+
+        # Create columns for download buttons
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.download_button(
+                "⬇️ Download Nodes (CSV)",
+                nodes_csv,
+                "network_nodes.csv",
+                "text/csv",
+                use_container_width=True,
+            )
+
+        with col2:
+            st.download_button(
+                "⬇️ Download Edges (CSV)",
+                edges_csv,
+                "network_edges.csv",
+                "text/csv",
+                use_container_width=True,
+            )
+
+        st.markdown(
+            """
+        <div class="info-box" style="background-color: var(--bg-tertiary); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+            <p style="margin: 0; color: var(--text-muted);">
+                ℹ️ The network files are in Cytoscape-compatible CSV format. To import in Cytoscape:
+                <ol style="margin-top: 0.5rem; color: var(--text-muted);">
+                    <li>Import nodes.csv first using File > Import > Network from File</li>
+                    <li>Then import edges.csv using File > Import > Network from File</li>
+                    <li>Use the 'source' and 'target' columns for edge mapping</li>
+                </ol>
+            </p>
+        </div>
+        """,
+            unsafe_allow_html=True,
         )
 
-        # Neighbor Relationships
-        st.markdown("#### Neighbor Relationships")
-        st.download_button(
-            "⬇️ Download Neighbor Relationships (CSV)",
-            neighbors_df_expanded.to_csv(index=False),
-            "neighbor_relationships.csv",
-            "text/csv",
-            use_container_width=True,
-        )
-        st.dataframe(
-            neighbors_df_expanded,
-            use_container_width=True,
-            height=300,
-        )
+        # Products Table
+        st.markdown("### 📊 Products")
+        if network_data_copy.products:
+            products_df = pd.DataFrame({"product_id": network_data_copy.products})
+            st.download_button(
+                "⬇️ Download Products (CSV)",
+                products_df.to_csv(index=False),
+                "products.csv",
+                "text/csv",
+                use_container_width=True,
+            )
+            st.dataframe(
+                products_df,
+                use_container_width=True,
+                height=300,
+            )
 
         # Matched MS1 Ions
         if self.analyzer:
-            st.markdown("#### Matched MS1 Ions")
+            st.markdown("### 🎯 Matched MS1 Ions")
             matched_ions = self.analyzer.ms1_df[
                 self.analyzer.ms1_df[TargetIonsColumn.ID]
                 .astype(str)
-                .isin(node_products_map.keys())
+                .isin(
+                    network_data_copy.node_products_map.keys()
+                    if network_data_copy.node_products_map
+                    else []
+                )
             ]
             st.download_button(
                 "⬇️ Download Matched MS1 Ions (CSV)",
@@ -929,14 +1022,14 @@ class RecursiveAnalysisUI:
                 unsafe_allow_html=True,
             )
 
-            neighbors_df, products, node_products_map = self.analyze()
+            network_data = self.analyze()
 
-            if neighbors_df is not None:
+            if network_data is not None:
                 # Clear the status container before showing results
                 status_container.empty()
                 progress_container.empty()
                 # Show results in grid layout
-                self.render_results(neighbors_df, products, node_products_map)
+                self.render_results(network_data)
 
         except InterruptedError as e:
             st.warning(str(e))
