@@ -523,6 +523,14 @@ class RecursiveAnalysisUI:
                         help="Maximum mass difference allowed between features",
                     )
 
+                    max_iterations = st.number_input(
+                        "Max Iterations",
+                        1,
+                        10,
+                        3,
+                        help="Maximum number of recursive iterations",
+                    )
+
                     # Run Analysis Button
                     submitted = st.form_submit_button(
                         "🚀 Start Analysis",
@@ -536,6 +544,7 @@ class RecursiveAnalysisUI:
                             config = RecursiveAnalysisConfig(
                                 min_cosine=min_cosine,
                                 max_mass_diff=max_mass_diff,
+                                max_iterations=max_iterations,
                             )
 
                             # Run analysis in the results column
