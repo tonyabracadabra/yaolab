@@ -112,30 +112,6 @@
   display: none;
 }
 
-.cl-card h1,
-.cl-card p,
-.cl-card [class^="cl-internal"] {
-  @apply text-primary;
-}
-
-.cl-card {
-  box-shadow: none;
-  @apply text-primary;
-  @apply bg-card;
-}
-
-.cl-navbarButton {
-  @apply text-primary;
-}
-
-.cl-footerActionText {
-  @apply text-primary;
-}
-
-.cl-dividerLine {
-  @apply bg-primary;
-}
-
 .rainbow-conic-gradient {
   background-image: conic-gradient(
     red,

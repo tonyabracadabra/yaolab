@@ -6,10 +6,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { localesLabels, routing } from "@/i18n";
+import { localesLabels, routing, usePathname, useRouter } from "@/i18n/routing";
 import { useLocale } from "next-intl";
 import { useTransition } from "react";
-import { usePathname, useRouter } from "../navigation";
 import { Button } from "./ui/button";
 
 export function LangToggle() {
