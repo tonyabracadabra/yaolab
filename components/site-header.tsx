@@ -5,7 +5,7 @@ import { MobileNav } from "@/components/mobile-nav";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useAuth, useUser } from "@clerk/nextjs";
 import Avatar from "boring-avatars";
-import { LogOut, Settings2 } from "lucide-react";
+import { LayoutDashboard, LogOut, Settings2 } from "lucide-react";
 import Link from "next/link";
 import { LangToggle } from "./lang-toggle";
 import { Button } from "./ui/button";
@@ -28,37 +28,68 @@ export function SiteHeader() {
         <div className="flex gap-2 flex-1 items-center justify-between space-x-2 md:justify-end">
           {isSignedIn ? (
             <DropdownMenu>
-              <DropdownMenuTrigger>
-                <div className="flex items-center justify-center gap-4 text-white">
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="relative flex items-center gap-2 h-9 px-2 py-1.5"
+                >
                   <Avatar
-                    size={25}
+                    size={28}
                     name={user?.username || ""}
                     variant="marble"
                   />
-                  <div>{user?.username}</div>
-                </div>
+                  <span className="text-sm font-medium">{user?.username}</span>
+                </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="-ml-20">
-                <DropdownMenuItem>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex flex-col space-y-1 leading-none">
+                    <p className="font-medium">{user?.username}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user?.primaryEmailAddress?.emailAddress}
+                    </p>
+                  </div>
+                </div>
+                <DropdownMenuItem asChild className="w-full cursor-pointer">
                   <Link
-                    href="/settings"
-                    className="flex items-center gap-2 justify-center"
+                    href="/workspace"
+                    className="flex w-full items-center justify-between"
                   >
-                    <Settings2 size={12} />
-                    Settings
+                    <div className="flex items-center gap-2">
+                      <LayoutDashboard className="h-4 w-4" />
+                      <span>Workspace</span>
+                    </div>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => signOut()}>
-                  <div className="text-red-500 flex items-center gap-2 justify-center">
-                    <LogOut size={12} />
-                    Log Out
+                <DropdownMenuItem asChild className="w-full cursor-pointer">
+                  <Link
+                    href="/workspace/settings"
+                    className="flex w-full items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Settings2 className="h-4 w-4" />
+                      <span>Settings</span>
+                    </div>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="w-full cursor-pointer text-red-500 focus:bg-red-50 focus:text-red-600 dark:focus:bg-red-950"
+                  onClick={() => signOut()}
+                >
+                  <div className="flex w-full items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <LogOut className="h-4 w-4" />
+                      <span>Log Out</span>
+                    </div>
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <Link href="/sign-in">
-              <Button size="sm">Sign In</Button>
+              <Button size="sm" className="px-4">
+                Sign In
+              </Button>
             </Link>
           )}
           <nav className="flex items-center gap-2">
