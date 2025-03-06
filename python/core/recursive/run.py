@@ -227,7 +227,7 @@ def process_node_batch(batch_data: BatchData) -> ProcessingResult:
             if len(matching_indices) > 0:
                 products = []
                 for idx in matching_indices:
-                    products.extend(batch_data.reactions[idx].products)
+                    products.append(batch_data.reactions[idx].product)
                 potential_neighbors[target_id] = products
 
         # Validate neighbors using ModCos scores
