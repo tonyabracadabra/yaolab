@@ -2,8 +2,9 @@ import logging
 import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
-from typing import NamedTuple, Optional, TypeAlias
+from typing import Any, Dict, List, NamedTuple, Optional, TypeAlias
 
+import networkx as nx
 import numpy as np
 import pandas as pd
 from core.recursive.reactions import ReactionData, reactions_data
@@ -34,6 +35,17 @@ if not logger.handlers:
 NodeId: TypeAlias = str
 Products: TypeAlias = list[str]
 NeighborProductsMap: TypeAlias = dict[NodeId, Products]
+
+
+@dataclass
+class NetworkData:
+    """Data structure for network visualization."""
+
+    nodes: List[Dict[str, Any]]  # List of nodes with their attributes
+    edges: List[Dict[str, Any]]  # List of edges with their attributes
+    neighbors_df: pd.DataFrame
+    products: List[str]
+    node_products_map: Dict[str, List[str]]
 
 
 class AnalysisConstants:
@@ -271,6 +283,22 @@ class RecursiveAnalysisConfig(BaseModel):
         default=AnalysisConstants.DEFAULT_MAX_ITERATIONS,
         description="Maximum number of recursive iterations",
     )
+    tolerance: float = Field(
+        default=AnalysisConstants.TOLERANCE,
+        description="Tolerance for mass matching in spectral similarity calculation",
+    )
+    seed_size: int = Field(
+        default=AnalysisConstants.DEFAULT_SEED_SIZE,
+        description="Number of initial seed metabolites to start with",
+    )
+    batch_size: int = Field(
+        default=AnalysisConstants.MAX_BATCH_SIZE,
+        description="Maximum size of node batches for parallel processing",
+    )
+    max_workers: int = Field(
+        default=AnalysisConstants.MAX_WORKERS,
+        description="Maximum number of parallel workers for processing",
+    )
 
 
 class RecursiveAnalyzer(BaseModel):
@@ -372,9 +400,9 @@ class RecursiveAnalyzer(BaseModel):
         """Initialize seed metabolites if not provided."""
         if self.seed_metabolites is None:
             self.seed_metabolites = (
-                self.ms1_df.nlargest(
-                    AnalysisConstants.DEFAULT_SEED_SIZE, TargetIonsColumn.MZ
-                )[TargetIonsColumn.ID]
+                self.ms1_df.nlargest(self.config.seed_size, TargetIonsColumn.MZ)[
+                    TargetIonsColumn.ID
+                ]
                 .astype(str)
                 .tolist()
             )
@@ -402,7 +430,7 @@ class RecursiveAnalyzer(BaseModel):
             return set(), [], set(), {}
 
         batch_size = max(
-            1, min(len(node_batches) // max_workers, AnalysisConstants.MAX_BATCH_SIZE)
+            1, min(len(node_batches) // max_workers, self.config.batch_size)
         )
 
         all_neighbors = set()
@@ -410,7 +438,7 @@ class RecursiveAnalyzer(BaseModel):
         processed_nodes = set()
         neighbor_products_map: dict[NodeId, list[str]] = {}
 
-        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        with ProcessPoolExecutor(max_workers=self.config.max_workers) as executor:
             futures = []
             common_data = BatchData(
                 node_batch=[],  # Will be replaced for each batch
@@ -420,7 +448,7 @@ class RecursiveAnalyzer(BaseModel):
                 delta_mz_threshold=self.config.delta_mz_threshold,
                 spectrum_lookup=self.spectrum_lookup,
                 modcos_threshold=self.config.modcos_threshold,
-                tolerance=AnalysisConstants.TOLERANCE,
+                tolerance=self.config.tolerance,
                 visited_nodes=visited_nodes.copy(),
                 mz_diff_matrix=self.mz_diff_matrix,
                 id_to_index=self.id_to_index,
@@ -457,7 +485,7 @@ class RecursiveAnalyzer(BaseModel):
 
     def explore_metabolic_network(
         self, visited_nodes: Optional[set[NodeId]] = None
-    ) -> tuple[pd.DataFrame, list[str], dict[NodeId, list[str]]]:
+    ) -> NetworkData:
         """
         Find neighbors by filtering on mass difference and calculating ModCos scores.
 
@@ -469,13 +497,19 @@ class RecursiveAnalyzer(BaseModel):
             visited_nodes: Set of already visited node IDs
 
         Returns:
-            Tuple containing:
-            - DataFrame of validated neighbors
-            - List of unique products from ReactionData
-            - Dictionary mapping node IDs to their corresponding products
+            NetworkData containing network information for visualization
         """
         visited_nodes = visited_nodes or set()
         self._initialize_seed_metabolites()
+
+        # Initialize NetworkX graph for internal processing
+        G = nx.Graph()
+
+        # Add seed metabolites as initial nodes
+        for seed_id in self.seed_metabolites:
+            if seed_id in self.id_to_index:
+                node_idx = self.id_to_index[seed_id]
+                G.add_node(seed_id, mz=float(self.mz_array[node_idx]), layer=0)
 
         all_neighbors: set[NodeId] = set()
         all_products: list[str] = []
@@ -503,6 +537,29 @@ class RecursiveAnalyzer(BaseModel):
                     self._process_layer(nodes_to_process, visited_nodes, max_workers)
                 )
 
+                # Update NetworkX graph with new nodes and edges
+                for neighbor_id in new_neighbors:
+                    if neighbor_id in self.id_to_index:
+                        node_idx = self.id_to_index[neighbor_id]
+                        # Add the new neighbor node with its properties
+                        G.add_node(
+                            neighbor_id,
+                            mz=float(self.mz_array[node_idx]),
+                            layer=current_layer,
+                        )
+
+                        # Add edges between the neighbor and its source nodes
+                        for source_node in nodes_to_process:
+                            if source_node in processed:
+                                # Get the products associated with this edge
+                                edge_products = layer_products_map.get(neighbor_id, [])
+                                G.add_edge(
+                                    source_node,
+                                    neighbor_id,
+                                    products=edge_products,
+                                    layer=current_layer,
+                                )
+
                 # Update node_products_map with the products for each neighbor
                 node_products_map.update(layer_products_map)
 
@@ -529,22 +586,34 @@ class RecursiveAnalyzer(BaseModel):
                 )
                 pbar.update(1)
 
-        # Final summary log with layer-by-layer breakdown
-        logger.info("Analysis complete - Layer summary:")
-        for stat in layer_stats:
+            # Final summary log with layer-by-layer breakdown
+            logger.info("Analysis complete - Layer summary:")
+            for stat in layer_stats:
+                logger.info(
+                    f"  Layer {stat['layer']}: processed={stat['processed']}, "
+                    f"new_neighbors={stat['new_neighbors']}, "
+                    f"new_products={stat['new_products']}"
+                )
             logger.info(
-                f"  Layer {stat['layer']}: processed={stat['processed']}, "
-                f"new_neighbors={stat['new_neighbors']}, "
-                f"new_products={stat['new_products']}"
+                f"Final network size: {len(visited_nodes)} nodes, "
+                f"{len(all_neighbors)} total neighbors, "
+                f"{len(set(all_products))} unique products, "
+                f"Graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges"
             )
-        logger.info(
-            f"Final network size: {len(visited_nodes)} nodes, "
-            f"{len(all_neighbors)} total neighbors, "
-            f"{len(set(all_products))} unique products"
-        )
 
-        return (
-            pd.DataFrame(list(all_neighbors), columns=[TargetIonsColumn.ID]),
-            list(set(all_products)),
-            node_products_map,
-        )
+            # Convert NetworkX graph to node and edge lists for visualization
+            nodes = [{"id": node, **data} for node, data in G.nodes(data=True)]
+            edges = [
+                {"source": source, "target": target, **data}
+                for source, target, data in G.edges(data=True)
+            ]
+
+            return NetworkData(
+                nodes=nodes,
+                edges=edges,
+                neighbors_df=pd.DataFrame(
+                    list(all_neighbors), columns=[TargetIonsColumn.ID]
+                ),
+                products=list(set(all_products)),
+                node_products_map=node_products_map,
+            )
