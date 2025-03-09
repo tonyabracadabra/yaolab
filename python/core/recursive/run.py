@@ -287,10 +287,6 @@ class RecursiveAnalysisConfig(BaseModel):
         default=AnalysisConstants.TOLERANCE,
         description="Tolerance for mass matching in spectral similarity calculation",
     )
-    seed_size: int = Field(
-        default=AnalysisConstants.DEFAULT_SEED_SIZE,
-        description="Number of initial seed metabolites to start with",
-    )
     batch_size: int = Field(
         default=AnalysisConstants.MAX_BATCH_SIZE,
         description="Maximum size of node batches for parallel processing",
@@ -298,6 +294,14 @@ class RecursiveAnalysisConfig(BaseModel):
     max_workers: int = Field(
         default=AnalysisConstants.MAX_WORKERS,
         description="Maximum number of parallel workers for processing",
+    )
+    parent_mz_list: List[float] = Field(
+        ...,  # This makes it required
+        description="List of parent molecular weights to use for seed selection",
+    )
+    parent_mz_error: float = Field(
+        default=0.01,
+        description="Maximum error threshold for matching parent molecular weights (in Da)",
     )
 
 
@@ -307,7 +311,6 @@ class RecursiveAnalyzer(BaseModel):
     config: RecursiveAnalysisConfig
     ms2_spectra: list[Spectrum]
     ms1_df: pd.DataFrame
-    seed_metabolites: Optional[list[NodeId]] = None
     spectrum_lookup: dict[NodeId, Spectrum] = Field(default_factory=dict)
     mz_array: np.ndarray = Field(default=None, exclude=True)
     id_array: np.ndarray = Field(default=None, exclude=True)
@@ -395,17 +398,6 @@ class RecursiveAnalyzer(BaseModel):
                 node_batches.append((node_id, current_mz, unvisited_indices))
 
         return node_batches
-
-    def _initialize_seed_metabolites(self) -> None:
-        """Initialize seed metabolites if not provided."""
-        if self.seed_metabolites is None:
-            self.seed_metabolites = (
-                self.ms1_df.nlargest(self.config.seed_size, TargetIonsColumn.MZ)[
-                    TargetIonsColumn.ID
-                ]
-                .astype(str)
-                .tolist()
-            )
 
     def _process_layer(
         self,
@@ -500,13 +492,26 @@ class RecursiveAnalyzer(BaseModel):
             NetworkData containing network information for visualization
         """
         visited_nodes = visited_nodes or set()
-        self._initialize_seed_metabolites()
+        
+        # Select seed metabolites based on parent m/z list
+        seed_metabolites = self._select_seed_metabolites()
+        
+        if not seed_metabolites:
+            logger.error("No seed metabolites found. Cannot perform network analysis.")
+            # Return empty network data
+            return NetworkData(
+                nodes=[],
+                edges=[],
+                neighbors_df=pd.DataFrame(columns=[TargetIonsColumn.ID]),
+                products=[],
+                node_products_map={},
+            )
 
         # Initialize NetworkX graph for internal processing
         G = nx.Graph()
 
         # Add seed metabolites as initial nodes
-        for seed_id in self.seed_metabolites:
+        for seed_id in seed_metabolites:
             if seed_id in self.id_to_index:
                 node_idx = self.id_to_index[seed_id]
                 G.add_node(seed_id, mz=float(self.mz_array[node_idx]), layer=0)
@@ -514,12 +519,12 @@ class RecursiveAnalyzer(BaseModel):
         all_neighbors: set[NodeId] = set()
         all_products: list[str] = []
         node_products_map: dict[NodeId, list[str]] = {}
-        nodes_to_process = set(self.seed_metabolites) - visited_nodes
+        nodes_to_process = set(seed_metabolites) - visited_nodes
         max_workers = min(AnalysisConstants.MAX_WORKERS, (os.cpu_count() or 1) * 2)
 
         current_layer = 0
         logger.info(
-            f"Starting analysis with {len(self.seed_metabolites)} seed metabolites "
+            f"Starting analysis with {len(seed_metabolites)} seed metabolites "
             f"(workers={max_workers}, modcos_threshold={self.config.modcos_threshold}, "
             f"delta_mz={self.config.delta_mz_threshold})"
         )
@@ -617,3 +622,65 @@ class RecursiveAnalyzer(BaseModel):
                 products=list(set(all_products)),
                 node_products_map=node_products_map,
             )
+
+    def _select_seed_metabolites(self) -> list[NodeId]:
+        """Select seed metabolites based on parent m/z list.
+
+        Returns:
+            List of node IDs selected as seed metabolites
+        """
+        # Check if parent_mz_list is provided
+        if self.config.parent_mz_list is None or len(self.config.parent_mz_list) == 0:
+            logger.warning("No parent m/z list provided. Cannot proceed with analysis.")
+            return []
+            
+        logger.info(f"Searching for seed metabolites matching {len(self.config.parent_mz_list)} parent m/z values with error threshold ±{self.config.parent_mz_error} Da")
+        
+        # Create a mask for each parent m/z value within the error threshold
+        masks = []
+        parent_match_counts = {}  # Track matches for each parent m/z
+        
+        for parent_mz in self.config.parent_mz_list:
+            mask = np.abs(self.mz_array - parent_mz) <= self.config.parent_mz_error
+            match_count = np.sum(mask)
+            parent_match_counts[parent_mz] = match_count
+            masks.append(mask)
+            
+            # Log individual parent m/z match results
+            if match_count > 0:
+                matching_mzs = self.mz_array[mask]
+                matching_ids = self.id_array[mask]
+                logger.info(f"Parent m/z {parent_mz:.4f} matched {match_count} metabolites:")
+                for i, (mz, id_) in enumerate(zip(matching_mzs, matching_ids)):
+                    logger.info(f"  {i+1}. ID: {id_}, m/z: {mz:.4f}, delta: {abs(mz - parent_mz):.4f} Da")
+            else:
+                logger.warning(f"Parent m/z {parent_mz:.4f} did not match any metabolites within error threshold")
+        
+        # Combine masks with logical OR
+        combined_mask = np.logical_or.reduce(masks) if masks else np.zeros(len(self.mz_array), dtype=bool)
+        
+        # Get the indices of matching metabolites
+        matching_indices = np.where(combined_mask)[0]
+        
+        # Print summary of all parent m/z matches
+        logger.info(f"Parent m/z match summary:")
+        for parent_mz, count in parent_match_counts.items():
+            logger.info(f"  - {parent_mz:.4f}: {count} matches")
+        
+        if len(matching_indices) > 0:
+            # Get the IDs of matching metabolites
+            seed_metabolites = self.id_array[matching_indices].astype(str).tolist()
+            logger.info(f"Selected {len(seed_metabolites)} seed metabolites based on parent m/z list")
+            
+            # Log the actual seed metabolites if not too many
+            if len(seed_metabolites) <= 20:
+                seed_mzs = [self.mz_array[self.id_to_index[seed_id]] for seed_id in seed_metabolites if seed_id in self.id_to_index]
+                seed_info = [f"{id}({mz:.4f})" for id, mz in zip(seed_metabolites, seed_mzs)]
+                logger.info(f"Seed metabolites: {', '.join(seed_info)}")
+            else:
+                logger.info(f"Too many seed metabolites to display individually ({len(seed_metabolites)})")
+            
+            return seed_metabolites
+        else:
+            logger.error("No matches found for any parent m/z values. Cannot proceed with analysis.")
+            return []

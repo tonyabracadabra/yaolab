@@ -516,6 +516,40 @@ class RecursiveAnalysisUI:
                     # Analysis Parameters Section
                     st.markdown("### ⚙️ Analysis Parameters")
 
+                    with st.expander("Parent Compound Selection", expanded=True):
+                        default_parent_mz_values = """174.0528234
+165.0789786
+148.0524295
+164.0473441
+913.1519897
+272.0684735"""
+                        parent_mz_input = st.text_area(
+                            "Parent Molecular Weights (one per line)",
+                            default_parent_mz_values,
+                            help="Enter parent molecular weights to use as seeds (one per line).",
+                            height=150,
+                        )
+                        
+                        parent_mz_error = st.number_input(
+                            "Parent m/z Error Threshold (Da)",
+                            0.001,
+                            1.0,
+                            0.01,
+                            format="%.4f",
+                            help="Maximum error threshold for matching parent molecular weights",
+                        )
+                        
+                        # Parse parent m/z list
+                        parent_mz_list = []
+                        if parent_mz_input.strip():
+                            try:
+                                for line in parent_mz_input.strip().split("\n"):
+                                    if line.strip():
+                                        parent_mz_list.append(float(line.strip()))
+                                st.info(f"Found {len(parent_mz_list)} parent m/z values")
+                            except ValueError:
+                                st.error("Invalid input. Please enter numeric values only.")
+
                     with st.expander("Core Parameters", expanded=True):
                         min_cosine = st.slider(
                             "Min Cosine Similarity",
@@ -582,15 +616,21 @@ class RecursiveAnalysisUI:
 
                     if submitted:
                         try:
+                            # Validate parent_mz_list
+                            if not parent_mz_list:
+                                st.error("Parent m/z list is required. Please enter at least one parent m/z value.")
+                                return
+                                
                             # Initialize analyzer with all parameters
                             config = RecursiveAnalysisConfig(
                                 modcos_threshold=min_cosine,
                                 delta_mz_threshold=max_mass_diff,
                                 max_iterations=max_iterations,
                                 tolerance=tolerance,
-                                seed_size=seed_size,
                                 batch_size=batch_size,
                                 max_workers=max_workers,
+                                parent_mz_list=parent_mz_list,
+                                parent_mz_error=parent_mz_error,
                             )
 
                             # Run analysis in the results column
@@ -926,7 +966,6 @@ class RecursiveAnalysisUI:
                 config=config,
                 ms2_spectra=self.ms2_spectra,
                 ms1_df=self.ms1_df,
-                seed_metabolites=[str(self.ms1_df["id"].iloc[0])],
             )
 
             # Add spinner CSS and updated container styles
