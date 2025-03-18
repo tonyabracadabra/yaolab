@@ -48,3 +48,5 @@ notebooks
 tmp*
 
 .venv/
+python/log/
+python/output/

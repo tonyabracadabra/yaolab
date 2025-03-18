@@ -17,6 +17,7 @@ import pandas as pd
 from core.models.analysis import MSTool
 from core.preprocess import preprocess_targeted_ions_file
 from core.recursive.run import RecursiveAnalysisConfig, RecursiveAnalyzer
+from core.utils.constants import TargetIonsColumn
 import numpy as np
 
 
@@ -33,8 +34,27 @@ def load_ms1_data(file_path: Path) -> pd.DataFrame:
     with open(file_path, "rb") as f:
         ms1_data = f.read()
 
-    # Process MS1 data using MSDIAL preprocessor
-    ms1_df, _ = preprocess_targeted_ions_file(ms1_data, MSTool.MSDial)
+    try:
+        # First try standard MS-DIAL format
+        ms1_df, _ = preprocess_targeted_ions_file(ms1_data, MSTool.MSDial)
+    except KeyError as e:
+        # If MS/MS assigned column is missing, create a custom DataFrame
+        ms1_df = pd.read_csv(io.BytesIO(ms1_data), sep="\t")
+        # Add required columns if they don't exist
+        if "MS/MS assigned" not in ms1_df.columns:
+            ms1_df["MS/MS assigned"] = True  # Assume all entries have MS/MS data
+        
+        # Map column names
+        column_mapping = {
+            "Peak ID": "id",
+            "Precursor m/z": "mz",
+            "RT (min)": "rt"
+        }
+        
+        # Rename columns if they exist
+        for old_col, new_col in column_mapping.items():
+            if old_col in ms1_df.columns and new_col not in ms1_df.columns:
+                ms1_df[new_col] = ms1_df[old_col]
 
     # Reset index to make sure we have a clean index
     ms1_df = ms1_df.reset_index(drop=True)
@@ -62,14 +82,14 @@ class TestRecursiveAnalyzer(unittest.TestCase):
         ms2_spectra: list[Spectrum] = list(
             load_from_mgf(
                 str(
-                    current_dir.parent.parent / "asset/test/S2_FreshGinger_MS2_File.mgf"
+                    Path("/Users/aylin/yaolab/python/asset/test/Mgf_LAJ01-POS.mgf")
                 )
             )
         )
 
         # Load MS1 data using the new function
         ms1_df = load_ms1_data(
-            current_dir.parent.parent / "asset/test/S2_FreshGinger_MS1_List.txt"
+            Path("/Users/aylin/yaolab/python/asset/test/LAJ01-POS.txt")
         )
         
         # Store MS1 data for parent m/z tests
@@ -206,7 +226,39 @@ async def run_analysis(ms1_file: Path, ms2_file: Path, parent_mz_list: list, par
     # Run analysis
     network_data = analyzer.explore_metabolic_network()
 
-    # Print results
+    # Create output directory
+    output_dir = Path("python/log")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # 1. Export network nodes with all attributes
+    nodes_df = pd.DataFrame(network_data.nodes)
+    nodes_df.to_csv(output_dir / "network_nodes.csv", index=False)
+    print(f"Exported {len(nodes_df)} network nodes to {output_dir}/network_nodes.csv")
+    
+    # 2. Export network edges with all attributes
+    edges_df = pd.DataFrame(network_data.edges)
+    edges_df.to_csv(output_dir / "network_edges.csv", index=False)
+    print(f"Exported {len(edges_df)} network edges to {output_dir}/network_edges.csv")
+    
+    # 3. Export neighbor products mapping
+    neighbor_products_df = pd.DataFrame([
+        {"node_id": node_id, "products": ",".join(products)}
+        for node_id, products in network_data.node_products_map.items()
+    ])
+    neighbor_products_df.to_csv(output_dir / "node_products.csv", index=False)
+    print(f"Exported {len(neighbor_products_df)} node-product mappings to {output_dir}/node_products.csv")
+    
+    # 4. Export all neighbors with their MS1 information
+    neighbors_with_ms1 = ms1_df[ms1_df[TargetIonsColumn.ID].astype(str).isin(network_data.neighbors_df[TargetIonsColumn.ID])]
+    neighbors_with_ms1.to_csv(output_dir / "neighbors_ms1_info.csv", index=False)
+    print(f"Exported {len(neighbors_with_ms1)} neighbors with MS1 information to {output_dir}/neighbors_ms1_info.csv")
+    
+    # 5. Export unique products list
+    products_df = pd.DataFrame({"product": list(set(network_data.products))})
+    products_df.to_csv(output_dir / "unique_products.csv", index=False)
+    print(f"Exported {len(products_df)} unique products to {output_dir}/unique_products.csv")
+
+    # Print basic results
     print(f"neighbors_df: {network_data.neighbors_df}")
     print(
         f"n products: {len(network_data.products)} on {len(network_data.node_products_map)} nodes"
@@ -214,7 +266,7 @@ async def run_analysis(ms1_file: Path, ms2_file: Path, parent_mz_list: list, par
     print(
         "matched ms1 ions",
         analyzer.ms1_df[
-            analyzer.ms1_df["id"]
+            analyzer.ms1_df[TargetIonsColumn.ID]
             .astype(str)
             .isin(network_data.node_products_map.keys())
         ].head(),
@@ -236,8 +288,8 @@ def main():
         description="Run recursive analysis on MS1 and MS2 data"
     )
     parser.add_argument("--test", action="store_true", help="Run unit tests")
-    parser.add_argument("--ms1", type=str, help="Path to MS1 data file")
-    parser.add_argument("--ms2", type=str, help="Path to MS2 MGF file")
+    parser.add_argument("--ms1", type=str, default="/Users/aylin/yaolab/python/asset/test/LAJ01-POS.txt", help="Path to MS1 data file")
+    parser.add_argument("--ms2", type=str, default="/Users/aylin/yaolab/python/asset/test/Mgf_LAJ01-POS.mgf", help="Path to MS2 MGF file")
     parser.add_argument("--parent-mz", type=float, nargs="+", help="List of parent m/z values to use as seeds (defaults to predefined values if not provided)")
     parser.add_argument("--parent-mz-error", type=float, default=0.01, help="Maximum error threshold for matching parent m/z values")
 
@@ -259,8 +311,13 @@ def main():
             parent_mz_error=args.parent_mz_error
         ))
     else:
-        parser.print_help()
-        sys.exit(1)
+        # 使用默认文件路径
+        asyncio.run(run_analysis(
+            Path("/Users/aylin/yaolab/python/asset/test/LAJ01-POS.txt"),
+            Path("/Users/aylin/yaolab/python/asset/test/Mgf_LAJ01-POS.mgf"),
+            parent_mz_list=parent_mz_list,
+            parent_mz_error=args.parent_mz_error
+        ))
 
 
 if __name__ == "__main__":

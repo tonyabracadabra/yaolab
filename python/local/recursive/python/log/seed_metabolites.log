@@ -1,0 +1,29 @@
+Seed Metabolite Selection Log
+==================================================
+Parent m/z list: 174.052823, 165.078979, 148.052429, 164.047344, 913.151990, 272.068473
+Error threshold: ±0.01 Da
+
+Parent m/z 174.052823 matched 3 metabolites:
+ID	m/z	delta (Da)
+1309	174.054920	0.002097
+1311	174.054950	0.002127
+1312	174.055020	0.002197
+
+Parent m/z 165.078979 did not match any metabolites within error threshold
+
+Parent m/z 148.052429 did not match any metabolites within error threshold
+
+Parent m/z 164.047344 did not match any metabolites within error threshold
+
+Parent m/z 913.151990 did not match any metabolites within error threshold
+
+Parent m/z 272.068473 did not match any metabolites within error threshold
+
+Summary of Selected Seed Metabolites
+==================================================
+Total seed metabolites selected: 3
+
+ID	m/z
+1309	174.054920
+1311	174.054950
+1312	174.055020
