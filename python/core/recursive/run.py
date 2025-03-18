@@ -222,9 +222,9 @@ def process_node_batch(batch_data: BatchData) -> ProcessingResult:
         potential_neighbors: NeighborProductsMap = {}
 
         # Find potential neighbors based on mass differences using vectorized operations
-        for mz_diff, target_id in zip(
+        for j, (mz_diff, target_id) in enumerate(zip(
             mass_differences, batch_data.id_array[unvisited_indices]
-        ):
+        )):
             if target_id in batch_data.visited_nodes:
                 continue
 
@@ -237,10 +237,8 @@ def process_node_batch(batch_data: BatchData) -> ProcessingResult:
             )
 
             if len(matching_indices) > 0:
-                products = []
-                for idx in matching_indices:
-                    products.append(batch_data.reactions[idx].product)
-                potential_neighbors[target_id] = products
+                # 修改: 这里存储的产物是目标节点的ID，而不是反应产物名称
+                potential_neighbors[target_id] = [target_id]  # 使用目标ID作为产物ID
 
         # Validate neighbors using ModCos scores
         if potential_neighbors and current_node in batch_data.spectrum_lookup:
@@ -252,20 +250,27 @@ def process_node_batch(batch_data: BatchData) -> ProcessingResult:
                 if target_id in batch_data.spectrum_lookup
             ]
 
-            for i, _ in calculate_modcos_scores(
-                source_spectrum,
-                target_spectra,
-                batch_data.modcos_threshold,
-                batch_data.tolerance,
-            ):
-                neighbor_id = target_ids[i]
-                if neighbor_id not in batch_data.visited_nodes:
-                    batch_neighbors.add(neighbor_id)
-                    neighbor_products[neighbor_id] = potential_neighbors[neighbor_id]
+            if target_spectra:
+                filtered_scores = calculate_modcos_scores(
+                    source_spectrum,
+                    target_spectra,
+                    batch_data.modcos_threshold,
+                    batch_data.tolerance,
+                )
+
+                for score_idx, score in filtered_scores:
+                    if score_idx < len(target_ids):
+                        valid_target = target_ids[score_idx]
+                        batch_neighbors.add(valid_target)
+                        neighbor_products[valid_target] = potential_neighbors[valid_target]
 
         processed_nodes.add(current_node)
 
-    return ProcessingResult(batch_neighbors, neighbor_products, processed_nodes)
+    return ProcessingResult(
+        new_neighbors=batch_neighbors,
+        neighbor_products=neighbor_products,
+        processed_nodes=processed_nodes,
+    )
 
 
 class RecursiveAnalysisConfig(BaseModel):
@@ -302,6 +307,27 @@ class RecursiveAnalysisConfig(BaseModel):
     parent_mz_error: float = Field(
         default=0.01,
         description="Maximum error threshold for matching parent molecular weights (in Da)",
+    )
+    # 添加MS2验证相关参数
+    enable_ms2_validation: bool = Field(
+        default=False,
+        description="Enable MS2 spectral validation for seed metabolite selection",
+    )
+    parent_ms2_peaks: Dict[float, List[Dict[str, float]]] = Field(
+        default_factory=dict,
+        description="Dictionary mapping parent m/z to their top MS2 peaks in format: {parent_mz: [{mz: float, intensity: float}, ...]}",
+    )
+    ms2_match_tolerance: float = Field(
+        default=0.02,
+        description="Mass tolerance for matching MS2 peaks (in Da)",
+    )
+    min_ms2_matched_peaks: int = Field(
+        default=2,
+        description="Minimum number of MS2 peaks that must match for validation",
+    )
+    ms2_similarity_threshold: float = Field(
+        default=0.3,
+        description="Minimum similarity score for MS2 validation",
     )
 
 
@@ -341,9 +367,11 @@ class RecursiveAnalyzer(BaseModel):
 
     def _build_spectrum_lookup(self) -> None:
         """Build a lookup dictionary for quick spectrum access by scan ID."""
-        self.spectrum_lookup = {
-            str(spectrum.metadata[SCANS_KEY]): spectrum for spectrum in self.ms2_spectra
-        }
+        self.spectrum_lookup = {}
+        for i, spectrum in enumerate(self.ms2_spectra):
+            # Try to get scan ID from metadata, if not available use index
+            scan_id = str(spectrum.metadata.get(SCANS_KEY, i))
+            self.spectrum_lookup[scan_id] = spectrum
 
     def _prepare_reaction_arrays(self) -> None:
         """Prepare arrays for optimized reaction matching."""
@@ -624,7 +652,7 @@ class RecursiveAnalyzer(BaseModel):
             )
 
     def _select_seed_metabolites(self) -> list[NodeId]:
-        """Select seed metabolites based on parent m/z list.
+        """Select seed metabolites based on parent m/z list and optionally validate with MS2.
 
         Returns:
             List of node IDs selected as seed metabolites
@@ -640,6 +668,13 @@ class RecursiveAnalyzer(BaseModel):
         masks = []
         parent_match_counts = {}  # Track matches for each parent m/z
         
+        # Create log directory if it doesn't exist
+        log_dir = os.path.join("python", "log")
+        os.makedirs(log_dir, exist_ok=True)
+        
+        # Create CSV file path for matched seed metabolites
+        matched_seeds_csv_path = os.path.join(log_dir, "matched_seed_metabolites.csv")
+        
         for parent_mz in self.config.parent_mz_list:
             mask = np.abs(self.mz_array - parent_mz) <= self.config.parent_mz_error
             match_count = np.sum(mask)
@@ -651,8 +686,10 @@ class RecursiveAnalyzer(BaseModel):
                 matching_mzs = self.mz_array[mask]
                 matching_ids = self.id_array[mask]
                 logger.info(f"Parent m/z {parent_mz:.4f} matched {match_count} metabolites:")
+                
                 for i, (mz, id_) in enumerate(zip(matching_mzs, matching_ids)):
-                    logger.info(f"  {i+1}. ID: {id_}, m/z: {mz:.4f}, delta: {abs(mz - parent_mz):.4f} Da")
+                    delta = abs(mz - parent_mz)
+                    logger.info(f"  {i+1}. ID: {id_}, m/z: {mz:.4f}, delta: {delta:.4f} Da")
             else:
                 logger.warning(f"Parent m/z {parent_mz:.4f} did not match any metabolites within error threshold")
         
@@ -670,7 +707,89 @@ class RecursiveAnalyzer(BaseModel):
         if len(matching_indices) > 0:
             # Get the IDs of matching metabolites
             seed_metabolites = self.id_array[matching_indices].astype(str).tolist()
-            logger.info(f"Selected {len(seed_metabolites)} seed metabolites based on parent m/z list")
+            logger.info(f"Selected {len(seed_metabolites)} potential seed metabolites based on parent m/z list")
+            
+            # Extract all MS1 information for matched seed metabolites
+            # Get all columns from the original MS1 dataframe for the matched metabolites
+            matched_ms1_data = self.ms1_df.iloc[matching_indices].copy()
+            
+            # Add parent m/z information and delta
+            matched_ms1_data['matched_parent_mz'] = None
+            matched_ms1_data['delta_Da'] = None
+            matched_ms1_data['ms2_validated'] = False
+            matched_ms1_data['ms2_match_score'] = None
+            matched_ms1_data['ms2_matched_peaks'] = None
+            
+            # For each matched metabolite, find which parent m/z it matched with
+            for idx in matching_indices:
+                mz_value = self.mz_array[idx]
+                id_value = self.id_array[idx]
+                
+                # Find the closest parent m/z
+                deltas = [abs(mz_value - parent_mz) for parent_mz in self.config.parent_mz_list]
+                min_delta_idx = deltas.index(min(deltas))
+                closest_parent_mz = self.config.parent_mz_list[min_delta_idx]
+                
+                # Update the dataframe
+                matched_ms1_data.loc[matched_ms1_data[TargetIonsColumn.ID] == id_value, 'matched_parent_mz'] = closest_parent_mz
+                matched_ms1_data.loc[matched_ms1_data[TargetIonsColumn.ID] == id_value, 'delta_Da'] = deltas[min_delta_idx]
+            
+            # Perform MS2 validation if enabled
+            if self.config.enable_ms2_validation and self.config.parent_ms2_peaks:
+                logger.info("Performing MS2 validation on potential seed metabolites")
+                validated_seeds = []
+                
+                for _, row in matched_ms1_data.iterrows():
+                    # Get scan ID
+                    scan_id = str(row[TargetIonsColumn.ID])
+                    # Skip validation if no MS2 spectrum is available
+                    if scan_id not in self.spectrum_lookup:
+                        logger.warning(f"No MS2 spectrum available for scan ID {scan_id}")
+                        continue
+                    
+                    # Get matched parent m/z for this potential seed
+                    parent_mz = row['matched_parent_mz']
+                    # Skip if no reference MS2 peaks are available for this parent m/z
+                    if parent_mz not in self.config.parent_ms2_peaks:
+                        logger.warning(f"No reference MS2 peaks provided for parent m/z {parent_mz:.4f}")
+                        continue
+                    
+                    # Get MS2 spectrum for this scan
+                    spectrum = self.spectrum_lookup[scan_id]
+                    
+                    # Validate using MS2 spectra
+                    reference_peaks = self.config.parent_ms2_peaks[parent_mz]
+                    ms2_validation_result = self._validate_ms2_spectrum(
+                        spectrum, 
+                        reference_peaks,
+                        self.config.ms2_match_tolerance,
+                        self.config.min_ms2_matched_peaks
+                    )
+                    
+                    # Update validation results
+                    matched_ms1_data.loc[matched_ms1_data[TargetIonsColumn.ID] == scan_id, 'ms2_validated'] = ms2_validation_result['validated']
+                    matched_ms1_data.loc[matched_ms1_data[TargetIonsColumn.ID] == scan_id, 'ms2_match_score'] = ms2_validation_result['similarity_score']
+                    matched_ms1_data.loc[matched_ms1_data[TargetIonsColumn.ID] == scan_id, 'ms2_matched_peaks'] = str(ms2_validation_result['matched_peaks'])
+                    
+                    # Add to validated seeds if passed validation
+                    if ms2_validation_result['validated']:
+                        validated_seeds.append(scan_id)
+                        logger.info(
+                            f"Seed ID {scan_id} (m/z: {row[TargetIonsColumn.MZ]:.4f}) validated by MS2 matching "
+                            f"with score {ms2_validation_result['similarity_score']:.3f}, "
+                            f"matched {len(ms2_validation_result['matched_peaks'])}/{len(reference_peaks)} peaks"
+                        )
+                
+                if validated_seeds:
+                    # Replace seed metabolites with only those validated by MS2
+                    logger.info(f"MS2 validation passed for {len(validated_seeds)}/{len(seed_metabolites)} potential seed metabolites")
+                    seed_metabolites = validated_seeds
+                else:
+                    logger.warning("No seed metabolites passed MS2 validation. Falling back to MS1-only matching.")
+            
+            # Export matched seed metabolites with all MS1 information to CSV
+            matched_ms1_data.to_csv(matched_seeds_csv_path, index=False)
+            logger.info(f"Exported matched seed metabolites with all MS1 information to {matched_seeds_csv_path}")
             
             # Log the actual seed metabolites if not too many
             if len(seed_metabolites) <= 20:
@@ -683,4 +802,78 @@ class RecursiveAnalyzer(BaseModel):
             return seed_metabolites
         else:
             logger.error("No matches found for any parent m/z values. Cannot proceed with analysis.")
+            
+            # Create empty CSV to indicate no matches
+            pd.DataFrame(columns=self.ms1_df.columns.tolist() + ['matched_parent_mz', 'delta_Da', 'ms2_validated', 'ms2_match_score', 'ms2_matched_peaks']).to_csv(matched_seeds_csv_path, index=False)
+            logger.info(f"Created empty seed metabolite CSV file at {matched_seeds_csv_path} (no matches found)")
+            
             return []
+
+    def _validate_ms2_spectrum(
+        self, 
+        spectrum: Spectrum, 
+        reference_peaks: List[Dict[str, float]], 
+        tolerance: float,
+        min_matched_peaks: int
+    ) -> Dict:
+        """Validate an MS2 spectrum against reference peaks.
+
+        Args:
+            spectrum: MS2 spectrum to validate
+            reference_peaks: List of reference peaks with mz and intensity
+            tolerance: Mass tolerance for matching peaks (in Da)
+            min_matched_peaks: Minimum number of peaks that must match
+
+        Returns:
+            Dict containing validation results
+        """
+        # Get spectrum peaks
+        spec_mzs = spectrum.peaks.mz
+        spec_intensities = spectrum.peaks.intensities
+        
+        # Normalize spectrum intensities for fair comparison
+        if len(spec_intensities) > 0:
+            max_intensity = max(spec_intensities)
+            if max_intensity > 0:
+                spec_intensities = spec_intensities / max_intensity * 1000
+        
+        # Match each reference peak with the spectrum
+        matched_peaks = []
+        total_ref_intensity = 0
+        matched_intensity = 0
+        
+        for ref_peak in reference_peaks:
+            ref_mz = ref_peak['mz']
+            ref_intensity = ref_peak['intensity']
+            total_ref_intensity += ref_intensity
+            
+            # Find matching peak in spectrum
+            for i, spec_mz in enumerate(spec_mzs):
+                if abs(spec_mz - ref_mz) <= tolerance:
+                    matched_peaks.append({
+                        'ref_mz': ref_mz,
+                        'ref_intensity': ref_intensity,
+                        'spec_mz': spec_mz,
+                        'spec_intensity': spec_intensities[i],
+                        'delta_mz': abs(spec_mz - ref_mz)
+                    })
+                    matched_intensity += ref_intensity
+                    break
+        
+        # Calculate similarity score
+        similarity_score = 0
+        if total_ref_intensity > 0:
+            similarity_score = matched_intensity / total_ref_intensity
+        
+        # Determine if validation passed
+        validated = (
+            len(matched_peaks) >= min_matched_peaks and 
+            similarity_score >= self.config.ms2_similarity_threshold
+        )
+        
+        return {
+            'validated': validated,
+            'similarity_score': similarity_score,
+            'matched_peaks': matched_peaks,
+            'total_peaks': len(reference_peaks)
+        }
