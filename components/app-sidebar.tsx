@@ -7,6 +7,7 @@
 // Core & Utils
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -17,6 +18,7 @@ import { useConvexAuth } from "convex/react";
 // Components
 import Avatar from "boring-avatars";
 import { Logo } from "./logo";
+import { ModeToggle } from "./mode-toggle";
 
 // UI Components
 import { Button } from "./ui/button";
@@ -86,6 +88,7 @@ export function AppSidebar() {
   const { user } = useUser();
   const t = useTranslations("New");
   const { toggleSidebar, state } = useSidebar();
+  const { theme } = useTheme();
 
   // ====================================================================
   // Navigation Items
@@ -236,6 +239,29 @@ export function AppSidebar() {
 
       {/* Footer Section */}
       <SidebarFooter className="border-t">
+        <SidebarMenuButton asChild>
+          <div
+            className={cn(
+              "py-2 flex items-center gap-2",
+              state === "expanded"
+                ? "px-3 justify-between"
+                : "px-0 justify-center"
+            )}
+          >
+            {state === "expanded" ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <ModeToggle />
+                  <span className="text-sm capitalize">
+                    {theme || "System"}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <ModeToggle />
+            )}
+          </div>
+        </SidebarMenuButton>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton>
