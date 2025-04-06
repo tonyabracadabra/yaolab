@@ -49,7 +49,10 @@ type Analysis = {
     ions: string;
     sampleCols: string[];
   };
-  reactionDb: "default-pos" | { name: string; reactions: any[] };
+  reactionDb:
+    | "default-pos"
+    | "default-neg"
+    | { name: string; reactions: any[] };
   config: any;
   creationTime: number;
 };
