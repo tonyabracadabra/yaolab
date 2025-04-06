@@ -1,9 +1,32 @@
+"use client";
+
 import { UserProfile } from "@clerk/nextjs";
 
-export default function Settings() {
+export default function SettingsPage() {
   return (
-    <div className="w-full">
-      <UserProfile />
-    </div>
+    <UserProfile
+      appearance={{
+        layout: {
+          socialButtonsPlacement: "bottom",
+        },
+        elements: {
+          rootBox: {
+            boxShadow: "none",
+            width: "100%",
+          },
+          card: {
+            border: "none",
+            boxShadow: "none",
+            width: "100%",
+          },
+          navbar: {
+            width: "100%",
+          },
+          scrollBox: {
+            width: "100%",
+          },
+        },
+      }}
+    />
   );
 }

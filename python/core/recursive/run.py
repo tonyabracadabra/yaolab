@@ -414,7 +414,6 @@ class RecursiveAnalyzer(BaseModel):
         """
         node_batches = []
         for node_id in nodes:
-            if node_id not in self.id_to_index:
                 continue
 
             node_idx = self.id_to_index[node_id]

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 import {
   DropdownMenu,
@@ -12,19 +13,33 @@ import { Computer, Moon, Sun } from "lucide-react";
 import { Button } from "./ui/button";
 
 export function ModeToggle() {
-  const { setTheme, theme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
-  const displayIcon = () => {
-    if (theme === "dark") return <Moon className="h-4 w-4" />;
-    if (theme === "light") return <Sun className="h-4 w-4" />;
-    return <Computer className="h-4 w-4" />;
-  };
+  // Avoid hydration mismatch by only mounting client-side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+        <Sun className="h-4 w-4 opacity-0" />
+        <span className="sr-only">Loading theme</span>
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-          {displayIcon()}
+          <Sun
+            className={`h-4 w-4 transition-all ${resolvedTheme === "dark" ? "scale-0 -rotate-90" : "scale-100 rotate-0"}`}
+          />
+          <Moon
+            className={`absolute h-4 w-4 transition-all ${resolvedTheme === "dark" ? "scale-100 rotate-0" : "scale-0 rotate-90"}`}
+          />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>

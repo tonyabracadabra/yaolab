@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // Auth
 import { useAuth, useUser } from "@clerk/nextjs";
@@ -88,7 +89,13 @@ export function AppSidebar() {
   const { user } = useUser();
   const t = useTranslations("New");
   const { toggleSidebar, state } = useSidebar();
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Mount safely for client-side rendering to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // ====================================================================
   // Navigation Items
@@ -248,12 +255,12 @@ export function AppSidebar() {
                 : "px-0 justify-center"
             )}
           >
-            {state === "expanded" ? (
+            {state === "expanded" && mounted ? (
               <>
                 <div className="flex items-center gap-2">
                   <ModeToggle />
                   <span className="text-sm capitalize">
-                    {theme || "System"}
+                    {resolvedTheme || "System"}
                   </span>
                 </div>
               </>
