@@ -53,11 +53,6 @@ const people = [
     pic: "/photos/陈国滔.png",
   },
   {
-    name: "QiQi Wang",
-    desc: "Ph.D. Candidate",
-    pic: "/photos/王琦琦.png",
-  },
-  {
     name: "ChanJuan Chen",
     desc: "Ph.D. Candidate",
     pic: "/photos/陈婵娟.png",
