@@ -11,11 +11,9 @@ dependencies = [
     "convex>=0.7.0",
     "fastapi>=0.115.6",
     "fastparquet>=2024.11.0",
-    "matchms>=0.28.2",
-    "modal>=0.71.11",
     "pandas>=2.2.3",
     "pyarrow>=18.1.0",
-    "pydantic>=2.10.4",
+    "pydantic>=2.12.4",
     "python-dotenv>=1.0.1",
     "redis>=5.2.1",
     "scipy>=1.15.0",
@@ -23,6 +21,8 @@ dependencies = [
     "pyteomics>=4.6.0",
     "streamlit>=1.42.1",
     "watchdog>=6.0.0",
+    "modal>=1.2.5",
+    "matchms>=0.31.0",
 ]
 requires-python = ">=3.12"
 
